@@ -268,20 +268,10 @@ export async function resetAppCompletely(): Promise<void> {
     `Performing fast app reset for E2E tests... (CI: ${String(isCI)})`,
   );
 
-  // Step 1: Terminate the app if running
-  try {
-    console.log('Terminating app...');
-    await Promise.race([
-      device.terminateApp(),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Terminate timeout')), 10000),
-      ),
-    ]);
-  } catch (error) {
-    console.log('App terminate failed (may not be running):', error);
-  }
-
-  // Step 2: Clear keychain to remove wallet data
+  // Clear the iOS keychain — wallet keys are stored here via
+  // react-native-keychain and persist across app uninstall/reinstall.
+  // Without this, delete: true reinstalls the app but the wallet
+  // remains in keychain, so the app skips onboarding.
   try {
     console.log('Clearing keychain...');
     await Promise.race([
@@ -295,20 +285,21 @@ export async function resetAppCompletely(): Promise<void> {
     console.log('Keychain clear failed or timed out:', error);
   }
 
-  // Step 3: Verify Metro is alive BEFORE launching
-  // On CI, the terminate/clearKeychain steps can cause memory pressure
-  // that kills Metro. Without Metro, the app shows "Could not connect
-  // to development server" and no React views render.
+  // Verify Metro is alive BEFORE launching.
+  // Without Metro, the app shows "Could not connect to development
+  // server" and no React views render (just a native spinner).
   await ensureMetroIsAlive();
 
-  // Step 4: Launch the app with sync ENABLED (no detoxEnableSynchronization: 0).
-  // Sync-enabled launch makes Detox wait for JS to load and the app to settle.
-  // The URL blacklist ensures background requests don't block idle.
-  // NOTE: waitFor() is still broken by sync, but launch itself works fine.
-  console.log('Launching app...');
+  // delete: true uninstalls + reinstalls the app, clearing AsyncStorage
+  // and all app data. Combined with clearKeychain() above, this gives
+  // us a fully clean state. No separate terminateApp() needed — delete
+  // handles termination internally, avoiding the hang that occurs when
+  // terminateApp() blocks the Node event loop via Detox IPC on CI.
+  console.log('Launching app with clean state (delete: true)...');
   const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
 
   await device.launchApp({
+    delete: true,
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
