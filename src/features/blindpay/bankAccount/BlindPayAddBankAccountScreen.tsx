@@ -222,7 +222,8 @@ export default function BlindPayAddBankAccountScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   // Total steps: 1 (rail+name) + number of rail step groups
-  const totalSteps = 1 + (selectedRail?.steps.length ?? 0);
+  // When no rail is selected yet, use 0 so the progress bar starts empty
+  const totalSteps = selectedRail ? 1 + selectedRail.steps.length : 0;
   const isLastStep = wizardStep === totalSteps - 1;
   const currentGroup: FieldGroup | null =
     wizardStep > 0 && selectedRail
