@@ -37,6 +37,9 @@ const URL_BLACKLIST = [
   // RPC endpoints (Cosmos chains, Solana)
   '.*keplr.app.*',
   '.*api.solana.com.*',
+  // Metro bundler (symbolication, LogBox assets) — these block Detox sync
+  '.*localhost:8081/symbolicate.*',
+  '.*localhost:8081/assets/node_modules.*',
 ];
 
 // ---------------------------------------------------------------------------
@@ -44,47 +47,30 @@ const URL_BLACKLIST = [
 // ---------------------------------------------------------------------------
 
 /**
- * Dismiss React Native LogBox warning/error banners that overlay the UI.
- * In debug builds, these banners can cover buttons and block Detox interactions.
- * Must be called with synchronization disabled since the app is "busy".
+ * Dismiss React Native LogBox notification banners that overlay the UI.
+ * On CI, LogBox.uninstall() may not work (NativeModules.DetoxHelper is
+ * unavailable in bridgeless mode), so banners cover bottom-positioned buttons.
+ * Uses manual expect() polling — waitFor() is blocked by internal sync.
+ *
+ * The dismiss buttons have IDs: logbox_dismiss_button_warn (yellow)
+ * and logbox_dismiss_button_error (red). The close icon is an Image,
+ * not text — so by.text('✕') won't work.
  */
-async function dismissDebugBanners(): Promise<void> {
-  await device.disableSynchronization();
-  try {
-    // Give the app a moment to render banners
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Dismiss all visible LogBox banners by tapping their close (X) buttons.
-    // Each banner has a small X button. We try multiple times since there
-    // can be stacked banners (yellow warning + red error).
+async function dismissLogBoxBanners(): Promise<void> {
+  const bannerIds = ['logbox_dismiss_button_error', 'logbox_dismiss_button_warn'];
+  for (const bannerId of bannerIds) {
+    // Each type can appear multiple times (stacked), try up to 3 per type
     for (let i = 0; i < 3; i++) {
       try {
-        // LogBox close button is a Text with "✕" or a Touchable with label "Dismiss"
-        const dismissBtn = element(by.text('Dismiss'));
-        await waitFor(dismissBtn).toExist().withTimeout(1500);
-        await dismissBtn.tap();
-        console.log(`Dismissed debug banner ${i + 1}`);
+        const btn = element(by.id(bannerId)).atIndex(0);
+        await expect(btn).toExist();
+        await btn.tap();
+        console.log(`Dismissed ${bannerId} (${i + 1})`);
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch {
-        // No more banners to dismiss
-        break;
+        break; // No more banners of this type
       }
     }
-
-    // Also try to dismiss the yellow "Open debugger to view warnings" bar
-    try {
-      const debuggerBar = element(by.text('Open debugger to view warnings.'));
-      await waitFor(debuggerBar).toExist().withTimeout(1000);
-      // Tap the X on the warning bar (it's a sibling of the text)
-      const closeBtn = element(by.label('Dismiss'));
-      await closeBtn.tap();
-      console.log('Dismissed debugger warning bar');
-    } catch {
-      // No debugger bar visible
-    }
-  } catch {
-    // Ignore errors — banners may not be present
-  } finally {
-    await device.enableSynchronization();
   }
 }
 
@@ -155,12 +141,13 @@ export async function navigateThroughOnboarding(): Promise<void> {
   }
   console.log('GetStarted carousel is loaded');
 
-  // Take a diagnostic screenshot to see actual screen state
-  try { await device.takeScreenshot('carousel-loaded'); } catch { /* ignore */ }
+  // Dismiss LogBox banners that cover bottom buttons.
+  // On CI, LogBox.uninstall() doesn't work (NativeModules.DetoxHelper
+  // is unavailable in bridgeless mode), so banners overlay the UI.
+  await dismissLogBoxBanners();
 
-  // The carousel has 3 sections. Tap "Continue" to advance.
-  // The splash screen may cover the button initially — retry until
-  // it dismisses and the button becomes hittable.
+  // Tap "Continue" to advance through the 3 carousel sections.
+  // Retry on failure — banners or splash may still be settling.
   for (let section = 1; section <= 3; section++) {
     for (let attempt = 0; attempt < 20; attempt++) {
       try {
@@ -169,6 +156,8 @@ export async function navigateThroughOnboarding(): Promise<void> {
         break;
       } catch {
         if (attempt === 19) throw new Error(`Continue not tappable on section ${section}`);
+        // If a banner reappeared, try dismissing again
+        if (attempt === 5 || attempt === 10) await dismissLogBoxBanners();
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
     }
@@ -334,6 +323,13 @@ export async function resetAppCompletely(): Promise<void> {
   });
 
   await device.setURLBlacklist(URL_BLACKLIST);
+
+  // Dismiss LogBox banners that may cover bottom buttons.
+  // Must be done with sync disabled since the app has pending timers.
+  await device.disableSynchronization();
+  await dismissLogBoxBanners();
+  await device.enableSynchronization();
+
   console.log('App launched and ready');
 }
 
