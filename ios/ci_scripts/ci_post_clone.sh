@@ -4,7 +4,10 @@
 # and Xcode later fails with missing `Pods-*.xcconfig` / `.xcfilelist` files during the Analyze/Build phase.
 set -euo pipefail
 
-# Prevent Homebrew from auto-cleanup
+# Prevent Homebrew from auto-updating and auto-cleanup.
+# Auto-update downloads the full formula index from ghcr.io on every `brew install`,
+# adding minutes to the build for no benefit in CI.
+export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 
 # Install CocoaPods using Homebrew
@@ -96,7 +99,7 @@ fi
 # Deintegrate and reinstall CocoaPods dependencies from `ios/`
 cd "${REPO_ROOT}/ios"
 pod deintegrate
-pod install --repo-update
+pod install
 
 
 # Create .env file in project root (REPO_ROOT, not relative to current directory)
