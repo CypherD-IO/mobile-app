@@ -17,6 +17,11 @@ const defaultResolveRequest =
     : resolve;
 
 const config = {
+  // Limit Metro's worker pools on CI to prevent OOM kills.
+  // Metro spawns two independent pools (transform + file-map), each
+  // defaulting to os.availableParallelism()/2. On CI (3 cores, 7GB),
+  // that can mean 4+ workers × complex resolver rules = OOM.
+  maxWorkers: process.env.CI ? 2 : undefined,
   resolver: {
     extraNodeModules: {
       assert: require.resolve('empty-module'), // assert can be polyfilled here if needed

@@ -482,6 +482,10 @@ jobs:
           pkill -f "node.*react-native.*start" || echo "No existing Metro processes found"
           pkill -f "Metro" || echo "No existing Metro processes found"
 
+          # Cap Node heap to 4GB so Metro doesn't consume all 7GB CI RAM.
+          # Leaves ~3GB for the simulator, Detox, and OS.
+          export NODE_OPTIONS="--max-old-space-size=4096"
+
           # Clean Metro cache before starting
           npx react-native start --reset-cache --port 8081 &
           METRO_PID=$!

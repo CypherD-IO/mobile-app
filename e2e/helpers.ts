@@ -19,6 +19,10 @@ const URL_BLACKLIST = [
   '.*googleapis.com.*',
   '.*sentry.io.*',
   '.*intercom.*',
+  // Firebase (persistent connections for messaging, installations, etc.)
+  '.*firebase.google.com.*',
+  '.*firebaseinstallations.*',
+  '.*crashlyticsreports.*',
   // WalletConnect & Web3
   '.*api.web3modal.org.*',
   '.*relay.walletconnect.com.*',
@@ -26,6 +30,8 @@ const URL_BLACKLIST = [
   // Backend API (device registration, config fetches on startup)
   '.*arch.cypherhq.io.*',
   '.*arch-dev.cypherd.io.*',
+  '.*cypherd.io.*',
+  '.*cypherhq.io.*',
   // Bridge / swap
   '.*api.skip.money.*',
   // RPC endpoints (Cosmos chains, Solana)
@@ -181,10 +187,9 @@ export async function resetAppForCIOnly(): Promise<void> {
   console.log('Using ultra-lightweight CI reset...');
 
   try {
-    console.log('Launching app with delete: true...');
+    console.log('Launching app with minimal config...');
     const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
     await device.launchApp({
-      delete: true,
       newInstance: true,
       permissions: { notifications: 'YES', camera: 'YES' },
       launchArgs: {
@@ -203,6 +208,42 @@ export async function resetAppForCIOnly(): Promise<void> {
 }
 
 /**
+ * Verify Metro is alive before launching the app. If Metro died (common on
+ * CI due to memory pressure), the app shows "Could not connect to development
+ * server" and no React views render.
+ */
+async function ensureMetroIsAlive(): Promise<void> {
+  const maxAttempts = 15;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const response = await fetch('http://localhost:8081/status');
+      if (response.ok) {
+        console.log('Metro is alive');
+        return;
+      }
+    } catch {
+      // not responding yet
+    }
+    if (i === 0) {
+      console.log('Metro not responding — waiting for it...');
+      // On CI, try to restart Metro if it died
+      if (process.env.CI === 'true') {
+        try {
+          const { exec } = require('child_process');
+          exec('npx react-native start --reset-cache --port 8081 &');
+          // Give Metro time to boot before polling
+          await new Promise(resolve => setTimeout(resolve, 10000));
+        } catch {
+          // ignore
+        }
+      }
+    }
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+  throw new Error('Metro bundler is not running — cannot launch app');
+}
+
+/**
  * Reset app state completely - optimized for speed and reliability
  */
 export async function resetAppCompletely(): Promise<void> {
@@ -211,21 +252,48 @@ export async function resetAppCompletely(): Promise<void> {
     `Performing fast app reset for E2E tests... (CI: ${String(isCI)})`,
   );
 
-  console.log('Launching app with clean state (delete: true wipes all data)...');
-  // Blacklist noisy URLs via launch args so Detox sync ignores them
+  // Step 1: Terminate the app if running
+  try {
+    console.log('Terminating app...');
+    await Promise.race([
+      device.terminateApp(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Terminate timeout')), 10000),
+      ),
+    ]);
+  } catch (error) {
+    console.log('App terminate failed (may not be running):', error);
+  }
+
+  // Step 2: Clear keychain to remove wallet data
+  try {
+    console.log('Clearing keychain...');
+    await Promise.race([
+      device.clearKeychain(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Keychain timeout')), 15000),
+      ),
+    ]);
+    console.log('Keychain cleared');
+  } catch (error) {
+    console.log('Keychain clear failed or timed out:', error);
+  }
+
+  // Step 3: Verify Metro is alive BEFORE launching
+  // On CI, the terminate/clearKeychain steps can cause memory pressure
+  // that kills Metro. Without Metro, the app shows "Could not connect
+  // to development server" and no React views render.
+  await ensureMetroIsAlive();
+
+  // Step 4: Launch the app with sync DISABLED
+  // The Lottie splash screen animation loops indefinitely. With sync
+  // enabled, Detox waits for all animations to finish — but a looping
+  // Lottie never finishes, so launchApp() would hang until setupTimeout.
+  // We disable sync and manually wait for views to render instead.
+  console.log('Launching app...');
   const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
 
-  // `delete: true` uninstalls + reinstalls the app, clearing BOTH
-  // keychain AND AsyncStorage. This is slower than clearKeychain() but
-  // avoids the keychain timeout issues seen on CI and guarantees no
-  // stale AsyncStorage data (e.g. keychainRefreshVersion) can interfere
-  // with the initialization flow.
-  //
-  // Do NOT wrap device.launchApp() in Promise.race — if the manual
-  // timeout fires first, Detox's internal launch keeps running in the
-  // background, corrupting device state for all subsequent operations.
   await device.launchApp({
-    delete: true,
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
@@ -240,17 +308,17 @@ export async function resetAppCompletely(): Promise<void> {
     },
   });
 
-  // Set the blacklist via API for any subsequent navigations
+  // Set the blacklist via the runtime API too (for subsequent navigations)
   await device.setURLBlacklist(URL_BLACKLIST);
 
-  // Give the JS thread time to finish initialization (loading reducers,
-  // checking keychain/AsyncStorage, resolving the navigation stack).
-  // CI hardware (3 cores, 7GB) is significantly slower than dev machines.
-  const initDelay = isCI ? 10000 : 3000;
-  console.log(`Waiting ${initDelay / 1000}s for JS initialization...`);
+  // With sync disabled, Detox returns as soon as the app process starts.
+  // The JS bundle still needs to load from Metro, React needs to render,
+  // and the splash screen needs to dismiss. Wait for this to complete.
+  const initDelay = isCI ? 15000 : 5000;
+  console.log(`Waiting ${initDelay / 1000}s for JS init + splash dismiss...`);
   await new Promise(resolve => setTimeout(resolve, initDelay));
 
-  console.log('Fast app reset completed successfully');
+  console.log('App reset completed');
 }
 
 // ---------------------------------------------------------------------------

@@ -10,14 +10,18 @@ describe('App Launch Tests', () => {
     async () => {
       await resetAppCompletely();
     },
-    process.env.CI ? 180000 : 90000,
+    process.env.CI ? 240000 : 120000,
   );
 
   it('should launch successfully and show onboarding screen', async () => {
     console.log('Running app launch and onboarding validation test');
 
-    // Handle any permission dialogs (sync is already disabled from launch)
+    // Disable sync for manual element queries — the app has persistent
+    // background activity (timers, WebSocket connections) that prevent
+    // Detox from ever considering it "idle" during interaction.
     await device.disableSynchronization();
+
+    // Handle any permission dialogs
     await handlePermissionDialog();
 
     // Wait for the first onboarding screen — CI runners (3 cores, 7GB)

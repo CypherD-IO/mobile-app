@@ -16,7 +16,7 @@ describe('Import Wallet Flow', () => {
     async () => {
       await resetAppCompletely();
     },
-    process.env.CI ? 180000 : 90000,
+    process.env.CI ? 240000 : 120000,
   );
 
   it('should navigate through onboarding screens and import a wallet', async () => {
