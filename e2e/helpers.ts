@@ -78,6 +78,29 @@ export async function waitForElementById(
   }
 }
 
+/**
+ * Same manual-polling pattern as waitForElementById but matches by text.
+ * Use for dynamic content (token lists, modals) that doesn't have testIDs.
+ * Returns true if element was found, false otherwise (does not throw).
+ */
+export async function waitForElementByText(
+  text: string,
+  opts: { timeoutMs?: number; intervalMs?: number; atIndex?: number } = {},
+): Promise<boolean> {
+  const { timeoutMs = 10000, intervalMs = 500, atIndex = 0 } = opts;
+  const attempts = Math.max(1, Math.ceil(timeoutMs / intervalMs));
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await expect(element(by.text(text)).atIndex(atIndex)).toExist();
+      return true;
+    } catch {
+      if (i === attempts - 1) return false;
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
+  }
+  return false;
+}
+
 // ---------------------------------------------------------------------------
 // Debug banner dismissal
 // ---------------------------------------------------------------------------
