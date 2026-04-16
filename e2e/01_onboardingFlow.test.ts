@@ -1,10 +1,11 @@
-import { device, element, by, waitFor } from 'detox';
+import { device, element, by } from 'detox';
 import {
   navigateThroughOnboarding,
   resetAppCompletely,
   reOpenApp,
   checkForPortfolioScreen,
   dismissPromotionalModals,
+  waitForElementById,
 } from './helpers';
 
 describe('Onboarding Flow', () => {
@@ -21,20 +22,20 @@ describe('Onboarding Flow', () => {
     // Navigate through the 3-screen carousel (manages its own sync)
     await navigateThroughOnboarding();
 
-    // Disable sync for the rest of the onboarding flow
+    // Disable sync for the rest of the onboarding flow.
+    // IMPORTANT: Use waitForElementById() (manual polling) instead of
+    // waitFor().toExist().withTimeout() — Detox sync is perpetually
+    // busy on CI (LogBox errors, pending timers) and waitFor() hangs
+    // until timeout even when the element is on screen.
     await device.disableSynchronization();
 
     // Tap "Continue with Wallets"
-    await waitFor(element(by.id('options-wallets-btn')))
-      .toExist()
-      .withTimeout(10000);
+    await waitForElementById('options-wallets-btn', { timeoutMs: 15000 });
     await element(by.id('options-wallets-btn')).tap();
     console.log('Tapped "Continue with Wallets"');
 
     // Tap "Create New Wallet"
-    await waitFor(element(by.id('options-create-wallet-btn')))
-      .toExist()
-      .withTimeout(10000);
+    await waitForElementById('options-create-wallet-btn', { timeoutMs: 15000 });
     await element(by.id('options-create-wallet-btn')).tap();
     console.log('Tapped "Create New Wallet"');
 
@@ -42,32 +43,27 @@ describe('Onboarding Flow', () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Wait for the seed phrase count modal to appear
-    await waitFor(element(by.id('options-12word-option')))
-      .toExist()
-      .withTimeout(10000);
+    await waitForElementById('options-12word-option', { timeoutMs: 15000 });
     await element(by.id('options-12word-option')).tap();
     console.log('Selected 12 Word Phrase');
 
     // Tap Continue in seed phrase count modal
-    await waitFor(element(by.id('options-seedcount-continue-btn')))
-      .toExist()
-      .withTimeout(10000);
+    await waitForElementById('options-seedcount-continue-btn', { timeoutMs: 15000 });
     await element(by.id('options-seedcount-continue-btn')).tap();
     console.log('Tapped Continue in modal');
 
     // On seed phrase screen, tap Continue
-    await waitFor(element(by.id('seedphrase-continue-btn')))
-      .toExist()
-      .withTimeout(15000);
+    await waitForElementById('seedphrase-continue-btn', { timeoutMs: 20000 });
     await element(by.id('seedphrase-continue-btn')).tap();
     console.log('Tapped Continue on seed phrase screen');
 
-    // Promo popup should appear after wallet creation
-    // Assert it EXISTS (verifies flow), then tap (may fail on some devices
-    // due to Detox window-bounds hit-test on bottom-positioned modals).
-    await waitFor(element(by.id('exclusive-offer-got-it-btn')))
-      .toExist()
-      .withTimeout(10000);
+    // Promo popup should appear after wallet creation.
+    // Give wallet creation up to 30s on CI — this is where sync is most
+    // blocked because Hermes + Firebase + WalletConnect all fire at once.
+    await waitForElementById('exclusive-offer-got-it-btn', {
+      timeoutMs: 30000,
+      label: 'exclusive offer Got it button',
+    });
     console.log('Verified: promo popup appeared after wallet creation');
     try {
       await element(by.id('exclusive-offer-got-it-btn')).tap();
@@ -79,9 +75,7 @@ describe('Onboarding Flow', () => {
 
     // Card application welcome should appear
     try {
-      await waitFor(element(by.id('card-welcome-skip-btn')))
-        .toExist()
-        .withTimeout(10000);
+      await waitForElementById('card-welcome-skip-btn', { timeoutMs: 15000 });
       console.log('Verified: card application welcome appeared');
       await element(by.id('card-welcome-skip-btn')).tap();
       console.log('Skipped card application screen');
@@ -94,9 +88,7 @@ describe('Onboarding Flow', () => {
     await dismissPromotionalModals();
 
     // Verify card tab exists (confirms initial landing on Card page)
-    await waitFor(element(by.id('tab-card')))
-      .toExist()
-      .withTimeout(10000);
+    await waitForElementById('tab-card', { timeoutMs: 15000 });
     console.log('Confirmed: Card tab exists after wallet creation');
 
     // Relaunch app to land on Portfolio (tab taps fail due to Detox

@@ -101,6 +101,14 @@ jobs:
           echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env
           echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
           echo "WEB3_AUTH_CLIENT_ID=${{ secrets.WEB3_AUTH_CLIENT_ID }}" >> .env
+          # IS_TESTING and CI flags must be baked into the .env BEFORE the
+          # iOS build — react-native-config reads the file at build time
+          # and inlines values into the native binary. If we write these
+          # after the build (we used to), Config.IS_TESTING is undefined
+          # at runtime, so boot-time LogBox suppression in index.js never
+          # runs and banners cover Detox button taps.
+          echo "CI=true" >> .env
+          echo "IS_TESTING=true" >> .env
 
       - name: Check Xcode version and available simulators
         run: |
@@ -449,10 +457,10 @@ jobs:
 
       - name: Create e2e environment file
         run: |
+          # IS_TESTING and CI are written to .env BEFORE the build step
+          # (see "Create .env file"). This step only writes the Jest-side
+          # env file with the test seed phrase — no need to rebuild.
           echo "TEST_SEED_PHRASE=${{ secrets.E2E_TEST_SEED_PHRASE }}" > e2e/.env.test
-          # Create .env file for React Native Config with CI flags
-          echo "CI=true" >> .env
-          echo "IS_TESTING='true'" >> .env
         env:
           E2E_TEST_SEED_PHRASE: ${{ secrets.E2E_TEST_SEED_PHRASE }}
 

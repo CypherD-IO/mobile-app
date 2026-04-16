@@ -1340,6 +1340,7 @@ export default function CardQuote({
             </CyDView>
             <CyDView className='flex flex-row mt-[10px] items-start gap-[6px]'>
               <CyDTouchView
+                testID='quote-price-fluctuation-consent'
                 className={clsx(
                   'h-[18px] w-[18px] border-base400 border-[1px] rounded-[4px]',
                   {
@@ -1401,44 +1402,53 @@ export default function CardQuote({
             </CyDTouchView>
           </CyDView>
         )}
-        <CyDView
-          className={'flex flex-row justify-between items-center px-[10px]'}>
-          <Button
-            testID='quote-cancel-btn'
-            title={t<string>('CANCEL')}
-            titleStyle='text-[14px]'
-            disabled={loading}
-            type={ButtonType.SECONDARY}
-            onPress={() => {
-              onCancel();
-            }}
-            style={'h-[60px] w-[46%] mr-[6px]'}
-          />
-          <Button
-            testID='quote-load-btn'
-            title={
-              t<string>('LOAD_ALL_CAPS') +
-              (!isPayDisabled
-                ? tokenExpiryTime
-                  ? ' (' + String(tokenExpiryTime) + ')'
-                  : ''
-                : '')
-            }
-            titleStyle='text-[14px]'
-            loading={loading}
-            disabled={
-              isPayDisabled ||
-              !targetAddress ||
-              (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
-            }
-            onPress={() => {
-              if (!isPayDisabled) {
-                void onLoadPress();
+        <CyDView>
+          <CyDView
+            className={'flex flex-row justify-between items-center px-[10px]'}>
+            <Button
+              testID='quote-cancel-btn'
+              title={t<string>('CANCEL')}
+              titleStyle='text-[14px]'
+              disabled={loading}
+              type={ButtonType.SECONDARY}
+              onPress={() => {
+                onCancel();
+              }}
+              style={'h-[60px] w-[46%] mr-[6px]'}
+            />
+            {/*
+              IMPORTANT: Do NOT include the expiry countdown in this
+              button's title. A title that ticks every second forces
+              the Button to re-render, which can drop in-flight
+              Pressable gestures (the Button wraps onPress in a 100ms
+              setTimeout — see src/components/v2/button.tsx). The
+              countdown is rendered separately below, so only a small
+              text node re-renders each second.
+            */}
+            <Button
+              testID='quote-load-btn'
+              title={t<string>('LOAD_ALL_CAPS')}
+              titleStyle='text-[14px]'
+              loading={loading}
+              disabled={
+                isPayDisabled ||
+                !targetAddress ||
+                (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
               }
-            }}
-            isPrivateKeyDependent={true}
-            style={'h-[60px] w-[46%] ml-[6px]'}
-          />
+              onPress={() => {
+                if (!isPayDisabled) {
+                  void onLoadPress();
+                }
+              }}
+              isPrivateKeyDependent={true}
+              style={'h-[60px] w-[46%] ml-[6px]'}
+            />
+          </CyDView>
+          {!isPayDisabled && tokenExpiryTime > 0 && (
+            <CyDText className='text-center text-[12px] text-base200 mt-[8px]'>
+              {t<string>('QUOTE_EXPIRES_IN')} {tokenExpiryTime}s
+            </CyDText>
+          )}
         </CyDView>
       </CyDView>
     </CyDView>

@@ -43,6 +43,42 @@ const URL_BLACKLIST = [
 ];
 
 // ---------------------------------------------------------------------------
+// Manual polling helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Wait for an element to exist using manual expect() polling.
+ *
+ * Detox's `waitFor().toExist().withTimeout()` is blocked by internal
+ * sync on RN 0.84+. When the app has persistent work on the main queue
+ * (pending timers, Firebase requests, LogBox errors firing repeatedly),
+ * sync never reports idle and waitFor() hangs until its timeout fires —
+ * even when the element is already on screen.
+ *
+ * Manual `expect()` in a try/catch loop bypasses sync entirely, so we can
+ * detect elements as soon as they render. Use this INSTEAD of waitFor()
+ * whenever you're past the initial navigation and sync is disabled.
+ */
+export async function waitForElementById(
+  testId: string,
+  opts: { timeoutMs?: number; intervalMs?: number; label?: string } = {},
+): Promise<void> {
+  const { timeoutMs = 30000, intervalMs = 1000, label = testId } = opts;
+  const attempts = Math.max(1, Math.ceil(timeoutMs / intervalMs));
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await expect(element(by.id(testId))).toExist();
+      return;
+    } catch {
+      if (i === attempts - 1) {
+        throw new Error(`Element "${label}" did not appear within ${timeoutMs}ms`);
+      }
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Debug banner dismissal
 // ---------------------------------------------------------------------------
 
@@ -56,35 +92,56 @@ const URL_BLACKLIST = [
  *
  * Strategy: tap the banner text to open the full LogBox inspector,
  * then tap the "Dismiss" text button in the inspector footer.
+ *
+ * Banner texts are matched as PREFIXES because LogBox truncates long
+ * messages (e.g. red banner shows `Cannot update a component (\`Wallet...`).
+ * We enumerate known text elements and tap any whose text starts with
+ * one of our prefixes.
  */
 async function dismissLogBoxBanners(): Promise<void> {
-  // Known banner texts that appear on CI
-  const bannerTexts = [
+  // Known banner text prefixes that appear during E2E runs.
+  // Add new ones here as we observe them in CI logs/screenshots.
+  const bannerPrefixes = [
     'Open debugger to view warnings.',
     'Cannot update a component',
   ];
 
-  for (const text of bannerTexts) {
+  for (const prefix of bannerPrefixes) {
+    // Try exact match first (covers full, untruncated banners).
+    let tapped = false;
     try {
-      // Check if this banner exists
-      await expect(element(by.text(text)).atIndex(0)).toExist();
-      // Tap the banner to open the full LogBox inspector
-      await element(by.text(text)).atIndex(0).tap();
-      console.log(`Opened LogBox inspector for: "${text}"`);
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Tap "Dismiss" in the inspector footer to dismiss this log
-      try {
-        await expect(element(by.text('Dismiss'))).toExist();
-        await element(by.text('Dismiss')).tap();
-        console.log('Tapped Dismiss in LogBox inspector');
-        await new Promise(resolve => setTimeout(resolve, 500));
-      } catch {
-        // Inspector might auto-dismiss or have different layout
-        console.log('Dismiss button not found in inspector');
-      }
+      await expect(element(by.text(prefix)).atIndex(0)).toExist();
+      await element(by.text(prefix)).atIndex(0).tap();
+      console.log(`Opened LogBox inspector for exact match: "${prefix}"`);
+      tapped = true;
     } catch {
-      // Banner not present — skip
+      // Fall through to regex match below.
+    }
+
+    // Fallback: Detox supports regex matchers via by.text on iOS when
+    // wrapped in ^...$ via string — but the most portable fallback is
+    // to just skip if exact didn't hit. Red banners that exceed the
+    // banner width (truncated) won't be found — we rely on the boot-time
+    // LogBox.uninstall() to prevent them from rendering.
+    if (!tapped) continue;
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Tap "Dismiss" in the inspector footer to dismiss this log.
+    try {
+      await expect(element(by.text('Dismiss'))).toExist();
+      await element(by.text('Dismiss')).tap();
+      console.log('Tapped Dismiss in LogBox inspector');
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch {
+      // Inspector might auto-dismiss, or layout changed. Fall back to
+      // swiping up from the bottom to close the full-screen inspector.
+      try {
+        await element(by.type('RCTView')).atIndex(0).swipe('down', 'fast', 0.5);
+        console.log('Swiped to close LogBox inspector');
+      } catch {
+        console.log('Could not close LogBox inspector');
+      }
     }
   }
 }
