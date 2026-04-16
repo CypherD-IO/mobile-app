@@ -372,6 +372,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
                   </CyDView>
                   {showCloseButton && (
                     <CyDTouchView
+                      testID='bottomsheet-close-btn'
                       onPress={() => bottomSheetRef.current?.close()}
                       className='w-[32px] h-[32px] rounded-full bg-n30 items-center justify-center'>
                       <CyDMaterialDesignIcons

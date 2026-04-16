@@ -96,7 +96,11 @@ export default function Login(props) {
     const wordCount = cleanedStr ? cleanedStr.split(' ').length : 0;
     const isValid = wordCount === 12 || wordCount === 24;
     setDisableSubmit(!isValid);
-    if (isValid) {
+    // Only auto-dismiss at 24 words. Previously we dismissed at 12 too,
+    // which interrupted users entering a 24-word phrase when they hit the
+    // 12-word mark — they had to re-tap the input to keep typing.
+    // Users entering 12-word phrases can still dismiss via Return key.
+    if (wordCount === 24) {
       Keyboard.dismiss();
     }
   }, [seedPhraseTextValue]);
