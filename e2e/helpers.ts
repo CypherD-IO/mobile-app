@@ -22,7 +22,13 @@ const URL_BLACKLIST = [
   // Firebase (persistent connections for messaging, installations, etc.)
   '.*firebase.google.com.*',
   '.*firebaseinstallations.*',
-  '.*crashlyticsreports.*',
+  // Broadened crashlytics pattern. The previous '.*crashlyticsreports.*'
+  // only matched the reports endpoint and MISSED 'firebase-settings.
+  // crashlytics.com', which Crashlytics polls on startup for remote
+  // config. On CI, that request can take 7+ min to settle, keeping
+  // Detox sync busy and hanging tests.
+  '.*crashlytics.*',
+  '.*firebase-settings.*',
   // WalletConnect & Web3
   '.*api.web3modal.org.*',
   '.*relay.walletconnect.com.*',
@@ -34,9 +40,32 @@ const URL_BLACKLIST = [
   '.*cypherhq.io.*',
   // Bridge / swap
   '.*api.skip.money.*',
-  // RPC endpoints (Cosmos chains, Solana)
+  // RPC endpoints — wallet startup polls every supported chain. Any slow
+  // RPC response keeps Detox sync busy. Cast a wide net on RPC providers.
   '.*keplr.app.*',
   '.*api.solana.com.*',
+  '.*rpc.ankr.com.*',
+  '.*ankr.com.*',
+  '.*publicnode.com.*',
+  '.*polkachu.com.*',
+  '.*alchemy.com.*',
+  '.*arb1.arbitrum.io.*',
+  '.*era.zksync.io.*',
+  '.*1rpc.io.*',
+  '.*ecostake.com.*',
+  '.*quickapi.com.*',
+  '.*solonation.io.*',
+  '.*mainnet-beta.solana.com.*',
+  // Block explorers (tx link lookups, metadata fetches)
+  '.*etherscan.io.*',
+  '.*polygonscan.com.*',
+  '.*bscscan.com.*',
+  '.*snowtrace.io.*',
+  '.*arbiscan.io.*',
+  '.*explorer.solana.com.*',
+  '.*basescan.org.*',
+  // Coingecko icons (portfolio token logos — many parallel requests)
+  '.*coingecko.com.*',
   // Metro bundler (symbolication, LogBox assets) — these block Detox sync
   '.*localhost:8081/symbolicate.*',
   '.*localhost:8081/assets/node_modules.*',
@@ -371,8 +400,11 @@ export async function resetAppCompletely(): Promise<void> {
     console.log('Clearing keychain...');
     await Promise.race([
       device.clearKeychain(),
+      // 30s (was 15s). CI 427 saw the keychain call miss the 15s window
+      // on the first test — the simulator hadn't fully booted yet. Still
+      // a hard cap so a wedged call can't eat the whole test budget.
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Keychain timeout')), 15000),
+        setTimeout(() => reject(new Error('Keychain timeout')), 30000),
       ),
     ]);
     console.log('Keychain cleared');
@@ -489,25 +521,16 @@ export async function debugVisibleElements(description: string): Promise<void> {
  */
 export async function dismissPromotionalModals(): Promise<void> {
   // Known promotional modals — add new ones here as they appear.
-  // Each entry: { name, dismiss action }
-  const promos = [
-    {
-      name: 'Exclusive offer',
-      dismiss: async () => {
-        await waitFor(element(by.id('exclusive-offer-got-it-btn')))
-          .toExist()
-          .withTimeout(3000);
-        await element(by.id('exclusive-offer-got-it-btn')).tap();
-      },
-    },
+  // Uses manual polling; each promo is optional, so missing modals
+  // don't throw — we just skip.
+  const promos: Array<{ name: string; testId: string }> = [
+    { name: 'Exclusive offer', testId: 'exclusive-offer-got-it-btn' },
   ];
 
   for (const promo of promos) {
-    try {
-      await promo.dismiss();
+    if (await waitForElementByIdSilent(promo.testId, 3000)) {
+      await element(by.id(promo.testId)).tap();
       console.log(`Dismissed promo: ${promo.name}`);
-    } catch {
-      // Promo not present — this is fine
     }
   }
 }
@@ -608,47 +631,49 @@ export async function checkForPortfolioScreen(): Promise<boolean> {
   console.log('Checking for portfolio screen...');
 
   // Sync must be disabled — the portfolio screen has persistent network
-  // activity that prevents Detox from ever considering the app idle.
+  // activity (token price polls, RPC reads) that prevents Detox from
+  // ever considering the app idle. Uses manual polling to bypass sync.
   await device.disableSynchronization();
 
   try {
-    try {
-      // Primary: testID on the screen container
-      await waitFor(element(by.id('portfolio-screen')))
-        .toExist()
-        .withTimeout(15000);
+    // Primary: testID on the screen container
+    if (await waitForElementByIdSilent('portfolio-screen', 15000)) {
       console.log('Found portfolio-screen via testID');
       return true;
-    } catch {
-      console.log('portfolio-screen not found, trying fallbacks...');
     }
+    console.log('portfolio-screen not found, trying fallbacks...');
 
     // Fallback: balance display testID
-    try {
-      await waitFor(element(by.id('portfolio-balance')))
-        .toExist()
-        .withTimeout(TIMEOUT_MEDIUM);
+    if (await waitForElementByIdSilent('portfolio-balance', TIMEOUT_MEDIUM)) {
       console.log('Found portfolio-balance via testID');
       return true;
-    } catch {
-      console.log('portfolio-balance not found');
     }
+    console.log('portfolio-balance not found');
 
     // Fallback: bottom nav tab text
-    try {
-      await waitFor(element(by.text('Portfolio')))
-        .toExist()
-        .withTimeout(TIMEOUT_SHORT);
+    if (await waitForElementByText('Portfolio', { timeoutMs: TIMEOUT_SHORT })) {
       console.log('Found Portfolio tab text');
       return true;
-    } catch {
-      console.log('Portfolio tab text not found');
     }
+    console.log('Portfolio tab text not found');
 
     console.log('Could not confirm portfolio screen with any indicator');
     return false;
   } finally {
     await device.enableSynchronization();
+  }
+}
+
+/** Silent version of waitForElementById — returns bool instead of throwing. */
+async function waitForElementByIdSilent(
+  testId: string,
+  timeoutMs: number,
+): Promise<boolean> {
+  try {
+    await waitForElementById(testId, { timeoutMs });
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -728,28 +753,29 @@ export async function completeWalletImport(): Promise<void> {
   await device.disableSynchronization();
 
   // 2. Tap "Continue with Wallets" on OnBoardingOptions
-  const walletsBtn = element(by.id('options-wallets-btn'));
-  await waitFor(walletsBtn).toExist().withTimeout(TIMEOUT_MEDIUM);
-  await walletsBtn.tap();
+  // Use manual polling (waitForElementById) — Detox sync is busy with
+  // Firebase/Crashlytics settling and waitFor() hangs on CI.
+  await waitForElementById('options-wallets-btn', { timeoutMs: TIMEOUT_LONG });
+  await element(by.id('options-wallets-btn')).tap();
   secureLog('Tapped "Continue with Wallets"');
 
   // 3. Tap "Import Existing Wallet"
-  const importBtn = element(by.id('options-import-wallet-btn'));
-  await waitFor(importBtn).toExist().withTimeout(TIMEOUT_MEDIUM);
-  await importBtn.tap();
+  await waitForElementById('options-import-wallet-btn', { timeoutMs: TIMEOUT_LONG });
+  await element(by.id('options-import-wallet-btn')).tap();
   secureLog('Tapped "Import Existing Wallet"');
 
   // Wait for modal animation
   await new Promise(resolve => setTimeout(resolve, 1000));
 
   // 4. Select "Import Seed Phrase" from the modal
-  const importSeedOption = element(by.id('options-import-seed-option'));
-  await waitFor(importSeedOption).toExist().withTimeout(TIMEOUT_MEDIUM);
-  await importSeedOption.tap();
+  await waitForElementById('options-import-seed-option', { timeoutMs: TIMEOUT_LONG });
+  await element(by.id('options-import-seed-option')).tap();
   secureLog('Selected "Import Seed Phrase"');
 
   // 5. Enter the seed phrase on the EnterKey screen.
   // Use by.type() for TextInput — testID doesn't propagate in Fabric.
+  // Keep waitFor() here only because by.type('UITextView') has no
+  // testID to poll on; the try/catch loop pattern doesn't apply cleanly.
   await new Promise(resolve => setTimeout(resolve, 3000));
   const TEST_RECOVERY_PHRASE = getSecureTestSeedPhrase();
 
@@ -769,21 +795,16 @@ export async function completeWalletImport(): Promise<void> {
   await element(by.type('UITextView')).atIndex(0).tapReturnKey();
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  await waitFor(element(by.id('enterkey-continue-btn')))
-    .toExist()
-    .withTimeout(TIMEOUT_LONG);
+  await waitForElementById('enterkey-continue-btn', { timeoutMs: TIMEOUT_LONG });
   await element(by.id('enterkey-continue-btn')).tap();
   secureLog('Tapped Continue on EnterKey screen');
 
-  // 7. Handle ChooseWalletIndex screen — tap "Submit"
+  // 7. Handle ChooseWalletIndex screen — tap "Submit" (optional screen)
   await new Promise(resolve => setTimeout(resolve, 3000));
-  try {
-    await waitFor(element(by.id('choose-wallet-submit-btn')))
-      .toExist()
-      .withTimeout(10000);
+  if (await waitForElementByIdSilent('choose-wallet-submit-btn', 10000)) {
     await element(by.id('choose-wallet-submit-btn')).tap();
     secureLog('Tapped Submit on wallet index screen');
-  } catch {
+  } else {
     secureLog('No wallet index screen, continuing');
   }
 
@@ -794,24 +815,15 @@ export async function completeWalletImport(): Promise<void> {
   await device.disableSynchronization();
 
   // Dismiss post-creation interstitials (promo + card application welcome)
-  try {
-    await waitFor(element(by.id('exclusive-offer-got-it-btn')))
-      .toExist()
-      .withTimeout(10000);
+  // Both are optional — use Silent variant so missing screens don't throw.
+  if (await waitForElementByIdSilent('exclusive-offer-got-it-btn', 10000)) {
     await element(by.id('exclusive-offer-got-it-btn')).tap();
     secureLog('Dismissed promo interstitial');
-  } catch {
-    // May not appear for import flow
   }
 
-  try {
-    await waitFor(element(by.id('card-welcome-skip-btn')))
-      .toExist()
-      .withTimeout(10000);
+  if (await waitForElementByIdSilent('card-welcome-skip-btn', 10000)) {
     await element(by.id('card-welcome-skip-btn')).tap();
     secureLog('Skipped card application screen');
-  } catch {
-    // May not appear for import flow
   }
 
   // 9. Relaunch app to land on Portfolio tab reliably.

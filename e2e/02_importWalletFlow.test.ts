@@ -6,6 +6,7 @@ import {
   getSecureTestSeedPhrase,
   secureLog,
   performSecureOperation,
+  waitForElementById,
 } from './helpers';
 
 // Get seed phrase securely from environment or fallback
@@ -25,20 +26,20 @@ describe('Import Wallet Flow', () => {
     // Navigate through the 3-screen carousel (manages its own sync)
     await navigateThroughOnboarding();
 
-    // Disable sync for the rest of the import flow
+    // Disable sync for the rest of the import flow.
+    // IMPORTANT: Use waitForElementById (manual polling) instead of
+    // waitFor().toExist().withTimeout() — Detox sync is blocked by
+    // background Firebase/RPC calls on CI even with sync disabled
+    // at the device level, so waitFor() hangs until timeout.
     await device.disableSynchronization();
 
     // Tap "Continue with Wallets"
-    await waitFor(element(by.id('options-wallets-btn')))
-      .toExist()
-      .withTimeout(10000);
+    await waitForElementById('options-wallets-btn', { timeoutMs: 15000 });
     await element(by.id('options-wallets-btn')).tap();
     secureLog('Tapped "Continue with Wallets"');
 
     // Tap "Import Existing Wallet"
-    await waitFor(element(by.id('options-import-wallet-btn')))
-      .toExist()
-      .withTimeout(5000);
+    await waitForElementById('options-import-wallet-btn', { timeoutMs: 10000 });
     await element(by.id('options-import-wallet-btn')).tap();
     secureLog('Tapped "Import Existing Wallet"');
 
@@ -46,9 +47,7 @@ describe('Import Wallet Flow', () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Tap "Import Seed Phrase"
-    await waitFor(element(by.id('options-import-seed-option')))
-      .toExist()
-      .withTimeout(5000);
+    await waitForElementById('options-import-seed-option', { timeoutMs: 10000 });
     await element(by.id('options-import-seed-option')).tap();
     secureLog('Selected Import Seed Phrase');
 
@@ -57,6 +56,8 @@ describe('Import Wallet Flow', () => {
 
     // Enter seed phrase — use replaceText WITHOUT tap() to avoid triggering
     // the keyboard, which covers the Continue button at the bottom.
+    // NOTE: Keeping waitFor() here because by.type('UITextView') has no
+    // testID to poll on — manual polling by type is not well-supported.
     await performSecureOperation(async () => {
       const seedInput = element(by.type('UITextView')).atIndex(0);
       await waitFor(seedInput).toExist().withTimeout(10000);
@@ -74,18 +75,14 @@ describe('Import Wallet Flow', () => {
     await element(by.type('UITextView')).atIndex(0).tapReturnKey();
 
     // Now Continue button should be visible
-    await waitFor(element(by.id('enterkey-continue-btn')))
-      .toExist()
-      .withTimeout(5000);
+    await waitForElementById('enterkey-continue-btn', { timeoutMs: 10000 });
     await element(by.id('enterkey-continue-btn')).tap();
     secureLog('Tapped Continue on import screen');
 
     // Handle ChooseWalletIndex screen — wait for navigation, then tap Submit
     await new Promise(resolve => setTimeout(resolve, 3000));
     try {
-      await waitFor(element(by.id('choose-wallet-submit-btn')))
-        .toExist()
-        .withTimeout(10000);
+      await waitForElementById('choose-wallet-submit-btn', { timeoutMs: 10000 });
       await element(by.id('choose-wallet-submit-btn')).tap();
     } catch {
       // Fallback: testID may not propagate on Button in Fabric
@@ -99,11 +96,10 @@ describe('Import Wallet Flow', () => {
     // Wait for wallet setup to complete
     await new Promise(resolve => setTimeout(resolve, 5000));
 
-    // Dismiss post-import interstitials if they appear (promo + card welcome)
+    // Dismiss post-import interstitials if they appear (promo + card welcome).
+    // Both are optional — skip silently if not present.
     try {
-      await waitFor(element(by.id('exclusive-offer-got-it-btn')))
-        .toExist()
-        .withTimeout(10000);
+      await waitForElementById('exclusive-offer-got-it-btn', { timeoutMs: 10000 });
       await element(by.id('exclusive-offer-got-it-btn')).tap();
       secureLog('Dismissed promo interstitial');
     } catch {
@@ -111,9 +107,7 @@ describe('Import Wallet Flow', () => {
     }
 
     try {
-      await waitFor(element(by.id('card-welcome-skip-btn')))
-        .toExist()
-        .withTimeout(10000);
+      await waitForElementById('card-welcome-skip-btn', { timeoutMs: 10000 });
       await element(by.id('card-welcome-skip-btn')).tap();
       secureLog('Skipped card application screen');
     } catch {

@@ -3,11 +3,12 @@ module.exports = {
   rootDir: '..',
   testMatch: ['<rootDir>/e2e/*.test.ts'],
   
-  // Per-test timeout. Keep this aggressive so a hung Detox session (e.g.
-  // bridge disconnect in bridgeless mode) fails fast instead of burning
-  // the whole CI budget on a single stuck test. Individual test steps
-  // handle their own slow-path waits via manual polling in helpers.
-  testTimeout: process.env.CI ? 240000 : 120000, // 4 min CI, 2 min local
+  // Per-test timeout. Needs enough headroom for CI's slow simulator +
+  // the wallet creation/import flows which include network requests,
+  // but tight enough that a truly hung test (e.g. Detox bridge
+  // disconnect) fails before the CI action's 25-min budget runs out.
+  // Keep individual test steps fast via manual polling in helpers.
+  testTimeout: process.env.CI ? 300000 : 180000, // 5 min CI, 3 min local
   
   // CI has a single simulator — multiple workers just waste memory and
   // cause sequential device-allocation queuing. Use 1 worker in CI.
