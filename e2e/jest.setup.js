@@ -81,29 +81,14 @@ beforeAll(async () => {
   console.log('✅ Metro bundler is stable and ready for E2E tests');
 }, 180000); // 3 minute timeout for setup
 
-// Clean up after each test to prevent hanging
+// Brief settle between tests so pending app-side operations finish.
+// (global.gc() was previously called here but only works with Node
+// --expose-gc, which we don't set — so it was effectively dead code.)
 afterEach(async () => {
-  try {
-    // Give a moment for any pending operations to complete
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Force garbage collection if available
-    if (global.gc) {
-      global.gc();
-    }
-  } catch (error) {
-    console.log('Warning: Error during afterEach cleanup:', error);
-  }
+  await new Promise(resolve => setTimeout(resolve, 1000));
 });
 
-// Global cleanup after all tests
 afterAll(async () => {
   console.log('🧹 Cleaning up E2E test environment...');
-  
-  // Clear any remaining timers or intervals
-  if (global.gc) {
-    global.gc();
-  }
-
   console.log('✅ Cleanup completed');
-}, 30000); // 30 second timeout for cleanup
+}, 30000);

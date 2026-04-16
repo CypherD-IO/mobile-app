@@ -71,8 +71,30 @@ const URL_BLACKLIST = [
   '.*localhost:8081/assets/node_modules.*',
 ];
 
+// URL blacklist formatted as a regex string for Detox's launchArgs. Detox
+// accepts the regex pre-baked in launchArgs (detoxURLBlacklistRegex) so the
+// blacklist applies from the very first frame, before setURLBlacklist()
+// lands over IPC.
+const URL_BLACKLIST_REGEX = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
+
+// Shared Detox launchArgs used by every app launch (initial + relaunch).
+const DEFAULT_LAUNCH_ARGS = {
+  detoxHandleSystemAlerts: 'YES',
+  detoxVisibilityPercentage: 75,
+  detoxURLBlacklistRegex: URL_BLACKLIST_REGEX,
+} as const;
+
 // ---------------------------------------------------------------------------
-// Manual polling helper
+// Small utilities
+// ---------------------------------------------------------------------------
+
+/** `await sleep(500)` — more readable than `new Promise(r => setTimeout(r, 500))`. */
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ---------------------------------------------------------------------------
+// Manual polling helpers
 // ---------------------------------------------------------------------------
 
 /**
@@ -102,8 +124,21 @@ export async function waitForElementById(
       if (i === attempts - 1) {
         throw new Error(`Element "${label}" did not appear within ${timeoutMs}ms`);
       }
-      await new Promise(resolve => setTimeout(resolve, intervalMs));
+      await sleep(intervalMs);
     }
+  }
+}
+
+/** Silent version of waitForElementById — returns bool instead of throwing. */
+export async function waitForElementByIdSilent(
+  testId: string,
+  timeoutMs: number,
+): Promise<boolean> {
+  try {
+    await waitForElementById(testId, { timeoutMs });
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -124,10 +159,44 @@ export async function waitForElementByText(
       return true;
     } catch {
       if (i === attempts - 1) return false;
-      await new Promise(resolve => setTimeout(resolve, intervalMs));
+      await sleep(intervalMs);
     }
   }
   return false;
+}
+
+/**
+ * Tap an element with automatic retry. The tap can fail during layout
+ * transitions, re-renders, or when a banner is briefly covering the UI;
+ * retrying handles all those cases without caller-side loops.
+ *
+ * Pass `onRetry` to run a side-effect between failed attempts (for
+ * example, dismissing a LogBox banner that may be blocking the tap).
+ */
+export async function tapWithRetry(
+  matcher: () => Detox.NativeElement,
+  opts: {
+    maxAttempts?: number;
+    intervalMs?: number;
+    onRetry?: (attempt: number) => Promise<void> | void;
+    label?: string;
+  } = {},
+): Promise<void> {
+  const { maxAttempts = 10, intervalMs = 1000, onRetry, label = 'element' } = opts;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await matcher().tap();
+      return;
+    } catch (err) {
+      if (attempt === maxAttempts) {
+        throw new Error(
+          `Could not tap "${label}" after ${maxAttempts} attempts: ${String(err)}`,
+        );
+      }
+      if (onRetry) await onRetry(attempt);
+      await sleep(intervalMs);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -177,14 +246,14 @@ async function dismissLogBoxBanners(): Promise<void> {
     // LogBox.uninstall() to prevent them from rendering.
     if (!tapped) continue;
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await sleep(500);
 
     // Tap "Dismiss" in the inspector footer to dismiss this log.
     try {
       await expect(element(by.text('Dismiss'))).toExist();
       await element(by.text('Dismiss')).tap();
       console.log('Tapped Dismiss in LogBox inspector');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await sleep(500);
     } catch {
       // Inspector might auto-dismiss, or layout changed. Fall back to
       // swiping up from the bottom to close the full-screen inspector.
@@ -209,20 +278,21 @@ async function dismissLogBoxBanners(): Promise<void> {
 export async function handlePermissionDialog(): Promise<boolean> {
   console.log('Checking for permission dialogs...');
 
-  try {
-    const notificationTitle = element(
-      by.text('"Cypher Wallet" Would Like to Send You Notifications'),
-    );
-    const allowButton = element(by.text('Allow'));
-
-    await waitFor(notificationTitle).toExist().withTimeout(TIMEOUT_SHORT);
-
-    console.log('Permission dialog found! Clicking Allow...');
-    await allowButton.tap();
-    console.log('Clicked Allow button successfully');
-    return true;
-  } catch (e) {
+  const found = await waitForElementByText(
+    '"Cypher Wallet" Would Like to Send You Notifications',
+    { timeoutMs: TIMEOUT_SHORT },
+  );
+  if (!found) {
     console.log('No permission dialog found or unable to handle');
+    return false;
+  }
+
+  try {
+    await element(by.text('Allow')).tap();
+    console.log('Clicked Allow on permission dialog');
+    return true;
+  } catch {
+    console.log('Permission dialog appeared but Allow tap failed');
     return false;
   }
 }
@@ -250,19 +320,12 @@ export async function handlePermissionDialog(): Promise<boolean> {
 export async function navigateThroughOnboarding(): Promise<void> {
   await device.disableSynchronization();
 
-  // Wait for the onboarding screen using manual polling.
-  // Detox's waitFor() is blocked by internal sync (main queue busy with
-  // JS timers + Firebase) even after disableSynchronization(). Manual
-  // expect() in a try/catch loop bypasses this completely.
-  for (let i = 0; i < 30; i++) {
-    try {
-      await expect(element(by.text('Continue'))).toExist();
-      break;
-    } catch {
-      if (i === 29) throw new Error('Onboarding screen did not load within 90s');
-      await new Promise(resolve => setTimeout(resolve, 3000));
-    }
-  }
+  // Wait for the GetStarted carousel's "Continue" button to render.
+  const loaded = await waitForElementByText('Continue', {
+    timeoutMs: 90000,
+    intervalMs: 3000,
+  });
+  if (!loaded) throw new Error('Onboarding screen did not load within 90s');
   console.log('GetStarted carousel is loaded');
 
   // Dismiss LogBox banners that cover bottom buttons.
@@ -270,34 +333,27 @@ export async function navigateThroughOnboarding(): Promise<void> {
   // is unavailable in bridgeless mode), so banners overlay the UI.
   await dismissLogBoxBanners();
 
-  // Tap "Continue" to advance through the 3 carousel sections.
-  // Retry on failure — banners or splash may still be settling.
+  // Tap "Continue" to advance through the 3 carousel sections. Retry
+  // on failure — banners or splash may still be settling. If the tap
+  // keeps failing, dismiss any banner that may have reappeared.
   for (let section = 1; section <= 3; section++) {
-    for (let attempt = 0; attempt < 20; attempt++) {
-      try {
-        await element(by.text('Continue')).tap();
-        console.log(`Tapped Continue on section ${section} (attempt ${attempt + 1})`);
-        break;
-      } catch {
-        if (attempt === 19) throw new Error(`Continue not tappable on section ${section}`);
-        // If a banner reappeared, try dismissing again
+    await tapWithRetry(() => element(by.text('Continue')), {
+      maxAttempts: 20,
+      intervalMs: 3000,
+      label: `Continue on section ${section}`,
+      onRetry: async attempt => {
         if (attempt === 5 || attempt === 10) await dismissLogBoxBanners();
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-    }
-    await new Promise(resolve => setTimeout(resolve, 300));
+      },
+    });
+    console.log(`Tapped Continue on section ${section}`);
+    await sleep(300);
   }
 
   // Confirm we arrived at the OnBoardingOptions screen
-  for (let i = 0; i < 10; i++) {
-    try {
-      await expect(element(by.id('options-wallets-btn'))).toExist();
-      break;
-    } catch {
-      if (i === 9) throw new Error('OnBoardingOptions screen not found');
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-  }
+  await waitForElementById('options-wallets-btn', {
+    timeoutMs: 20000,
+    label: 'OnBoardingOptions screen',
+  });
   console.log('Arrived at OnBoardingOptions screen');
 
   await device.enableSynchronization();
@@ -308,44 +364,13 @@ export async function navigateThroughOnboarding(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export const reOpenApp = async () => {
-  const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
   await device.launchApp({
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' },
-    launchArgs: {
-      detoxHandleSystemAlerts: 'YES',
-      detoxVisibilityPercentage: 75,
-      detoxURLBlacklistRegex: blacklistRegex,
-    },
+    launchArgs: { ...DEFAULT_LAUNCH_ARGS },
   });
   await device.setURLBlacklist(URL_BLACKLIST);
 };
-
-/**
- * Ultra-lightweight reset for CI environments when the main reset fails
- */
-export async function resetAppForCIOnly(): Promise<void> {
-  console.log('Using ultra-lightweight CI reset...');
-
-  try {
-    console.log('Launching app with minimal config...');
-    const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
-    await device.launchApp({
-      newInstance: true,
-      permissions: { notifications: 'YES', camera: 'YES' },
-      launchArgs: {
-        detoxHandleSystemAlerts: 'YES',
-        detoxVisibilityPercentage: 75,
-        detoxURLBlacklistRegex: blacklistRegex,
-      },
-    });
-    await device.setURLBlacklist(URL_BLACKLIST);
-    console.log('Ultra-lightweight CI reset completed');
-  } catch (error) {
-    console.error('Even ultra-lightweight reset failed:', error);
-    throw error;
-  }
-}
 
 /**
  * Verify Metro is alive before launching the app. If Metro died (common on
@@ -372,13 +397,13 @@ async function ensureMetroIsAlive(): Promise<void> {
           const { exec } = require('child_process');
           exec('npx react-native start --reset-cache --port 8081 &');
           // Give Metro time to boot before polling
-          await new Promise(resolve => setTimeout(resolve, 10000));
+          await sleep(10000);
         } catch {
           // ignore
         }
       }
     }
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await sleep(2000);
   }
   throw new Error('Metro bundler is not running — cannot launch app');
 }
@@ -423,20 +448,15 @@ export async function resetAppCompletely(): Promise<void> {
   // handles termination internally, avoiding the hang that occurs when
   // terminateApp() blocks the Node event loop via Detox IPC on CI.
   console.log('Launching app with clean state (delete: true)...');
-  const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
 
   await device.launchApp({
     delete: true,
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
-      detoxHandleSystemAlerts: 'YES',
-      detoxVisibilityPercentage: 75,
-      detoxURLBlacklistRegex: blacklistRegex,
+      ...DEFAULT_LAUNCH_ARGS,
       RCTDevLoadingViewGetLogLevel: '0',
-      ...(isCI && {
-        detoxDisableHierarchyDump: 'YES',
-      }),
+      ...(isCI && { detoxDisableHierarchyDump: 'YES' }),
     },
   });
 
@@ -449,60 +469,6 @@ export async function resetAppCompletely(): Promise<void> {
   await device.enableSynchronization();
 
   console.log('App launched and ready');
-}
-
-// ---------------------------------------------------------------------------
-// Debug helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Debug helper to log visible elements when tests fail
- */
-export async function debugVisibleElements(description: string): Promise<void> {
-  console.log(`DEBUG: ${description}`);
-  console.log('Looking for common button patterns...');
-
-  const buttonTexts = [
-    'CONFIRM',
-    'Confirm',
-    'CONTINUE',
-    'Continue',
-    'NEXT',
-    'Next',
-    'DONE',
-    'Done',
-  ];
-
-  for (const text of buttonTexts) {
-    try {
-      const buttonElement = element(by.text(text));
-      await waitFor(buttonElement).toExist().withTimeout(1000);
-      console.log(`Found button with text: "${text}"`);
-    } catch {
-      // not found — skip
-    }
-  }
-
-  const buttonTestIds = [
-    'getstarted-continue-btn',
-    'options-wallets-btn',
-    'options-create-wallet-btn',
-    'options-import-wallet-btn',
-    'options-import-seed-option',
-    'enterkey-seed-input',
-    'enterkey-continue-btn',
-    'portfolio-screen',
-  ];
-
-  for (const testId of buttonTestIds) {
-    try {
-      const buttonElement = element(by.id(testId));
-      await waitFor(buttonElement).toExist().withTimeout(1000);
-      console.log(`Found element with testID: "${testId}"`);
-    } catch {
-      // not found — skip
-    }
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -531,89 +497,6 @@ export async function dismissPromotionalModals(): Promise<void> {
     if (await waitForElementByIdSilent(promo.testId, 3000)) {
       await element(by.id(promo.testId)).tap();
       console.log(`Dismissed promo: ${promo.name}`);
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Debug helpers
-// ---------------------------------------------------------------------------
-
-export async function debugAllElementsByType(types: string[]): Promise<void> {
-  console.log('=== DEBUGGING ELEMENTS BY TYPE ===');
-  for (const type of types) {
-    try {
-      const elements = element(by.type(type));
-      const attributes = await elements.getAttributes();
-      console.log(`${type}:`, JSON.stringify(attributes, null, 2));
-    } catch (error) {
-      console.log(
-        `${type}: No elements found or error:`,
-        (error as Error).message,
-      );
-    }
-  }
-  console.log('=== END DEBUG ===');
-}
-
-/**
- * Debug function to log all visible elements on screen
- */
-export async function debugAllVisibleElements(context: string): Promise<void> {
-  console.log(`DEBUG ALL ELEMENTS: ${context}`);
-
-  try {
-    await device.takeScreenshot(`debug-${Date.now()}`);
-    console.log('Screenshot taken');
-  } catch {
-    console.log('Could not take screenshot');
-  }
-
-  const inputTypes = [
-    'RCTTextField',
-    'RCTTextView',
-    'RCTTextInput',
-    'RCTMultilineTextInputView',
-    'RCTSinglelineTextInputView',
-    'UITextField',
-    'UITextView',
-  ];
-
-  for (const inputType of inputTypes) {
-    try {
-      const elements = element(by.type(inputType));
-      await waitFor(elements).toExist().withTimeout(1000);
-      console.log(`Found ${inputType} element(s)`);
-
-      try {
-        for (let i = 0; i < 5; i++) {
-          const specificElement = element(by.type(inputType)).atIndex(i);
-          await waitFor(specificElement).toExist().withTimeout(500);
-          console.log(`  - ${inputType} at index ${i} exists`);
-        }
-      } catch {
-        // Expected when we run out of elements
-      }
-    } catch {
-      console.log(`No ${inputType} elements found`);
-    }
-  }
-
-  const inputTexts = [
-    'Enter your key',
-    'seed phrase',
-    'recovery phrase',
-    'Enter recovery phrase',
-    'ENTER_KEY_PLACEHOLDER',
-  ];
-
-  for (const text of inputTexts) {
-    try {
-      const textElement = element(by.text(text));
-      await waitFor(textElement).toExist().withTimeout(1000);
-      console.log(`Found element with text: "${text}"`);
-    } catch {
-      console.log(`No element found with text: "${text}"`);
     }
   }
 }
@@ -661,19 +544,6 @@ export async function checkForPortfolioScreen(): Promise<boolean> {
     return false;
   } finally {
     await device.enableSynchronization();
-  }
-}
-
-/** Silent version of waitForElementById — returns bool instead of throwing. */
-async function waitForElementByIdSilent(
-  testId: string,
-  timeoutMs: number,
-): Promise<boolean> {
-  try {
-    await waitForElementById(testId, { timeoutMs });
-    return true;
-  } catch {
-    return false;
   }
 }
 
@@ -765,7 +635,7 @@ export async function completeWalletImport(): Promise<void> {
   secureLog('Tapped "Import Existing Wallet"');
 
   // Wait for modal animation
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await sleep(1000);
 
   // 4. Select "Import Seed Phrase" from the modal
   await waitForElementById('options-import-seed-option', { timeoutMs: TIMEOUT_LONG });
@@ -776,7 +646,7 @@ export async function completeWalletImport(): Promise<void> {
   // Use by.type() for TextInput — testID doesn't propagate in Fabric.
   // Keep waitFor() here only because by.type('UITextView') has no
   // testID to poll on; the try/catch loop pattern doesn't apply cleanly.
-  await new Promise(resolve => setTimeout(resolve, 3000));
+  await sleep(3000);
   const TEST_RECOVERY_PHRASE = getSecureTestSeedPhrase();
 
   await performSecureOperation(async () => {
@@ -793,14 +663,14 @@ export async function completeWalletImport(): Promise<void> {
 
   // 6. Tap Return key to dismiss keyboard, then tap Continue
   await element(by.type('UITextView')).atIndex(0).tapReturnKey();
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await sleep(1000);
 
   await waitForElementById('enterkey-continue-btn', { timeoutMs: TIMEOUT_LONG });
   await element(by.id('enterkey-continue-btn')).tap();
   secureLog('Tapped Continue on EnterKey screen');
 
   // 7. Handle ChooseWalletIndex screen — tap "Submit" (optional screen)
-  await new Promise(resolve => setTimeout(resolve, 3000));
+  await sleep(3000);
   if (await waitForElementByIdSilent('choose-wallet-submit-btn', 10000)) {
     await element(by.id('choose-wallet-submit-btn')).tap();
     secureLog('Tapped Submit on wallet index screen');
@@ -809,7 +679,7 @@ export async function completeWalletImport(): Promise<void> {
   }
 
   // Wait for wallet setup to complete
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await sleep(5000);
 
   // 8. Ensure sync is disabled for interstitial checks
   await device.disableSynchronization();
@@ -832,7 +702,7 @@ export async function completeWalletImport(): Promise<void> {
   // Must use the same sync/blacklist args as initial launch.
   await reOpenApp();
   await device.disableSynchronization();
-  await new Promise(resolve => setTimeout(resolve, 8000));
+  await sleep(8000);
 
   // 10. Verify portfolio screen (manages its own sync)
   const portfolioDetected = await checkForPortfolioScreen();

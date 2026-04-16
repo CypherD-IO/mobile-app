@@ -1,5 +1,9 @@
-import { device, element, by, expect as detoxExpect } from 'detox';
-import { handlePermissionDialog, resetAppCompletely } from './helpers';
+import { device } from 'detox';
+import {
+  handlePermissionDialog,
+  resetAppCompletely,
+  waitForElementByText,
+} from './helpers';
 
 describe('App Launch Tests', () => {
   beforeAll(
@@ -15,17 +19,15 @@ describe('App Launch Tests', () => {
     await device.disableSynchronization();
     await handlePermissionDialog();
 
-    // Manual polling — Detox's waitFor() is blocked by internal sync
-    // (main queue busy with JS timers) even after disableSynchronization().
-    for (let i = 0; i < 30; i++) {
-      try {
-        await detoxExpect(element(by.text('Continue'))).toExist();
-        console.log(`App launched successfully - onboarding visible (attempt ${i + 1})`);
-        return; // PASS
-      } catch {
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
+    // Manual polling via helper — Detox sync is blocked by JS timers and
+    // background requests, so waitFor() hangs. 90s budget = 30 × 3s.
+    const visible = await waitForElementByText('Continue', {
+      timeoutMs: 90000,
+      intervalMs: 3000,
+    });
+    if (!visible) {
+      throw new Error('Onboarding screen did not appear within 90s');
     }
-    throw new Error('Onboarding screen did not appear within 90s');
+    console.log('App launched successfully - onboarding visible');
   });
 });
