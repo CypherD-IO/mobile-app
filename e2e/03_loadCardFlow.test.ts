@@ -55,9 +55,14 @@ describe('Load Card Flow', () => {
     // Previously this step used waitFor() which was sync-blocked; the
     // USDC text never resolved and the modal was left open.
     secureLog('Step 3: Checking for token selector');
+    // Short timeout here: we're just asking "is Choose Token on screen RIGHT
+    // NOW?" — if the default token is pre-selected (common case on CI), this
+    // check will fail and we skip the modal. Each failed expect() call takes
+    // ~1s on Detox's side, so 2s ≈ 2 attempts is enough to avoid flaking
+    // without burning 10s on the happy path.
     const tokenSelectorPresent = await waitForElementByText('Choose Token', {
-      timeoutMs: 5000,
-    }).catch(() => false);
+      timeoutMs: 2000,
+    });
     if (tokenSelectorPresent) {
       await element(by.id('fundcard-token-selector')).tap();
       secureLog('Opened token selector modal');
