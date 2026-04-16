@@ -102,18 +102,56 @@ const RAIL_GROUPS: Record<string, GroupRule[]> = {
   ],
 };
 
+/**
+ * Generate a human-friendly validation message from an API regex pattern.
+ * Falls back to a label-based message when the pattern isn't recognized.
+ */
+function humanRegexMessage(apiField: ApiFieldSchema): string {
+  const { regex, key, label } = apiField;
+  // Normalize: some APIs double-escape backslashes
+  const pattern = regex.replace(/\\\\/g, '\\');
+
+  const exactDigits = /^\^\\d\{(\d+)\}\$$/.exec(pattern);
+  if (exactDigits) return `Must be exactly ${exactDigits[1]} digits`;
+
+  const rangeDigits = /^\^\\d\{(\d+),(\d+)\}\$$/.exec(pattern);
+  if (rangeDigits) return `Must be ${rangeDigits[1]}-${rangeDigits[2]} digits`;
+
+  const exactLetters = /^\^\[A-Z\]\{(\d+)\}\$$/i.exec(pattern);
+  if (exactLetters) return `Must be exactly ${exactLetters[1]} letters`;
+
+  const rangeAny = /^\^\.\{(\d+),(\d+)\}\$$/.exec(pattern);
+  if (rangeAny) return `Must be ${rangeAny[1]}-${rangeAny[2]} characters`;
+
+  const maxAny = /^\^\.\{1,(\d+)\}\$$/.exec(pattern);
+  if (maxAny) return `Must be 1-${maxAny[1]} characters`;
+
+  if (key.includes('phone')) return 'Use international format (e.g. +14155551234)';
+  if (key.includes('email')) return 'Enter a valid email address';
+  if (key.includes('tax_id')) return 'Enter a valid tax ID';
+  if (key.includes('swift') || key.includes('bic')) return 'Must be 8 or 11 alphanumeric characters';
+  if (key.includes('iban')) return 'Enter a valid IBAN';
+
+  return `Enter a valid ${label.toLowerCase()}`;
+}
+
 /** Transform a single API field schema into a FieldDef */
 function transformField(apiField: ApiFieldSchema): FieldDef {
   const key = snakeToCamel(apiField.key);
   const hasItems = !!apiField.items?.length;
   const isDropdown = hasItems;
 
+  // `requiredWhen` takes precedence over `required`: if a conditional rule
+  // exists, the field is only required when that rule evaluates true.
+  const hasConditional = !!apiField.requiredWhen;
+  const baseRequired = hasConditional ? false : !!apiField.required;
+
   const def: FieldDef = {
     key,
     label: apiField.label,
     placeholder: isDropdown ? `Select ${apiField.label.toLowerCase()}` : apiField.label,
     type: isDropdown ? 'dropdown' : 'text',
-    required: apiField.required,
+    required: baseRequired,
   };
 
   if (isDropdown) {
@@ -126,7 +164,7 @@ function transformField(apiField: ApiFieldSchema): FieldDef {
   if (apiField.regex) {
     try {
       def.regex = new RegExp(apiField.regex);
-      def.regexMessage = 'Invalid format';
+      def.regexMessage = humanRegexMessage(apiField);
     } catch {
       // Malformed regex from API — skip validation
     }
@@ -222,5 +260,8 @@ export function evaluateRequiredWhen(
   formValues: Record<string, string>,
 ): boolean {
   const val = (formValues[rule.field] ?? '').trim();
-  return rule.values.includes(val);
+  if (!val) return false;
+  if (rule.operator === 'eq') return rule.values[0] === val;
+  if (rule.operator === 'in') return rule.values.includes(val);
+  return false;
 }

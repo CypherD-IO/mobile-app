@@ -74,8 +74,11 @@ npm -v
 echo "Node.js binary: $(which node)"
 
 # Install JS dependencies from repo root (package.json lives there).
+# ELECTRON_SKIP_BINARY_DOWNLOAD skips electron's postinstall binary fetch from
+# release-assets.githubusercontent.com, which Xcode Cloud blocks. We don't need
+# the electron binary for iOS builds — it's only pulled in as a transitive dev dep.
 cd "$REPO_ROOT"
-npm install --legacy-peer-deps
+ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install --legacy-peer-deps
 
 # Clean up DerivedData folder if it exists
 rm -rf /Volumes/workspace/DerivedData

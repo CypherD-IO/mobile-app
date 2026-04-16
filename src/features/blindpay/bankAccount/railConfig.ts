@@ -1,4 +1,5 @@
 import type { BlindpayBankAccountType } from '../types';
+import { BLINDPAY_COUNTRIES } from '../countries';
 
 /** Field types for dynamic rendering. */
 export type FieldType = 'text' | 'dropdown' | 'phone';
@@ -168,9 +169,12 @@ const US_ADDRESS_FIELDS: FieldDef[] = [
   { key: 'addressLine2', label: 'Apt / Suite', placeholder: 'Apartment, Suite', type: 'text', required: true, maxLength: 256 },
   { key: 'city', label: 'City', placeholder: 'City', type: 'text', required: true },
   { key: 'stateProvinceRegion', label: 'State', placeholder: 'e.g. CA, NY', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter state code' },
-  { key: 'country', label: 'Country', placeholder: 'Select country', type: 'dropdown', required: true, options: [], searchable: true },
+  { key: 'country', label: 'Country', placeholder: 'Select country', type: 'dropdown', required: true, options: BLINDPAY_COUNTRIES, searchable: true },
   { key: 'postalCode', label: 'Postal Code', placeholder: 'Postal code', type: 'text', required: true },
 ];
+
+// Countries that require a phone number on the recipient (per BlindPay API schema).
+const PHONE_REQUIRED_COUNTRIES = ['BR', 'CN', 'CO', 'HK', 'MY', 'MX', 'PH', 'UG', 'UY'];
 
 // ── US bank common fields ──
 
@@ -183,8 +187,27 @@ const US_BANK_COMMON: FieldDef[] = [
 
 // ── Helpers ──
 
-const PHONE_FIELD: FieldDef = { key: 'phoneNumber', label: 'Phone Number', placeholder: '+14155551234', type: 'text', required: true, keyboardType: 'phone-pad', regex: /^\+\d{7,15}$/, regexMessage: 'E.164 format (e.g. +14155551234)' };
-const INDUSTRY_FIELD: FieldDef = { key: 'businessIndustry', label: 'Business Industry (NAICS)', placeholder: 'Select industry', type: 'dropdown', required: true, options: [], searchable: true };
+const PHONE_FIELD: FieldDef = {
+  key: 'phoneNumber',
+  label: 'Phone Number',
+  placeholder: '+14155551234',
+  type: 'text',
+  required: false,
+  requiredWhen: { field: 'country', operator: 'in', values: PHONE_REQUIRED_COUNTRIES },
+  keyboardType: 'phone-pad',
+  regex: /^\+[1-9]\d{1,14}$/,
+  regexMessage: 'Use international format (e.g. +14155551234)',
+};
+const INDUSTRY_FIELD: FieldDef = {
+  key: 'businessIndustry',
+  label: 'Business Industry (NAICS)',
+  placeholder: 'Select industry',
+  type: 'dropdown',
+  required: false,
+  requiredWhen: { field: 'accountClass', operator: 'eq', values: ['business'] },
+  options: [],
+  searchable: true,
+};
 
 function buildRail(
   r: Omit<RailDef, 'fields'>,
