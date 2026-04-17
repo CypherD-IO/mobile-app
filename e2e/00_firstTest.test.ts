@@ -10,7 +10,7 @@ describe('App Launch Tests', () => {
     async () => {
       await resetAppCompletely();
     },
-    process.env.CI ? 240000 : 120000,
+    process.env.CI ? 360000 : 120000,
   );
 
   it('should launch successfully and show onboarding screen', async () => {

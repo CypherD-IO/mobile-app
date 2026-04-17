@@ -302,20 +302,14 @@ export async function handlePermissionDialog(): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 /**
- * Navigate through the GetStarted carousel (3 taps) then wait for the
- * OnBoardingOptions screen to appear.
+ * Navigate through the GetStarted carousel (3 "Continue" taps) then wait
+ * for the OnBoardingOptions screen.
  *
- * Uses the `getstarted-continue-btn` testID added to the GetStarted screen
- * and confirms arrival at options via `options-wallets-btn`.
- *
- * NOTE: Detox sync is temporarily disabled during carousel navigation
- * because the app's main queue has persistent work items (timers,
- * analytics init) that prevent Detox from ever considering it "idle".
- */
-/**
- * Navigate through the GetStarted carousel (3 swipes).
- * Manages its own sync lifecycle: disables at start, re-enables at end.
- * This brief re-enable lets Detox sync the screen transition.
+ * Disables Detox sync while driving the carousel (the main queue has
+ * persistent work — Firebase, WalletConnect, RPC polls — that prevents
+ * Detox from ever considering the app idle). Re-enables sync at the end
+ * so the caller's next Detox action (usually a modal-opening tap) can
+ * wait for the in-flight UI transition to settle before firing.
  */
 export async function navigateThroughOnboarding(): Promise<void> {
   await device.disableSynchronization();

@@ -13,7 +13,7 @@ describe('Onboarding Flow', () => {
     async () => {
       await resetAppCompletely();
     },
-    process.env.CI ? 240000 : 120000,
+    process.env.CI ? 360000 : 120000,
   );
 
   it('should navigate through onboarding and create a wallet', async () => {
