@@ -81,7 +81,7 @@ export const CHAIN_ETH: Chain = {
 export const CHAIN_POLYGON: Chain = {
   chainName: 'ethereum',
   name: 'Polygon',
-  symbol: 'MATIC',
+  symbol: 'POL',
   id: 1,
   logo_url: AppImages.POLYGON,
   backendName: ChainBackendNames.POLYGON,

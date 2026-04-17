@@ -39,6 +39,10 @@ import {
   getMaxBridgeSpendable,
   type BackendGasPriceResponse,
 } from '../bridgeMaxSpendable';
+import {
+  getBridgeGasToken,
+  calcBridgeGasReserve,
+} from '../bridgeGasTokens';
 import BridgeV2InlineSignPanel from '../components/BridgeV2InlineSignPanel';
 import useBridgeV2, { BridgeV2Executors } from '../hooks/useBridgeV2';
 import { BRIDGE_V2_SHEET_ID } from '../hooks/useBridgeV2Sheet';
@@ -670,49 +674,131 @@ export default function BridgeV2Content({
   }, [quote, destToken]);
 
   /**
-   * For non-native source tokens, check if the user has enough native token
-   * balance to cover gas fees returned by the quote.
-   * Returns a warning string or null.
+   * Backend gas price for the EVM source chain. Fetched once per chain change
+   * so the gas-sufficiency check can compute a realistic reserve locally
+   * (the quote's reported gas cost can underestimate the actual on-chain cost).
+   */
+  const [evmSourceGasPrice, setEvmSourceGasPrice] = useState<
+    BackendGasPriceResponse | undefined
+  >(undefined);
+  // `useAxios` returns a new `getWithoutAuth` reference on every render, so
+  // stash it in a ref. Otherwise this effect's dep array fires every render,
+  // resetting the gas price to undefined → insufficientGasWarning flickers
+  // on/off → Review button oscillates.
+  const getWithoutAuthRef = useRef(getWithoutAuth);
+  getWithoutAuthRef.current = getWithoutAuth;
+  const sourceChainId = sourceChain?.chainId;
+  const sourceChainType = sourceChain?.chainType;
+  useEffect(() => {
+    setEvmSourceGasPrice(undefined);
+    if (!sourceChainId || sourceChainType !== 'evm') return;
+    const chainIdNum = Number(sourceChainId);
+    const chain = ALL_CHAINS.find(c => c.chainIdNumber === chainIdNum);
+    if (!chain) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const resp = await getWithoutAuthRef.current(
+          `/v1/prices/gas/${chain.backendName}`,
+        );
+        if (!cancelled && !resp.isError && resp.data) {
+          setEvmSourceGasPrice(resp.data);
+        }
+      } catch {
+        // fallback to default gwei in calcEvmGasReserve
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceChainId, sourceChainType]);
+
+  /**
+   * Check if user has enough native gas token to cover fees.
+   *
+   * Gas token per chain is resolved via `getBridgeGasToken` (derives from
+   * ALL_CHAINS + cosmosConfig) so money-movement paths never infer gas denom
+   * from holdings.
+   *
+   * Reserve is computed locally (EVM via backend gas price, Cosmos via
+   * configured minGasPrice × pre-route gas units, Solana via conservative
+   * 0.01 SOL buffer). The quote's reported gas is not trusted — observed
+   * LiFi quotes on BSC under-report actual gas by ~20x.
+   *
+   * For native source tokens: gasTokenBalance >= amountIn + reserve.
+   * For non-native source tokens: gasTokenBalance >= reserve.
    */
   const insufficientGasWarning = useMemo((): string | null => {
     if (!quote || !sourceToken || !sourceChain) return null;
-    // Only relevant for non-native tokens — native token gas is handled by max spendable
-    if (sourceToken.isNative) return null;
 
-    // Find native token holding for the source chain
     const sourceChainId = sourceChain.chainId;
-    let nativeHolding: Holding | undefined;
+    const gasTokenInfo = getBridgeGasToken(sourceChainId);
+    if (!gasTokenInfo) return null;
+
+    // Resolve the gas-token holding by denom/symbol from the explicit map,
+    // not by the `isNativeToken` flag — the flag is not authoritative for
+    // chains where the fee denom is not the stake denom (e.g. Noble uses USDC).
+    let gasHolding: Holding | undefined;
     if (portfolioHoldings) {
-      nativeHolding = portfolioHoldings.find(h => {
+      gasHolding = portfolioHoldings.find(h => {
         const hChainId = getBridgeChainId(h.chainDetails);
-        return hChainId === sourceChainId && h.isNativeToken;
+        if (hChainId !== sourceChainId) return false;
+        if (sourceChain.chainType === 'cosmos') {
+          return (
+            h.denom === gasTokenInfo.denom || h.symbol === gasTokenInfo.symbol
+          );
+        }
+        // EVM/Solana: the native token flag uniquely identifies the gas token.
+        return h.isNativeToken;
       });
     }
 
-    // Sum gas fees from the quote for the source chain
-    const gasFees = quote.fees.filter(f => f.feeType === 'gas');
-    if (gasFees.length === 0) return null;
+    if (!gasHolding) return null;
 
-    // Use USD comparison — simplest and works across all chains
-    const totalGasUsd = gasFees.reduce((sum, f) => {
-      return sum + (f.amountUsd ? parseFloat(f.amountUsd) : 0);
-    }, 0);
+    const isCrossChain = !!(destChain && destChain.chainId !== sourceChainId);
+    const reserve = calcBridgeGasReserve({
+      chainId: sourceChainId,
+      chainType: sourceChain.chainType as 'evm' | 'cosmos' | 'solana' | 'tron',
+      isCrossChain,
+      provider: quote.provider,
+      evmBackendGasPrice: evmSourceGasPrice,
+    });
+    if (reserve === null) return null;
 
-    if (totalGasUsd <= 0) return null;
+    let balance = 0n;
+    try {
+      balance = BigInt(gasHolding.balanceInteger || '0');
+    } catch {
+      return null;
+    }
 
-    const nativeBalanceUsd = nativeHolding?.totalValue ?? 0;
-    if (nativeBalanceUsd < totalGasUsd) {
-      const nativeSymbol =
-        nativeHolding?.symbol ??
-        (sourceChain.chainType === 'evm'
-          ? 'ETH'
-          : sourceChain.chainType === 'solana'
-          ? 'SOL'
-          : 'native token');
-      return `Insufficient ${nativeSymbol} for gas fees`;
+    // Only subtract amountIn from the gas balance when the user is spending
+    // the gas token itself (e.g. BNB→ETH with BNB as source). For non-native
+    // source tokens (e.g. USDC→ETH), gas is paid from a separate balance.
+    const spendingGasToken =
+      sourceToken.isNative && sourceToken.symbol === gasTokenInfo.symbol;
+    let amountIn = 0n;
+    if (spendingGasToken) {
+      try {
+        amountIn = BigInt(quote.amountIn || '0');
+      } catch {
+        amountIn = 0n;
+      }
+    }
+    const required = amountIn + reserve;
+
+    if (balance > 0n && balance < required) {
+      return `Insufficient ${gasTokenInfo.symbol} for gas fees`;
     }
     return null;
-  }, [quote, sourceToken, sourceChain, portfolioHoldings]);
+  }, [
+    quote,
+    sourceToken,
+    sourceChain,
+    destChain,
+    portfolioHoldings,
+    evmSourceGasPrice,
+  ]);
 
   const hasFromAmountNumber = useMemo(() => {
     const t = amountInput.trim();

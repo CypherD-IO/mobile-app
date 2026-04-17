@@ -62,7 +62,7 @@ export type BackendGasPriceResponse = {
  * Convert a backend gas price response to a wei BigInt.
  * The backend returns gasPrice / maxFee in gwei.
  */
-function backendGasPriceToWei(resp: BackendGasPriceResponse): bigint {
+export function backendGasPriceToWei(resp: BackendGasPriceResponse): bigint {
   const gweiValue = resp.isEIP1559Supported
     ? (resp.maxFee ?? resp.gasPrice ?? 30)
     : (resp.gasPrice ?? 30);
