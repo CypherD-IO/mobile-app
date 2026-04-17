@@ -66,9 +66,14 @@ const URL_BLACKLIST = [
   '.*basescan.org.*',
   // Coingecko icons (portfolio token logos — many parallel requests)
   '.*coingecko.com.*',
-  // Metro bundler (symbolication, LogBox assets) — these block Detox sync
+  // Metro bundler — symbolication and ALL /assets/ URLs (app images like
+  // shortcutsSwap.png, coinRed.png, profileAvatar.png + node_modules assets).
+  // Previously only /assets/node_modules/* was covered, which missed app
+  // images served at /assets/assets/images/*. On CI those fetches happen
+  // in a burst after reOpenApp and kept Detox's sync 'busy' for 3+ min
+  // while the test waited on disableSynchronization().
   '.*localhost:8081/symbolicate.*',
-  '.*localhost:8081/assets/node_modules.*',
+  '.*localhost:8081/assets/.*',
 ];
 
 // URL blacklist formatted as a regex string for Detox's launchArgs. Detox
