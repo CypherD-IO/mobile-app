@@ -368,6 +368,14 @@ export const reOpenApp = async () => {
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: { ...DEFAULT_LAUNCH_ARGS },
   });
+  // CRITICAL ordering: disable sync BEFORE setURLBlacklist.
+  // launchApp re-enables sync by default. If we call setURLBlacklist while
+  // sync is on, Detox waits for the app to become "idle" first — but the
+  // very URLs we're trying to blacklist (Metro asset fetches, Firebase
+  // polls) are what keeps the app busy. The wait can stretch 3+ minutes
+  // on CI and cause the whole test to time out. Disabling sync first
+  // makes the setURLBlacklist command send immediately.
+  await device.disableSynchronization();
   await device.setURLBlacklist(URL_BLACKLIST);
 };
 
@@ -459,11 +467,13 @@ export async function resetAppCompletely(): Promise<void> {
     },
   });
 
-  await device.setURLBlacklist(URL_BLACKLIST);
-
-  // Dismiss LogBox banners that may cover bottom buttons.
-  // Must be done with sync disabled since the app has pending timers.
+  // CRITICAL ordering: disable sync BEFORE setURLBlacklist — otherwise
+  // setURLBlacklist waits for the app to go idle first, but the app is
+  // busy fetching the very URLs we're trying to blacklist (Firebase,
+  // Crashlytics, Metro assets). On CI that wait can exceed 3 minutes.
+  // With sync disabled, the command sends to the app immediately.
   await device.disableSynchronization();
+  await device.setURLBlacklist(URL_BLACKLIST);
   await dismissLogBoxBanners();
   await device.enableSynchronization();
 
