@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Config } from 'react-native-config';
 import usePortfolio from '../usePortfolio';
 import * as Sentry from '@sentry/react-native';
 
@@ -30,6 +31,14 @@ export function usePortfolioRefresh() {
 
   useEffect(() => {
     void refreshPortfolio();
+
+    // Skip the 2-minute background refresh under E2E tests. Detox treats the
+    // recurring network request as an "app is busy" signal and stalls tests
+    // waiting for an idle state that never arrives. One-shot initial fetch
+    // above is fine; tests rely on the data being fetched once on mount.
+    if (Config.IS_TESTING === 'true') {
+      return;
+    }
 
     const intervalId = setInterval(() => {
       void refreshPortfolio();

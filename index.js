@@ -64,14 +64,19 @@ if (__DEV__) {
   }
 }
 
-messaging().setBackgroundMessageHandler(async remoteMessage => {
-  try {
-    await showNotification(remoteMessage.notification, remoteMessage.data);
-  } catch (e) {
-    Sentry.captureException(e);
-  }
-return Promise.resolve();
-});
+// Skip Firebase background handler under E2E tests. The handler itself isn't
+// the worst offender, but registering it boots Firebase messaging which adds
+// to Detox-sync "busy" signals at app launch.
+if (!isE2ETesting) {
+  messaging().setBackgroundMessageHandler(async remoteMessage => {
+    try {
+      await showNotification(remoteMessage.notification, remoteMessage.data);
+    } catch (e) {
+      Sentry.captureException(e);
+    }
+    return Promise.resolve();
+  });
+}
 
 // NOTE: Use `require()` here (instead of static `import App from './App'`) so our
 // Bridgeless debug log above runs BEFORE the app module graph is evaluated.

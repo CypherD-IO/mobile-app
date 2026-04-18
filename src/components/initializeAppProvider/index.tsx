@@ -35,6 +35,7 @@ import JoinDiscordModal from '../v2/joinDiscordModal';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
 import { useInstallReferrer } from '../../hooks/useInstallReferrer';
 import { get } from 'lodash';
+import { Config } from 'react-native-config';
 
 import {
   requestUserPermission,
@@ -119,34 +120,41 @@ export const InitializeAppProvider = ({
   const [walletLoading, setWalletLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const messagingInstance = getMessaging();
-    const unsubscribeOnMessage = onMessage(messagingInstance, response => {
-      if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
-        setTimeout(() => {
-          showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
-            data: response.data,
-            closeModal: hideModal,
-          });
-        }, 1000);
-      } else if (
-        response.data?.actionKey === NotificationEvents.CARD_TXN_UPDATE &&
-        (response.data?.declineCode === CypherDeclineCodes.MERCHANT_GLOBAL ||
-          response.data?.declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
-          response.data?.declineCode ===
-            CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE)
-      ) {
-        setTimeout(() => {
-          showModal(GlobalModalType.TRANSACTION_DECLINE_HANDLING, {
-            data: response.data,
-            closeModal: hideModal,
-          });
-        }, 1000);
-      } else {
-        void showNotification(response.notification, response.data).catch(
-          Sentry.captureException,
-        );
-      }
-    });
+    const isE2ETesting = Config.IS_TESTING === 'true';
+
+    // Skip the Firebase onMessage subscription under E2E tests. The live
+    // messaging channel keeps Detox sync "busy" (persistent connection +
+    // periodic firelog/firebase-settings polls). Tests never exercise push
+    // notifications, so no coverage lost.
+    const unsubscribeOnMessage = isE2ETesting
+      ? () => {}
+      : onMessage(getMessaging(), response => {
+          if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
+            setTimeout(() => {
+              showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+                data: response.data,
+                closeModal: hideModal,
+              });
+            }, 1000);
+          } else if (
+            response.data?.actionKey === NotificationEvents.CARD_TXN_UPDATE &&
+            (response.data?.declineCode === CypherDeclineCodes.MERCHANT_GLOBAL ||
+              response.data?.declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
+              response.data?.declineCode ===
+                CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE)
+          ) {
+            setTimeout(() => {
+              showModal(GlobalModalType.TRANSACTION_DECLINE_HANDLING, {
+                data: response.data,
+                closeModal: hideModal,
+              });
+            }, 1000);
+          } else {
+            void showNotification(response.notification, response.data).catch(
+              Sentry.captureException,
+            );
+          }
+        });
 
     const initializeApp = async () => {
       try {
@@ -154,6 +162,10 @@ export const InitializeAppProvider = ({
 
         if (isAPIAccessible) {
           await exitIfJailBroken();
+          // Keep fetching RPC endpoints even under E2E. The Quote flow
+          // (test 03) expects them to land in globalContext before the
+          // quote API is hit. It's a one-shot fetch, so the Detox-sync
+          // impact is bounded to app boot.
           void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
           void loadActivitiesFromAsyncStorage();
           await requestUserPermission();
