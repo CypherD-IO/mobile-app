@@ -90,19 +90,25 @@ export default function Login(props) {
     onChangeseedPhraseTextValue(textValue);
   };
 
+  const prevWordCountRef = useRef(0);
   useEffect(() => {
     const seedPhrase = seedPhraseTextValue;
     const cleanedStr = seedPhrase.trim().replace(/\s+/g, ' ');
     const wordCount = cleanedStr ? cleanedStr.split(' ').length : 0;
     const isValid = wordCount === 12 || wordCount === 24;
     setDisableSubmit(!isValid);
-    // Only auto-dismiss at 24 words. Previously we dismissed at 12 too,
-    // which interrupted users entering a 24-word phrase when they hit the
-    // 12-word mark — they had to re-tap the input to keep typing.
-    // Users entering 12-word phrases can still dismiss via Return key.
-    if (wordCount === 24) {
+    // Dismiss the keyboard ONLY on the transition INTO a valid length
+    // (12 or 24). Re-dismissing every keystroke at a valid length was
+    // unusable for users editing a completed phrase — any character
+    // change with wordCount still == 12/24 would close the keyboard
+    // again and force them to re-tap the input.
+    const justEnteredValid =
+      (prevWordCountRef.current !== 12 && wordCount === 12) ||
+      (prevWordCountRef.current !== 24 && wordCount === 24);
+    if (justEnteredValid) {
       Keyboard.dismiss();
     }
+    prevWordCountRef.current = wordCount;
   }, [seedPhraseTextValue]);
 
   const debouncedTextChange = useCallback(
