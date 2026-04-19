@@ -7,6 +7,24 @@ on:
 
 jobs:
   e2e-ios:
+    # Matrix fan-out: one runner per test file. Tests are fully independent
+    # (each test's beforeAll does its own resetAppCompletely / setupTestWithWallet),
+    # so we can run all four in parallel across four runners instead of
+    # serializing on a single runner. Primary wins:
+    #   - wall time ~= slowest single test + setup, not sum of all tests
+    #   - a hung test (e.g. test 01 launchApp native hang on CI 438) can't
+    #     eat the budget of the other tests
+    # fail-fast: false so one leg failing doesn't cancel the others — we
+    # want artifacts from every leg for debugging.
+    strategy:
+      fail-fast: false
+      matrix:
+        test-file:
+          - 00_firstTest
+          - 01_onboardingFlow
+          - 02_importWalletFlow
+          - 03_loadCardFlow
+    name: e2e-ios (${{ matrix.test-file }})
     runs-on: macos-14 # Use macos-14 for more consistent Xcode versions
     timeout-minutes: 45 # Prevent hanging builds
     env:
@@ -624,8 +642,11 @@ jobs:
           ) &
           TIMEOUT_PID=$!
 
-          # Run all tests in parallel (no pattern restrictions)
-          npm run e2e:test:ios || TEST_EXIT_CODE=$?
+          # Run ONLY this matrix leg's test file. The trailing argument
+          # is passed through to `detox test` (which forwards it to jest
+          # as a testNamePattern/file filter).
+          echo "🎯 This leg runs: ${{ matrix.test-file }}"
+          npm run e2e:test:ios -- ${{ matrix.test-file }} || TEST_EXIT_CODE=$?
 
           # Kill timeout monitor
           kill $TIMEOUT_PID 2>/dev/null || true
@@ -676,7 +697,11 @@ jobs:
             echo "✅ All E2E tests passed successfully in parallel!"
             echo "🎉 Parallel execution completed - all tests independent and successful"
           fi
-        timeout-minutes: 25
+        # 30 min ceiling. Worst-observed test-file timings (CI 438):
+        # 00 ~7:37, 01 ~6 (will improve with launchApp retry), 02 ~4:46,
+        # 03 ~5:48. Total ~24:00 leaves ~6 min headroom for startup/cleanup.
+        # Job-level timeout-minutes: 45 (line 11) still caps the whole job.
+        timeout-minutes: 30
 
       - name: Stop Metro Bundler
         if: always()
@@ -771,7 +796,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-ios-test-results-${{ github.run_number }}
+          # Include matrix.test-file so the four parallel legs don't
+          # collide on the same artifact name.
+          name: e2e-ios-test-results-${{ matrix.test-file }}-${{ github.run_number }}
           path: |
             e2e/artifacts/
             e2e/screenshots/

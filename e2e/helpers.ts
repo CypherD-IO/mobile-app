@@ -457,9 +457,13 @@ export async function resetAppCompletely(): Promise<void> {
   // us a fully clean state. No separate terminateApp() needed — delete
   // handles termination internally, avoiding the hang that occurs when
   // terminateApp() blocks the Node event loop via Detox IPC on CI.
-  console.log('Launching app with clean state (delete: true)...');
-
-  await device.launchApp({
+  //
+  // Wrap in a per-attempt timeout + single retry. On slow CI runners the
+  // first launchApp sometimes hangs at the iOS simctl level (stuck on
+  // native black-screen spinner — see CI run 438 beforeAllFailure.png
+  // for test 01). A fresh attempt usually succeeds because the first
+  // attempt eventually finishes its install work in the background.
+  const launchOpts = {
     delete: true,
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' },
@@ -468,7 +472,36 @@ export async function resetAppCompletely(): Promise<void> {
       RCTDevLoadingViewGetLogLevel: '0',
       ...(isCI && { detoxDisableHierarchyDump: 'YES' }),
     },
-  });
+  } as const;
+  const LAUNCH_TIMEOUT_MS = 240000; // 4 min per attempt
+  const MAX_LAUNCH_ATTEMPTS = 2;
+
+  for (let attempt = 1; attempt <= MAX_LAUNCH_ATTEMPTS; attempt++) {
+    console.log(
+      `Launching app with clean state (delete: true, attempt ${attempt}/${MAX_LAUNCH_ATTEMPTS})...`,
+    );
+    try {
+      await Promise.race([
+        device.launchApp(launchOpts),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`launchApp timeout after ${LAUNCH_TIMEOUT_MS}ms`)),
+            LAUNCH_TIMEOUT_MS,
+          ),
+        ),
+      ]);
+      break;
+    } catch (err) {
+      console.log(`launchApp attempt ${attempt} failed: ${String(err)}`);
+      if (attempt === MAX_LAUNCH_ATTEMPTS) throw err;
+      // Best-effort cleanup before retry. terminateApp is known to hang
+      // on wedged sessions, so we cap it too and ignore failures.
+      await Promise.race([
+        device.terminateApp().catch(() => undefined),
+        new Promise(resolve => setTimeout(resolve, 10000)),
+      ]);
+    }
+  }
 
   // CRITICAL ordering: disable sync BEFORE setURLBlacklist — otherwise
   // setURLBlacklist waits for the app to go idle first, but the app is
