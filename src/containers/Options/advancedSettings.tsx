@@ -89,6 +89,7 @@ export default function AdvancedSettings() {
         </CyDView>
         <CyDView className={'h-[01px] my-[14px] bg-n40'} />
         <CyDTouchView
+          testID='advanced-hosts-rpc'
           onPress={() => {
             navigation.navigate(screenTitle.HOSTS_AND_RPC_SCREEN);
           }}

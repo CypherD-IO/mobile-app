@@ -35,7 +35,7 @@ function ProgressIndicator({
   totalSections: number;
 }) {
   return (
-    <CyDView className='flex-row justify-center items-center pt-4'>
+    <CyDView testID='getstarted-progress' className='flex-row justify-center items-center pt-4'>
       {Array.from({ length: totalSections }).map((_, index) => {
         const isActive = index === currentIndex;
         const dotStyle = {
@@ -82,6 +82,7 @@ function BottomNavigation({
         {/* Back Button or Spacer */}
         {showBackButton ? (
           <CyDTouchView
+            testID='getstarted-back-btn'
             className='border-2 border-white/30 bg-transparent py-[12px] px-[14px] rounded-[30px] min-w-[100px]'
             onPress={onBack}>
             <CyDText className='text-white text-[16px] font-semibold text-center'>
@@ -94,6 +95,7 @@ function BottomNavigation({
 
         {/* Continue Button */}
         <CyDTouchView
+          testID='getstarted-continue-btn'
           className={`bg-white py-[14px] px-6 rounded-[30px] ${
             showBackButton ? 'ml-3' : 'flex-1'
           }`}
@@ -339,7 +341,7 @@ const OnBoardingGetStarted = () => {
   );
 
   return (
-    <CyDView className='flex-1' {...panResponder.panHandlers}>
+    <CyDView testID='getstarted-screen' className='flex-1' {...panResponder.panHandlers}>
       {/* Sections */}
       {currentIndex === 0 && <Section1 handleContinue={handleContinue} />}
       {currentIndex === 1 && <Section2 handleContinue={handleContinue} />}

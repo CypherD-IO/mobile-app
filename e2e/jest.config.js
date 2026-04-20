@@ -3,11 +3,16 @@ module.exports = {
   rootDir: '..',
   testMatch: ['<rootDir>/e2e/*.test.ts'],
   
-  // Increase timeout for CI environment (individual tests may be longer now)
-  testTimeout: process.env.CI ? 360000 : 180000, // 6 min CI, 3 min local (tests include import flow)
+  // Per-test timeout. Needs enough headroom for CI's slow simulator +
+  // the wallet creation/import flows which include network requests,
+  // but tight enough that a truly hung test (e.g. Detox bridge
+  // disconnect) fails before the CI action's 25-min budget runs out.
+  // Keep individual test steps fast via manual polling in helpers.
+  testTimeout: process.env.CI ? 300000 : 180000, // 5 min CI, 3 min local
   
-  // Maximum parallel execution - all tests are now independent
-  maxWorkers: process.env.CI ? 4 : 2, // Use 4 workers in CI for full parallelization
+  // CI has a single simulator — multiple workers just waste memory and
+  // cause sequential device-allocation queuing. Use 1 worker in CI.
+  maxWorkers: process.env.CI ? 1 : 2,
   maxConcurrency: 1, // Keep test cases within files sequential (safer for E2E)
   
   // Global setup and teardown
@@ -35,12 +40,13 @@ module.exports = {
   forceExit: true,
   detectOpenHandles: true,
   
-  // CI-specific optimizations for parallel execution
+  // CI-specific optimizations for parallel execution.
+  // NOTE: Do NOT override testTimeout here — it's already set above with
+  // a CI-aware ternary. Overriding it with a larger value lets a single
+  // hung test eat the entire CI budget.
   ...(process.env.CI && {
     // Don't bail on first failure - let all parallel tests complete
     bail: false,
-    // Longer timeout for tests that include full import flow
-    testTimeout: 360000, // 6 minutes per test in CI
     testNamePattern: process.env.E2E_TEST_PATTERN,
     // Optimize for parallel execution
     verbose: false, // Reduce log noise with multiple parallel tests

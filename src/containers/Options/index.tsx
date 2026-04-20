@@ -61,16 +61,19 @@ const RenderOptions = ({
   title,
   onPress,
   apiDependent,
+  testID,
 }: {
   isLoading: boolean;
   icon: IconNames;
   title: string;
   onPress: () => void;
   apiDependent: boolean;
+  testID?: string;
 }) => {
   return (
     <CyDView className='items-center justify-center w-[100px]'>
       <CyDTouchView
+        testID={testID}
         className={clsx(
           'rounded-full border !border-base80 p-[12px] items-center justify-center',
           {
@@ -244,6 +247,7 @@ export default function OptionsHub() {
       icon: 'settings',
       apiDependent: false,
       title: t('ADVANCED_SETTINGS'),
+      testID: 'options-advanced-settings',
       onPress: () => {
         navigation.navigate(screenTitle.ADVANCED_SETTINGS);
       },
@@ -804,6 +808,7 @@ export default function OptionsHub() {
                   icon={benefit.icon as IconNames}
                   title={benefit.title}
                   onPress={benefit.onPress}
+                  testID={benefit.testID}
                 />
               ))}
             </CyDView>
@@ -856,7 +861,9 @@ export default function OptionsHub() {
                 onPress={() => {
                   void handleVersionClick();
                 }}>
-                <CyDText className='text-[10px] font-regular text-base300'>
+                <CyDText
+                  testID='options-version-text'
+                  className='text-[10px] font-regular text-base300'>
                   {t<string>('VERSION')} {DeviceInfo.getVersion()}
                   {isDeveloperMode && ' 🔧'}
                 </CyDText>
