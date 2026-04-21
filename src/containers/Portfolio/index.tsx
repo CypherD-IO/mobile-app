@@ -100,7 +100,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
-import { SwapBridgeChainData, SwapBridgeTokenData } from '../Bridge';
+import { SwapBridgeChainData, SwapBridgeTokenData } from '../../models/swapBridge';
 import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';

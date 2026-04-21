@@ -1,5 +1,5 @@
 import React, { Dispatch } from 'react';
-import { SwapBridgeChainData, SwapBridgeTokenData } from '../containers/Bridge';
+import { SwapBridgeChainData, SwapBridgeTokenData } from '../models/swapBridge';
 
 export enum BridgeStatus {
   FETCHING = 'FETCHING',

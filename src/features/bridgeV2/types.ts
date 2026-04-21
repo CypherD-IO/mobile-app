@@ -419,3 +419,19 @@ export function getTxExplorerUrl(chainId: string, txHash: string): string | null
   if (!base || !h) return null;
   return `${base}${h}`;
 }
+
+export interface SwapEventDto {
+  provider: 'skip' | 'odos' | 'lifi';
+  txHash: string;
+  sourceChainId: string;
+  sourceToken: string;
+  destToken: string;
+  amountInUsd: string;
+  destChainId?: string;
+  amountOutUsd?: string;
+  receivingTxHash?: string;
+  sourceTokenSymbol?: string;
+  destTokenSymbol?: string;
+  amountIn?: string;
+  amountOut?: string;
+}

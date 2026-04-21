@@ -9,6 +9,7 @@ import {
   BridgeV2StatusRequestDto,
   BridgeV2StatusResponse,
   BridgeV2TokensResponse,
+  SwapEventDto,
 } from './types';
 
 const ENDPOINTS = {
@@ -17,6 +18,7 @@ const ENDPOINTS = {
   QUOTE: '/v1/swap/v2/bridge/quote',
   MESSAGES: '/v1/swap/v2/bridge/messages',
   STATUS: '/v1/swap/v2/bridge/status',
+  ANALYTICS: '/v1/swap/analytics',
 } as const;
 
 export default function useBridgeV2Api() {
@@ -91,11 +93,22 @@ export default function useBridgeV2Api() {
     return { isError: false, data: response.data };
   }
 
+  async function postSwapAnalytics(
+    body: SwapEventDto,
+  ): Promise<{ isError: boolean; error?: any }> {
+    const response = await postWithAuth(ENDPOINTS.ANALYTICS, body);
+    if (response.isError) {
+      return { isError: true, error: response.error };
+    }
+    return { isError: false };
+  }
+
   return {
     getBridgeV2Chains,
     getBridgeV2Tokens,
     postBridgeV2Quote,
     postBridgeV2Messages,
     getBridgeV2Status,
+    postSwapAnalytics,
   };
 }

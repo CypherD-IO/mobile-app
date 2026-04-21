@@ -51,7 +51,9 @@ import {
   BridgeV2QuoteRequestDto,
   BridgeV2QuoteResponse,
   BridgeV2SignReviewPayload,
+  BridgeV2StatusResponse,
   BridgeV2Token,
+  BRIDGE_V2_USER_REJECTED_SIGN,
   ExecutionStep,
   EVM_NATIVE_QUOTE_TOKEN_DENOM,
   getTxExplorerUrl,
@@ -59,7 +61,10 @@ import {
   isEvmChainId,
   SOLANA_CHAIN_ID,
   SOLANA_NATIVE_QUOTE_TOKEN_DENOM,
+  SwapEventDto,
 } from '../types';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
+import useSwapAnalytics from '../hooks/useSwapAnalytics';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
@@ -267,6 +272,79 @@ function formatTokenAmount(amount: string, _decimals?: number): string {
   }
 }
 
+interface BridgeAnalyticsCtx {
+  sourceChain: BridgeV2Chain | null;
+  destChain: BridgeV2Chain | null;
+  sourceToken: BridgeV2Token | null;
+  destToken: BridgeV2Token | null;
+  executionSteps: ExecutionStep[];
+  statusInfo: BridgeV2StatusResponse | null;
+  error: string | null;
+}
+
+function buildSwapEventDto(args: {
+  quote: BridgeV2QuoteResponse;
+  ctx: BridgeAnalyticsCtx;
+  sendingTxHash: string;
+}): SwapEventDto {
+  const { quote, ctx, sendingTxHash } = args;
+  const { sourceToken, destToken } = ctx;
+  const sourceTokenId =
+    (sourceToken?.tokenContract ? sourceToken.tokenContract : sourceToken?.denom) ??
+    quote.sourceTokenDenom;
+  const destTokenId =
+    (destToken?.tokenContract ? destToken.tokenContract : destToken?.denom) ??
+    quote.destTokenDenom;
+  const receivingTxHash =
+    quote.provider === 'lifi' ? ctx.statusInfo?.receivingTxHash : undefined;
+  return {
+    provider: quote.provider,
+    txHash: sendingTxHash,
+    sourceChainId: quote.sourceChainId,
+    destChainId: quote.destChainId,
+    sourceToken: sourceTokenId,
+    destToken: destTokenId,
+    amountInUsd: quote.amountInUsd ?? '0',
+    amountOutUsd: quote.amountOutUsd,
+    receivingTxHash,
+    sourceTokenSymbol: sourceToken?.symbol,
+    destTokenSymbol: destToken?.symbol,
+    amountIn: quote.amountIn,
+    amountOut: quote.estimatedAmountOut,
+  };
+}
+
+function buildBridgeAnalyticsPayload(
+  quote: BridgeV2QuoteResponse,
+  ctx: BridgeAnalyticsCtx,
+) {
+  const { sourceChain, destChain, sourceToken, destToken } = ctx;
+  const fromAddress =
+    sourceToken?.tokenContract && sourceToken.tokenContract !== ''
+      ? sourceToken.tokenContract
+      : undefined;
+  const toAddress =
+    destToken?.tokenContract && destToken.tokenContract !== ''
+      ? destToken.tokenContract
+      : undefined;
+  return {
+    provider: quote.provider,
+    route_tool: quote.routeTool,
+    usd_amount_in: quote.amountInUsd,
+    usd_amount_out: quote.amountOutUsd,
+    from_chain: sourceChain?.prettyName ?? quote.sourceChainId,
+    to_chain: destChain?.prettyName ?? quote.destChainId,
+    from_token_symbol: sourceToken?.symbol,
+    to_token_symbol: destToken?.symbol,
+    from_token_address: fromAddress,
+    to_token_address: toAddress,
+    from_token_denom: sourceToken?.denom ?? quote.sourceTokenDenom,
+    to_token_denom: destToken?.denom ?? quote.destTokenDenom,
+    from_amount: quote.amountIn,
+    to_amount: quote.estimatedAmountOut,
+  };
+}
+
 export default function BridgeV2Content({
   executors,
   portfolioHoldings,
@@ -288,6 +366,7 @@ export default function BridgeV2Content({
 
   const globalContext = useContext<any>(GlobalContext);
   const { getWithoutAuth } = useAxios();
+  const { trackSwapSuccess } = useSwapAnalytics();
 
   const {
     chains,
@@ -513,6 +592,28 @@ export default function BridgeV2Content({
   }, [onBridgeSuccess]);
 
   const bridgeSuccessNotifiedRef = useRef(false);
+  const bridgeAnalyticsFiredRef = useRef(false);
+  const analyticsCtxRef = useRef({
+    executionSteps,
+    statusInfo,
+    error,
+    sourceChain,
+    destChain,
+    sourceToken,
+    destToken,
+  });
+  useEffect(() => {
+    analyticsCtxRef.current = {
+      executionSteps,
+      statusInfo,
+      error,
+      sourceChain,
+      destChain,
+      sourceToken,
+      destToken,
+    };
+  }, [executionSteps, statusInfo, error, sourceChain, destChain, sourceToken, destToken]);
+
   useEffect(() => {
     if (step === 'completed') {
       if (!bridgeSuccessNotifiedRef.current) {
@@ -521,10 +622,55 @@ export default function BridgeV2Content({
           /* caller handles errors */
         });
       }
+      if (!bridgeAnalyticsFiredRef.current && quote) {
+        bridgeAnalyticsFiredRef.current = true;
+        const ctx = analyticsCtxRef.current;
+        const isSwap = quote.sourceChainId === quote.destChainId;
+        const sourceStep = ctx.executionSteps.find(
+          s => s.chainId === quote.sourceChainId && s.txHash,
+        );
+        const sendingTxHash =
+          sourceStep?.txHash ??
+          ctx.executionSteps.find(s => s.txHash)?.txHash ??
+          ctx.statusInfo?.sendingTxHash;
+        void logAnalyticsToFirebase(
+          isSwap ? AnalyticEvent.SWAP_SUCCESS : AnalyticEvent.BRIDGE_SUCCESS,
+          {
+            ...buildBridgeAnalyticsPayload(quote, ctx),
+            tx_hash: sendingTxHash,
+          },
+        );
+        if (sendingTxHash && quote.amountInUsd != null) {
+          trackSwapSuccess(
+            buildSwapEventDto({
+              quote,
+              ctx,
+              sendingTxHash,
+            }),
+          );
+        }
+      }
+    } else if (step === 'failed') {
+      if (!bridgeAnalyticsFiredRef.current && quote) {
+        const ctx = analyticsCtxRef.current;
+        if (ctx.error === BRIDGE_V2_USER_REJECTED_SIGN) {
+          return;
+        }
+        bridgeAnalyticsFiredRef.current = true;
+        const isSwap = quote.sourceChainId === quote.destChainId;
+        void logAnalyticsToFirebase(
+          isSwap ? AnalyticEvent.SWAP_ERROR : AnalyticEvent.BRIDGE_ERROR,
+          {
+            ...buildBridgeAnalyticsPayload(quote, ctx),
+            error: ctx.error ?? 'unknown',
+          },
+        );
+      }
     } else if (step === 'idle') {
       bridgeSuccessNotifiedRef.current = false;
+      bridgeAnalyticsFiredRef.current = false;
     }
-  }, [step]);
+  }, [step, quote, trackSwapSuccess]);
 
   /** Ensures tokens for selected From/To chains; {@link loadTokens} skips chains already in cache. */
   useEffect(() => {

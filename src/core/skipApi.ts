@@ -23,7 +23,7 @@ import { parseUnits, PublicClient } from 'viem';
 import { cosmosConfig } from '../constants/cosmosConfig';
 import { ChainBackendNameMapping, ChainIdNameMapping } from '../constants/data';
 import { ALL_CHAINS, ChainBackendNames } from '../constants/server';
-import { SwapBridgeTokenData } from '../containers/Bridge';
+import { SwapBridgeTokenData } from '../models/swapBridge';
 import useCosmosSigner from '../hooks/useCosmosSigner';
 import useGasService from '../hooks/useGasService';
 import useSolanaSigner from '../hooks/useSolana';
