@@ -1,24 +1,21 @@
 import { AnalyticsType } from '../constants/enum';
 
-export interface SuccessAnalytics {
+interface BaseAnalytics {
   type: AnalyticsType;
   chain: string;
-  txnHash?: string;
   address?: string;
   contractData?: string;
-  category?: string;
   quoteId?: string;
   connectionType?: string;
+  other?: Record<string, unknown>;
 }
 
-export interface ErrorAnalytics {
-  type: AnalyticsType;
-  chain: string;
+export interface SuccessAnalytics extends BaseAnalytics {
+  txnHash?: string;
+  category?: string;
+}
+
+export interface ErrorAnalytics extends BaseAnalytics {
   message?: string;
   screen?: string;
-  address?: string;
-  contractData?: string;
-  quoteId?: string;
-  connectionType?: string;
-  other?: any;
 }
