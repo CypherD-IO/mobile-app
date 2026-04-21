@@ -52,6 +52,7 @@ import {
   BridgeV2QuoteResponse,
   BridgeV2SignReviewPayload,
   BridgeV2Token,
+  BRIDGE_V2_USER_REJECTED_SIGN,
   ExecutionStep,
   EVM_NATIVE_QUOTE_TOKEN_DENOM,
   getTxExplorerUrl,
@@ -266,6 +267,44 @@ function formatTokenAmount(amount: string, _decimals?: number): string {
   } catch {
     return amount;
   }
+}
+
+interface BridgeAnalyticsCtx {
+  sourceChain: BridgeV2Chain | null;
+  destChain: BridgeV2Chain | null;
+  sourceToken: BridgeV2Token | null;
+  destToken: BridgeV2Token | null;
+}
+
+function buildBridgeAnalyticsPayload(
+  quote: BridgeV2QuoteResponse,
+  ctx: BridgeAnalyticsCtx,
+) {
+  const { sourceChain, destChain, sourceToken, destToken } = ctx;
+  const fromAddress =
+    sourceToken?.tokenContract && sourceToken.tokenContract !== ''
+      ? sourceToken.tokenContract
+      : undefined;
+  const toAddress =
+    destToken?.tokenContract && destToken.tokenContract !== ''
+      ? destToken.tokenContract
+      : undefined;
+  return {
+    provider: quote.provider,
+    route_tool: quote.routeTool,
+    usd_amount_in: quote.amountInUsd,
+    usd_amount_out: quote.amountOutUsd,
+    from_chain: sourceChain?.prettyName ?? quote.sourceChainId,
+    to_chain: destChain?.prettyName ?? quote.destChainId,
+    from_token_symbol: sourceToken?.symbol,
+    to_token_symbol: destToken?.symbol,
+    from_token_address: fromAddress,
+    to_token_address: toAddress,
+    from_token_denom: sourceToken?.denom ?? quote.sourceTokenDenom,
+    to_token_denom: destToken?.denom ?? quote.destTokenDenom,
+    from_amount: quote.amountIn,
+    to_amount: quote.estimatedAmountOut,
+  };
 }
 
 export default function BridgeV2Content({
@@ -515,6 +554,27 @@ export default function BridgeV2Content({
 
   const bridgeSuccessNotifiedRef = useRef(false);
   const bridgeAnalyticsFiredRef = useRef(false);
+  const analyticsCtxRef = useRef({
+    executionSteps,
+    statusInfo,
+    error,
+    sourceChain,
+    destChain,
+    sourceToken,
+    destToken,
+  });
+  useEffect(() => {
+    analyticsCtxRef.current = {
+      executionSteps,
+      statusInfo,
+      error,
+      sourceChain,
+      destChain,
+      sourceToken,
+      destToken,
+    };
+  }, [executionSteps, statusInfo, error, sourceChain, destChain, sourceToken, destToken]);
+
   useEffect(() => {
     if (step === 'completed') {
       if (!bridgeSuccessNotifiedRef.current) {
@@ -525,53 +585,36 @@ export default function BridgeV2Content({
       }
       if (!bridgeAnalyticsFiredRef.current && quote) {
         bridgeAnalyticsFiredRef.current = true;
+        const ctx = analyticsCtxRef.current;
         const isSwap = quote.sourceChainId === quote.destChainId;
+        const sourceStep = ctx.executionSteps.find(
+          s => s.chainId === quote.sourceChainId && s.txHash,
+        );
         const sendingTxHash =
-          executionSteps.find(s => s.txHash)?.txHash ??
-          statusInfo?.sendingTxHash;
+          sourceStep?.txHash ??
+          ctx.executionSteps.find(s => s.txHash)?.txHash ??
+          ctx.statusInfo?.sendingTxHash;
         void logAnalyticsToFirebase(
           isSwap ? AnalyticEvent.SWAP_SUCCESS : AnalyticEvent.BRIDGE_SUCCESS,
           {
-            provider: quote.provider,
-            route_tool: quote.routeTool,
-            usd_amount_in: quote.amountInUsd,
-            usd_amount_out: quote.amountOutUsd,
-            from_chain: sourceChain?.prettyName ?? quote.sourceChainId,
-            to_chain: destChain?.prettyName ?? quote.destChainId,
-            from_token_symbol: sourceToken?.symbol,
-            to_token_symbol: destToken?.symbol,
-            from_token_address: sourceToken?.tokenContract,
-            to_token_address: destToken?.tokenContract,
-            from_token_denom: sourceToken?.denom ?? quote.sourceTokenDenom,
-            to_token_denom: destToken?.denom ?? quote.destTokenDenom,
-            from_amount: quote.amountIn,
-            to_amount: quote.estimatedAmountOut,
+            ...buildBridgeAnalyticsPayload(quote, ctx),
             tx_hash: sendingTxHash,
           },
         );
       }
     } else if (step === 'failed') {
       if (!bridgeAnalyticsFiredRef.current && quote) {
+        const ctx = analyticsCtxRef.current;
+        if (ctx.error === BRIDGE_V2_USER_REJECTED_SIGN) {
+          return;
+        }
         bridgeAnalyticsFiredRef.current = true;
         const isSwap = quote.sourceChainId === quote.destChainId;
         void logAnalyticsToFirebase(
           isSwap ? AnalyticEvent.SWAP_ERROR : AnalyticEvent.BRIDGE_ERROR,
           {
-            error: error ?? 'unknown',
-            provider: quote.provider,
-            route_tool: quote.routeTool,
-            usd_amount_in: quote.amountInUsd,
-            usd_amount_out: quote.amountOutUsd,
-            from_chain: sourceChain?.prettyName ?? quote.sourceChainId,
-            to_chain: destChain?.prettyName ?? quote.destChainId,
-            from_token_symbol: sourceToken?.symbol,
-            to_token_symbol: destToken?.symbol,
-            from_token_address: sourceToken?.tokenContract,
-            to_token_address: destToken?.tokenContract,
-            from_token_denom: sourceToken?.denom ?? quote.sourceTokenDenom,
-            to_token_denom: destToken?.denom ?? quote.destTokenDenom,
-            from_amount: quote.amountIn,
-            to_amount: quote.estimatedAmountOut,
+            ...buildBridgeAnalyticsPayload(quote, ctx),
+            error: ctx.error ?? 'unknown',
           },
         );
       }
@@ -579,7 +622,7 @@ export default function BridgeV2Content({
       bridgeSuccessNotifiedRef.current = false;
       bridgeAnalyticsFiredRef.current = false;
     }
-  }, [step, quote, executionSteps, statusInfo, error, sourceChain, destChain, sourceToken, destToken]);
+  }, [step, quote]);
 
   /** Ensures tokens for selected From/To chains; {@link loadTokens} skips chains already in cache. */
   useEffect(() => {
