@@ -60,6 +60,7 @@ import {
   SOLANA_CHAIN_ID,
   SOLANA_NATIVE_QUOTE_TOKEN_DENOM,
 } from '../types';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
@@ -513,6 +514,7 @@ export default function BridgeV2Content({
   }, [onBridgeSuccess]);
 
   const bridgeSuccessNotifiedRef = useRef(false);
+  const bridgeAnalyticsFiredRef = useRef(false);
   useEffect(() => {
     if (step === 'completed') {
       if (!bridgeSuccessNotifiedRef.current) {
@@ -521,10 +523,63 @@ export default function BridgeV2Content({
           /* caller handles errors */
         });
       }
+      if (!bridgeAnalyticsFiredRef.current && quote) {
+        bridgeAnalyticsFiredRef.current = true;
+        const isSwap = quote.sourceChainId === quote.destChainId;
+        const sendingTxHash =
+          executionSteps.find(s => s.txHash)?.txHash ??
+          statusInfo?.sendingTxHash;
+        void logAnalyticsToFirebase(
+          isSwap ? AnalyticEvent.SWAP_SUCCESS : AnalyticEvent.BRIDGE_SUCCESS,
+          {
+            provider: quote.provider,
+            route_tool: quote.routeTool,
+            usd_amount_in: quote.amountInUsd,
+            usd_amount_out: quote.amountOutUsd,
+            from_chain: sourceChain?.prettyName ?? quote.sourceChainId,
+            to_chain: destChain?.prettyName ?? quote.destChainId,
+            from_token_symbol: sourceToken?.symbol,
+            to_token_symbol: destToken?.symbol,
+            from_token_address: sourceToken?.tokenContract,
+            to_token_address: destToken?.tokenContract,
+            from_token_denom: sourceToken?.denom ?? quote.sourceTokenDenom,
+            to_token_denom: destToken?.denom ?? quote.destTokenDenom,
+            from_amount: quote.amountIn,
+            to_amount: quote.estimatedAmountOut,
+            tx_hash: sendingTxHash,
+          },
+        );
+      }
+    } else if (step === 'failed') {
+      if (!bridgeAnalyticsFiredRef.current && quote) {
+        bridgeAnalyticsFiredRef.current = true;
+        const isSwap = quote.sourceChainId === quote.destChainId;
+        void logAnalyticsToFirebase(
+          isSwap ? AnalyticEvent.SWAP_ERROR : AnalyticEvent.BRIDGE_ERROR,
+          {
+            error: error ?? 'unknown',
+            provider: quote.provider,
+            route_tool: quote.routeTool,
+            usd_amount_in: quote.amountInUsd,
+            usd_amount_out: quote.amountOutUsd,
+            from_chain: sourceChain?.prettyName ?? quote.sourceChainId,
+            to_chain: destChain?.prettyName ?? quote.destChainId,
+            from_token_symbol: sourceToken?.symbol,
+            to_token_symbol: destToken?.symbol,
+            from_token_address: sourceToken?.tokenContract,
+            to_token_address: destToken?.tokenContract,
+            from_token_denom: sourceToken?.denom ?? quote.sourceTokenDenom,
+            to_token_denom: destToken?.denom ?? quote.destTokenDenom,
+            from_amount: quote.amountIn,
+            to_amount: quote.estimatedAmountOut,
+          },
+        );
+      }
     } else if (step === 'idle') {
       bridgeSuccessNotifiedRef.current = false;
+      bridgeAnalyticsFiredRef.current = false;
     }
-  }, [step]);
+  }, [step, quote, executionSteps, statusInfo, error, sourceChain, destChain, sourceToken, destToken]);
 
   /** Ensures tokens for selected From/To chains; {@link loadTokens} skips chains already in cache. */
   useEffect(() => {
