@@ -45,6 +45,7 @@ export enum ChainBackendNames {
   SOLANA = 'SOLANA',
   HYPERLIQUID = 'HYPERLIQUID',
   BASE_SEPOLIA = 'BASE_SEPOLIA',
+  SOLANA_DEVNET = 'SOLANA_DEVNET',
 }
 
 export enum FundWalletAddressType {
@@ -309,6 +310,19 @@ export const CHAIN_SOLANA: Chain = {
   coinGeckoId: 'solana',
 };
 
+export const CHAIN_SOLANA_DEVNET: Chain = {
+  chainName: 'solana',
+  name: 'Solana Devnet',
+  symbol: 'SOL',
+  id: 26,
+  logo_url: AppImages.SOLANA_LOGO,
+  backendName: ChainBackendNames.SOLANA_DEVNET,
+  chain_id: 'solana_devnet',
+  native_token_address: 'solana-devnet-native',
+  chainIdNumber: 103,
+  coinGeckoId: 'solana',
+};
+
 export const EnsCoinTypes: Record<string, string> = {
   [ChainBackendNames.ETH]: '60',
   [ChainBackendNames.AVALANCHE]: '2147526762',
@@ -551,6 +565,7 @@ export const ChainConfigMapping = {
   base: CHAIN_BASE,
   base_sepolia: CHAIN_BASE_SEPOLIA,
   solana: CHAIN_SOLANA,
+  solana_devnet: CHAIN_SOLANA_DEVNET,
 };
 
 export enum QRScannerScreens {

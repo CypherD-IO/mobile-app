@@ -24,9 +24,11 @@ import {
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_SOLANA,
+  CHAIN_SOLANA_DEVNET,
   NON_EIP1599_CHAINS,
   CHAIN_BASE_SEPOLIA,
 } from '../constants/server';
+import { isNonProdEnv } from '../global';
 import {
   GlobalStateDef,
   GlobalContextDef,
@@ -1005,10 +1007,14 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   let availableChains: Chain[] = [];
   if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
     availableChains = [CHAIN_COLLECTION, ...EVM_CHAINS];
+    // Expose Base Sepolia testnet in dev/non-prod builds.
+    if (__DEV__ || isNonProdEnv()) availableChains.push(CHAIN_BASE_SEPOLIA);
   }
   // add Solana to the 2nd postion of the array to show it after Ethereum
   if (get(solana.wallets, solana.currentIndex)?.address) {
     availableChains.splice(2, 0, CHAIN_SOLANA);
+    // Solana Devnet alongside mainnet in non-prod builds.
+    if (__DEV__ || isNonProdEnv()) availableChains.push(CHAIN_SOLANA_DEVNET);
   }
   if (get(cosmos.wallets, cosmos.currentIndex)?.address) {
     availableChains.push(CHAIN_COSMOS);

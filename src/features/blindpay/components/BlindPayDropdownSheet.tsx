@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Dimensions, Keyboard } from 'react-native';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import {
   CyDMaterialDesignIcons,
   CyDText,
@@ -28,12 +29,14 @@ function DropdownContent({
   selected,
   onSelect,
   searchable,
+  addAction,
 }: {
   title: string;
   options: DropdownOption[];
   selected: string;
   onSelect: (value: string) => void;
   searchable?: boolean;
+  addAction?: { label: string; onPress: () => void };
 }) {
   const [query, setQuery] = useState('');
 
@@ -47,38 +50,59 @@ function DropdownContent({
     );
   }, [options, query, searchable]);
 
+  // Split into a fixed header (title + search + addAction) and a scrollable list.
   return (
-    <CyDView className='flex-1'>
-      <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] px-[16px] mb-[12px]'>
-        {title}
-      </CyDText>
-
-      {searchable ? (
-        <CyDView className='px-[16px] pb-[8px]'>
-          <CyDView className='flex-row items-center bg-n0 rounded-[8px] px-[12px] h-[44px] gap-[8px]'>
-            <CyDMaterialDesignIcons name='magnify' size={20} className='text-n200' />
-            <CyDTextInput
-              className='flex-1 text-[16px] font-medium text-base400 py-0 bg-transparent'
-              placeholder='Search...'
-              placeholderTextColor='#8C8C8C'
-              value={query}
-              onChangeText={setQuery}
-              autoCapitalize='none'
-              autoCorrect={false}
-              returnKeyType='done'
-              blurOnSubmit
-              onSubmitEditing={() => Keyboard.dismiss()}
-            />
-            {query ? (
-              <CyDTouchView onPress={() => setQuery('')} hitSlop={8}>
-                <CyDMaterialDesignIcons name='close-circle' size={18} className='text-n200' />
-              </CyDTouchView>
-            ) : null}
+    <BottomSheetScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ paddingBottom: 24 }}
+      stickyHeaderIndices={[0]}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps='handled'>
+      {/* 0. Sticky header */}
+      <CyDView className='bg-n20'>
+        <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] px-[16px] mb-[12px]'>
+          {title}
+        </CyDText>
+        {searchable ? (
+          <CyDView className='px-[16px] pb-[8px]'>
+            <CyDView className='flex-row items-center bg-n0 rounded-[8px] px-[12px] h-[44px] gap-[8px]'>
+              <CyDMaterialDesignIcons name='magnify' size={20} className='text-n200' />
+              <CyDTextInput
+                className='flex-1 text-[16px] font-medium text-base400 py-0 bg-transparent'
+                placeholder='Search...'
+                placeholderTextColor='#8C8C8C'
+                value={query}
+                onChangeText={setQuery}
+                autoCapitalize='none'
+                autoCorrect={false}
+                returnKeyType='done'
+                blurOnSubmit
+                onSubmitEditing={() => Keyboard.dismiss()}
+              />
+              {query ? (
+                <CyDTouchView onPress={() => setQuery('')} hitSlop={8}>
+                  <CyDMaterialDesignIcons name='close-circle' size={18} className='text-n200' />
+                </CyDTouchView>
+              ) : null}
+            </CyDView>
           </CyDView>
-        </CyDView>
-      ) : null}
+        ) : null}
+        {addAction ? (
+          <CyDView className='px-[16px] pb-[10px]'>
+            <CyDTouchView
+              onPress={addAction.onPress}
+              className='flex-row items-center gap-[8px] bg-n0 rounded-[16px] p-[16px] border border-dashed border-n40'>
+              <CyDView className='w-[32px] h-[32px] rounded-full bg-p0 items-center justify-center'>
+                <CyDMaterialDesignIcons name='plus' size={20} className='text-base400' />
+              </CyDView>
+              <CyDText className='text-[15px] font-semibold text-base400'>{addAction.label}</CyDText>
+            </CyDTouchView>
+          </CyDView>
+        ) : null}
+      </CyDView>
 
-      <CyDView className='px-[16px] pb-[16px]'>
+      {/* 1. Scrollable list */}
+      <CyDView className='px-[16px]'>
         <CyDView className='rounded-[16px] overflow-hidden'>
           {filtered.length === 0 ? (
             <CyDView className='items-center py-[32px]'>
@@ -113,7 +137,7 @@ function DropdownContent({
           ))}
         </CyDView>
       </CyDView>
-    </CyDView>
+    </BottomSheetScrollView>
   );
 }
 
@@ -148,28 +172,31 @@ export default function useBlindPaySheet() {
     selected,
     onSelect,
     searchable = false,
+    addAction,
   }: {
     title: string;
     options: DropdownOption[];
     selected: string;
     onSelect: (value: string) => void;
     searchable?: boolean;
+    addAction?: { label: string; onPress: () => void };
   }) => {
     // Close any existing sheet first
     if (currentIdRef.current) hideBottomSheet(currentIdRef.current);
 
-    const contentHeight = HEADER_HEIGHT + (options.length * ITEM_HEIGHT) + BOTTOM_PADDING + (searchable ? 60 : 0);
+    const contentHeight = HEADER_HEIGHT + (options.length * ITEM_HEIGHT) + BOTTOM_PADDING + (searchable ? 60 : 0) + (addAction ? 72 : 0);
     const contentPercent = Math.round((contentHeight / SCREEN_HEIGHT) * 100);
-    const minSnap = contentPercent > 50 ? 65 : contentPercent;
+    // More than 5 rows → open full-height so users see the whole list without dragging.
+    const minSnap = options.length > 5 ? 95 : (contentPercent > 50 ? 65 : contentPercent);
     const id = nextId();
     currentIdRef.current = id;
 
     showBottomSheet({
       id,
-      snapPoints: [`${minSnap}%`, '95%'],
+      snapPoints: options.length > 5 ? ['95%'] : [`${minSnap}%`, '95%'],
       showHandle: true,
       showCloseButton: false,
-      scrollable: true,
+      scrollable: false,
       onClose: () => {
         if (currentIdRef.current === id) currentIdRef.current = null;
       },
@@ -179,6 +206,14 @@ export default function useBlindPaySheet() {
           options={options}
           selected={selected}
           searchable={searchable}
+          addAction={addAction ? {
+            label: addAction.label,
+            onPress: () => {
+              hideBottomSheet(id);
+              if (currentIdRef.current === id) currentIdRef.current = null;
+              addAction.onPress();
+            },
+          } : undefined}
           onSelect={(value) => {
             onSelect(value);
             hideBottomSheet(id);

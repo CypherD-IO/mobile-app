@@ -25,8 +25,11 @@ import { GlobalContext } from '../../../core/globalContext';
 import { ALL_CHAINS, CHAIN_BASE_SEPOLIA } from '../../../constants/server';
 import useTransactionManager from '../../../hooks/useTransactionManager';
 import { encodeErc20ApproveData, normalizeEvmAddress } from '../../bridgeV2/evmTxViem';
-import LongPressConfirmButton from '../../../components/v2/LongPressConfirmButton';
 import CyDTokenValue from '../../../components/v2/tokenValue';
+import usePayoutDocumentUpload from './usePayoutDocumentUpload';
+import useSolanaSigner from '../../../hooks/useSolana';
+import { Transaction, VersionedTransaction } from '@solana/web3.js';
+import { Buffer } from 'buffer';
 
 const RAIL_FLAGS: Record<string, string> = {
   ach: '\uD83C\uDDFA\uD83C\uDDF8', wire: '\uD83C\uDDFA\uD83C\uDDF8',
@@ -61,9 +64,12 @@ export default function BlindPayPayoutStatusScreen() {
     fiatSymbol?: string;
   }>, string>>();
   const insets = useSafeAreaInsets();
-  const { createEvmPayout, getPayout } = useBlindPayApi();
+  const { createEvmPayout, createSolanaPayout, prepareSolanaDelegate, getPayout } = useBlindPayApi();
   const globalContext = useContext<any>(GlobalContext);
   const { executeTransferContract } = useTransactionManager();
+  const hdWallet = useContext(HdWalletContext) as any;
+  const solanaAddress = hdWallet?.state?.wallet?.solana?.address ?? '';
+  const { getSolanWallet } = useSolanaSigner();
 
   const createEvmPayoutRef = useRef(createEvmPayout);
   createEvmPayoutRef.current = createEvmPayout;
@@ -83,6 +89,9 @@ export default function BlindPayPayoutStatusScreen() {
   const [txHash, setTxHash] = useState('');
 
   const payoutId = payoutData?.id ?? route.params?.payoutId;
+  const isSwift = account?.type === 'international_swift';
+  const { openDocumentUpload } = usePayoutDocumentUpload();
+  const [docsUploaded, setDocsUploaded] = useState(false);
   const receiverAmount = payoutData?.receiverAmount ?? quote?.receiverAmount ?? 0;
   const senderAmount = payoutData?.senderAmount ?? quote?.senderAmount ?? 0;
   const recipientName = account?.name ?? 'Recipient';
@@ -123,11 +132,82 @@ export default function BlindPayPayoutStatusScreen() {
   }, [phase, payoutId]);
 
   // Approve + Create payout
-  const handleSwipeComplete = useCallback(async () => {
-    if (!quote?.contract || !evmAddress) return;
+  const handleComplete = useCallback(async () => {
+    if (!quote?.contract) return;
+
+    // Detect Solana from either selected token network or from the quote's
+    // contract.network.name (BlindPay returns `chainId: 0` for Solana, so
+    // chainId-based detection won't work).
+    const tokenNetwork = String(token?.network ?? '').toLowerCase();
+    const networkName = String(quote.contract?.network?.name ?? '').toLowerCase();
+    const isSolana =
+      tokenNetwork === 'solana' ||
+      tokenNetwork === 'solana_devnet' ||
+      networkName.includes('solana');
+
+    if (isSolana) {
+      if (!solanaAddress) {
+        showToast('No Solana address available', 'error');
+        return;
+      }
+      setPhase('processing');
+      try {
+        const prepRes = await prepareSolanaDelegate({
+          ownerAddress: solanaAddress,
+          quoteId: quote.id,
+        });
+        if (prepRes.isError || !prepRes.data?.transaction) {
+          showToast(prepRes.errorMessage ?? 'Failed to prepare transaction', 'error');
+          setPhase('failed');
+          return;
+        }
+
+        // Reuse the shared Solana wallet helper — handles both mnemonic and
+        // private-key connection types (bs58.decode on a stored mnemonic would fail).
+        const keypair = await getSolanWallet();
+        if (!keypair) {
+          showToast('Unable to load Solana wallet', 'error');
+          setPhase('failed');
+          return;
+        }
+
+        const txBytes = Buffer.from(prepRes.data.transaction, 'base64');
+        let signedBase64: string;
+        try {
+          const vtx = VersionedTransaction.deserialize(txBytes);
+          vtx.sign([keypair]);
+          signedBase64 = Buffer.from(vtx.serialize()).toString('base64');
+        } catch {
+          const legacyTx = Transaction.from(txBytes);
+          legacyTx.partialSign(keypair);
+          signedBase64 = legacyTx.serialize({ requireAllSignatures: false }).toString('base64');
+        }
+
+        const res = await createSolanaPayout({
+          quoteId: quote.id,
+          senderWalletAddress: solanaAddress,
+          signedTransaction: signedBase64,
+        });
+        if (res.isError) {
+          showToast(res.errorMessage ?? 'Failed to create payout', 'error');
+          setPhase('failed');
+          return;
+        }
+        setPayoutData(res.data);
+        if ((res.data as any)?.trackingTransaction?.transactionHash) {
+          setTxHash((res.data as any).trackingTransaction.transactionHash);
+        }
+      } catch (e: any) {
+        showToast(e?.message ?? 'Transaction failed', 'error');
+        setPhase('failed');
+      }
+      return;
+    }
+
+    // EVM path
+    if (!evmAddress) return;
     const { contract } = quote;
     const chainId = contract.network?.chainId;
-    // Check ALL_CHAINS first, then fallback to CHAIN_BASE_SEPOLIA for testnet
     let currentChain = ALL_CHAINS.find(c => c.chainIdNumber === chainId);
     if (!currentChain && CHAIN_BASE_SEPOLIA.chainIdNumber === chainId) {
       currentChain = CHAIN_BASE_SEPOLIA;
@@ -137,11 +217,9 @@ export default function BlindPayPayoutStatusScreen() {
       throw new Error('Unsupported chain');
     }
 
-    // Transition to processing immediately
     setPhase('processing');
 
     try {
-      // 1. ERC-20 approve
       const rpc = getWeb3Endpoint(currentChain, globalContext);
       const publicClient = getViemPublicClient(rpc);
       const contractData = encodeErc20ApproveData(
@@ -176,7 +254,6 @@ export default function BlindPayPayoutStatusScreen() {
 
       if (approveResult.hash) setTxHash(approveResult.hash);
 
-      // 2. Create payout via API
       const res = await createEvmPayoutRef.current({
         quoteId: quote.id,
         senderWalletAddress: evmAddress,
@@ -192,7 +269,7 @@ export default function BlindPayPayoutStatusScreen() {
       showToast(e?.message ?? 'Transaction failed', 'error');
       setPhase('failed');
     }
-  }, [quote, evmAddress, globalContext, executeTransferContract]);
+  }, [quote, evmAddress, solanaAddress, token, getSolanWallet, globalContext, executeTransferContract, prepareSolanaDelegate, createSolanaPayout]);
 
   const copyHash = useCallback(() => {
     if (txHash) {
@@ -207,7 +284,7 @@ export default function BlindPayPayoutStatusScreen() {
   if (phase === 'sign') {
     return (
       <CyDSafeAreaView className='flex-1 bg-n20' edges={['top']}>
-        {/* Header */}
+        {/* 1. Header (back button) */}
         <CyDView className='flex-row items-center px-[4px] h-[56px]'>
           <CyDTouchView onPress={() => navigation.goBack()} hitSlop={12}
             className='w-[48px] h-[48px] items-center justify-center'>
@@ -215,9 +292,12 @@ export default function BlindPayPayoutStatusScreen() {
           </CyDTouchView>
         </CyDView>
 
-        <CyDScrollView className='flex-1' contentContainerClassName='px-[16px] gap-[12px]'
-          contentContainerStyle={{ paddingBottom: Math.max(24, insets.bottom + 8) }}>
-          {/* Lottie + text */}
+        {/* 2. Scrollable content */}
+        <CyDScrollView
+          className='flex-1'
+          contentContainerClassName='px-[16px] gap-[12px]'
+          contentContainerStyle={{ paddingBottom: 16 }}
+          showsVerticalScrollIndicator={false}>
           <CyDView className='items-center py-[24px]'>
             <CyDLottieView
               source={AppImages.MONEY_TRANSFER}
@@ -230,7 +310,6 @@ export default function BlindPayPayoutStatusScreen() {
             </CyDText>
           </CyDView>
 
-          {/* Est. Received card */}
           <CyDView className='bg-n0 rounded-[10px] p-[12px] gap-[12px]'>
             <CyDText className='text-[12px] font-medium text-n200'>Est. Received</CyDText>
             <CyDTokenValue prefix='' suffix={fiatCode} className='text-[24px]'>{receiverAmount / 100}</CyDTokenValue>
@@ -247,7 +326,6 @@ export default function BlindPayPayoutStatusScreen() {
             </CyDView>
           </CyDView>
 
-          {/* Sending status card */}
           <CyDView className='bg-n0 rounded-[10px] p-[12px] flex-row items-center justify-between'>
             <CyDView className='flex-row items-center gap-[10px]'>
               <CyDMaterialDesignIcons name='swap-horizontal' size={20} className='text-base400' />
@@ -260,33 +338,54 @@ export default function BlindPayPayoutStatusScreen() {
             </CyDText>
           </CyDView>
 
-          {/* Approval details */}
           <CyDView className='bg-n0 rounded-[10px] p-[12px] gap-[8px]'>
             <CyDText className='text-[14px] font-semibold text-base400 mb-[2px]'>Approval Details</CyDText>
-            {[
-              { label: 'Network', value: quote?.contract?.network?.name ?? 'Unknown' },
-              { label: 'You send', value: `${(senderAmount / 100).toFixed(2)} ${token?.symbol ?? 'USDC'}` },
-              { label: 'Message', value: 'ERC-20 approval' },
-              { label: 'Spender', value: quote?.contract?.blindpayContractAddress
-                ? `${quote.contract.blindpayContractAddress.slice(0, 6)}...${quote.contract.blindpayContractAddress.slice(-4)}`
-                : '' },
-              { label: 'Token contract', value: quote?.contract?.address
-                ? `${quote.contract.address.slice(0, 6)}...${quote.contract.address.slice(-4)}`
-                : '' },
-            ].filter(r => r.value).map(r => (
-              <CyDView key={r.label} className='flex-row items-center justify-between'>
-                <CyDText className='text-[13px] text-n200'>{r.label}</CyDText>
-                <CyDText className='text-[13px] font-medium text-base400'>{r.value}</CyDText>
-              </CyDView>
-            ))}
+            {(() => {
+              const netName = String(quote?.contract?.network?.name ?? '').toLowerCase();
+              const solana = netName.includes('solana');
+              const truncate = (s: string) =>
+                s.length > 10 ? `${s.slice(0, 6)}...${s.slice(-4)}` : s;
+              const rows = [
+                { label: 'Network', value: quote?.contract?.network?.name ?? 'Unknown' },
+                { label: 'You send', value: `${(senderAmount / 100).toFixed(2)} ${token?.symbol ?? 'USDC'}` },
+                { label: 'Message', value: solana ? 'SPL token delegate' : 'ERC-20 approval' },
+                solana
+                  ? {
+                      label: 'Mint',
+                      value: quote?.contract?.address ? truncate(quote.contract.address) : '',
+                    }
+                  : {
+                      label: 'Spender',
+                      value: quote?.contract?.blindpayContractAddress
+                        ? truncate(quote.contract.blindpayContractAddress)
+                        : '',
+                    },
+                !solana && {
+                  label: 'Token contract',
+                  value: quote?.contract?.address ? truncate(quote.contract.address) : '',
+                },
+              ].filter((r): r is { label: string; value: string } => !!r && !!r.value);
+              return rows.map(r => (
+                <CyDView key={r.label} className='flex-row items-center justify-between'>
+                  <CyDText className='text-[13px] text-n200'>{r.label}</CyDText>
+                  <CyDText className='text-[13px] font-medium text-base400'>{r.value}</CyDText>
+                </CyDView>
+              ));
+            })()}
           </CyDView>
-
-          {/* Long press to approve */}
-          <LongPressConfirmButton
-            onConfirm={handleSwipeComplete}
-            label='Hold to approve & send'
-          />
         </CyDScrollView>
+
+        {/* 3. Bottom pinned CTA */}
+        <CyDView className='px-[16px] pt-[12px] border-t border-n30 bg-n20'
+          style={{ paddingBottom: Math.max(16, insets.bottom) }}>
+          <CyDTouchView
+            onPress={handleComplete}
+            className='rounded-full h-[48px] bg-[#F7C645] items-center justify-center'>
+            <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
+              Approve & Send
+            </CyDText>
+          </CyDTouchView>
+        </CyDView>
       </CyDSafeAreaView>
     );
   }
@@ -392,13 +491,46 @@ export default function BlindPayPayoutStatusScreen() {
           </CyDView>
         ) : null}
 
-        <CyDTouchView
-          onPress={() => navigation.goBack()}
-          className='rounded-full h-[58px] bg-[#FFDE59] items-center justify-center'>
-          <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
-            Done
-          </CyDText>
-        </CyDTouchView>
+        {isSuccess && isSwift && payoutId && !docsUploaded ? (
+          <>
+            <CyDView className='flex-row items-start gap-[8px] bg-n0 rounded-[8px] p-[12px]'>
+              <CyDMaterialDesignIcons name='file-document-outline' size={18} className='text-p100 mt-[1px]' />
+              <CyDText className='text-[12px] font-medium text-n200 flex-1 leading-[1.45]'>
+                SWIFT transfers require supporting documents (invoice, contract, etc). Upload them now — your payout is on hold until received.
+              </CyDText>
+            </CyDView>
+            <CyDView className='flex-row gap-[12px]'>
+              <CyDTouchView
+                onPress={() => navigation.goBack()}
+                className='flex-1 rounded-full h-[48px] border border-n40 bg-n0 items-center justify-center'>
+                <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+                  Do it later
+                </CyDText>
+              </CyDTouchView>
+              <CyDTouchView
+                onPress={() => openDocumentUpload({
+                  payoutId,
+                  onSuccess: () => {
+                    setDocsUploaded(true);
+                    showToast('Documents submitted');
+                  },
+                })}
+                className='flex-1 rounded-full h-[48px] bg-[#F7C645] items-center justify-center'>
+                <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
+                  Upload Documents
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
+          </>
+        ) : (
+          <CyDTouchView
+            onPress={() => navigation.goBack()}
+            className='rounded-full h-[48px] bg-[#F7C645] items-center justify-center'>
+            <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
+              Done
+            </CyDText>
+          </CyDTouchView>
+        )}
       </CyDView>
     </CyDSafeAreaView>
   );

@@ -44,7 +44,11 @@ export default function usePortfolio() {
 
       const nonProd = isNonProdEnv();
       const chains = nonProd
-        ? [...PORTFOLIO_CHAINS_BACKEND_NAMES, ChainBackendNames.BASE_SEPOLIA]
+        ? [
+            ...PORTFOLIO_CHAINS_BACKEND_NAMES,
+            ChainBackendNames.BASE_SEPOLIA,
+            ChainBackendNames.SOLANA_DEVNET,
+          ]
         : PORTFOLIO_CHAINS_BACKEND_NAMES;
       const payload = {
         chains,
