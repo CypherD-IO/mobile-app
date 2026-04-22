@@ -344,18 +344,22 @@ export default function useGasService() {
       );
 
       /**
-       * `getCode` can be empty (wrong RPC timing / proxy) so native+router calls get EOA multipliers
-       * (~26k × 1.2 ≈ 31k) — far below a real swap. Floor when calldata is a real contract call.
+       * Native + router calldata (e.g. Base → USDC via LiFi): `contractAddress` is a native
+       * placeholder so `getCode` returns '0x' and the EOA multiplier (~26k × 1.2 ≈ 31k) lands far
+       * below a real swap. Floor only this case — ERC20 transfers already trust the estimate.
        */
-      const calldataHex =
-        typeof contractData === 'string' ? contractData.trim() : '';
-      const hasMeaningfulCalldata =
-        calldataHex.length > 10 &&
-        calldataHex.toLowerCase().startsWith('0x') &&
-        calldataHex.toLowerCase() !== '0x';
-      const MIN_GAS_MEANINGFUL_CONTRACT_CALL = 400_000;
-      if (hasMeaningfulCalldata && gasLimit < MIN_GAS_MEANINGFUL_CONTRACT_CALL) {
-        gasLimit = MIN_GAS_MEANINGFUL_CONTRACT_CALL;
+      if (!isErc20) {
+        const calldataHex =
+          typeof contractData === 'string' ? contractData.trim().toLowerCase() : '';
+        const hasMeaningfulCalldata =
+          calldataHex.length > 10 && calldataHex.startsWith('0x');
+        const MIN_GAS_MEANINGFUL_CONTRACT_CALL = 400_000;
+        if (
+          hasMeaningfulCalldata &&
+          gasLimit < MIN_GAS_MEANINGFUL_CONTRACT_CALL
+        ) {
+          gasLimit = MIN_GAS_MEANINGFUL_CONTRACT_CALL;
+        }
       }
 
       // Determine final gas price based on EIP-1559 support
