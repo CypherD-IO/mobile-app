@@ -117,8 +117,14 @@ function humanRegexMessage(apiField: ApiFieldSchema): string {
   const rangeDigits = /^\^\\d\{(\d+),(\d+)\}\$$/.exec(pattern);
   if (rangeDigits) return `Must be ${rangeDigits[1]}-${rangeDigits[2]} digits`;
 
-  const exactLetters = /^\^\[A-Z\]\{(\d+)\}\$$/i.exec(pattern);
-  if (exactLetters) return `Must be exactly ${exactLetters[1]} letters`;
+  const exactLettersAZ = /^\^\[A-Z\]\{(\d+)\}\$$/i.exec(pattern);
+  if (exactLettersAZ) return `Must be exactly ${exactLettersAZ[1]} letters`;
+
+  const exactLettersAZaz = /^\^\[A-Za-z\]\{(\d+)\}\$$/.exec(pattern);
+  if (exactLettersAZaz) return `Must be exactly ${exactLettersAZaz[1]} letters`;
+
+  const rangeLettersAZaz = /^\^\[A-Za-z\]\{(\d+),(\d+)\}\$$/.exec(pattern);
+  if (rangeLettersAZaz) return `Must be ${rangeLettersAZaz[1]}-${rangeLettersAZaz[2]} letters`;
 
   const rangeAny = /^\^\.\{(\d+),(\d+)\}\$$/.exec(pattern);
   if (rangeAny) return `Must be ${rangeAny[1]}-${rangeAny[2]} characters`;
@@ -129,7 +135,11 @@ function humanRegexMessage(apiField: ApiFieldSchema): string {
   if (key.includes('phone')) return 'Use international format (e.g. +14155551234)';
   if (key.includes('email')) return 'Enter a valid email address';
   if (key.includes('tax_id')) return 'Enter a valid tax ID';
-  if (key.includes('swift') || key.includes('bic')) return 'Must be 8 or 11 alphanumeric characters';
+  // BIC/SWIFT code specifically — only if the regex matches the BIC shape.
+  const isBicPattern = /\[A-Za-z\]\{6\}.*\{2\}.*\{3\}/.test(pattern);
+  if (isBicPattern || key === 'swift_code_bic' || key === 'swift_intermediary_bank_swift_code_bic' || key.endsWith('_bic')) {
+    return 'Must be 8 or 11 alphanumeric characters';
+  }
   if (key.includes('iban')) return 'Enter a valid IBAN';
 
   return `Enter a valid ${label.toLowerCase()}`;

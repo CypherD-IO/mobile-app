@@ -568,10 +568,10 @@ export default function BlindPayAddBankAccountScreen() {
               ) : null}
             </CyDView>
 
-            {/* Account name */}
+            {/* Account nickname */}
             <CyDView className='gap-[4px]'>
               <CyDText className={LABEL_CLASS}>
-                {String(t('ACCOUNT_NAME', 'Account Name'))}
+                {String(t('ACCOUNT_DISPLAY_NAME', 'Account Display Name'))}
               </CyDText>
               <CyDView
                 className={`bg-n0 border ${
@@ -595,7 +595,7 @@ export default function BlindPayAddBankAccountScreen() {
                     }
                   }}
                   placeholder={String(
-                    t('ACCOUNT_NAME_PH', 'e.g. My US Checking'),
+                    t('ACCOUNT_NAME_PH', "e.g. Dad's SWIFT account"),
                   )}
                   placeholderTextColor={PLACEHOLDER_COLOR}
                   autoCapitalize='words'
@@ -613,7 +613,20 @@ export default function BlindPayAddBankAccountScreen() {
             </CyDView>
           </>
         ) : displayGroup ? (
-          <GroupedFieldCard
+          <>
+            {currentGroup?.title === 'Intermediary Bank' ? (
+              <CyDView className='flex-row items-start gap-[8px] bg-n10 border border-n40 rounded-[10px] p-[12px]'>
+                <CyDMaterialDesignIcons
+                  name='information-outline'
+                  size={18}
+                  className='text-n200 mt-[1px]'
+                />
+                <CyDText className='text-[12px] font-medium text-n200 flex-1 leading-[1.45]'>
+                  This step is optional. Only fill it if the receiving bank requires an intermediary/correspondent bank. Feel free to skip.
+                </CyDText>
+              </CyDView>
+            ) : null}
+            <GroupedFieldCard
             group={displayGroup}
             formValues={formValues}
             fieldErrors={fieldErrors}
@@ -645,6 +658,7 @@ export default function BlindPayAddBankAccountScreen() {
               }
             }}
           />
+          </>
         ) : null}
       </CyDKeyboardAwareScrollView>
 

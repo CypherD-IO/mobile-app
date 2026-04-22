@@ -16,6 +16,7 @@ import {
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_SOLANA,
+  CHAIN_SOLANA_DEVNET,
   CHAIN_HYPERLIQUID,
 } from '../constants/server';
 import axios from './Http';
@@ -118,6 +119,7 @@ export interface WalletHoldings {
   coreum: ChainHoldings;
   injective: ChainHoldings;
   solana: ChainHoldings;
+  solana_devnet?: ChainHoldings;
   totalHoldings: Holding[];
   hyperliquid: ChainHoldings;
   timestamp: string;
@@ -192,6 +194,8 @@ export function getCurrentChainHoldings(
       return portfolio.injective;
     case CHAIN_SOLANA.backendName:
       return portfolio.solana;
+    case CHAIN_SOLANA_DEVNET.backendName:
+      return portfolio.solana_devnet ?? portfolio.solana;
     case CHAIN_HYPERLIQUID.backendName:
       return portfolio.hyperliquid;
     default:
@@ -230,6 +234,7 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let baseHoldings;
   let baseSepoliaHoldings;
   let solanaHoldings;
+  let solanaDevnetHoldings;
   let hyperliquidHoldings;
 
   const tempHyperliquidBalances: any[] = Array.isArray(
@@ -337,6 +342,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         case CHAIN_SOLANA.backendName:
           tokenHolding.chainDetails = CHAIN_SOLANA;
           break;
+        case CHAIN_SOLANA_DEVNET.backendName:
+          tokenHolding.chainDetails = CHAIN_SOLANA_DEVNET;
+          break;
         case CHAIN_HYPERLIQUID.backendName:
           tokenHolding.accountType = allholdings[+i]?.accountType;
           tokenHolding.chainDetails = CHAIN_HYPERLIQUID;
@@ -411,6 +419,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
       case CHAIN_SOLANA.backendName:
         solanaHoldings = chainHoldings;
         break;
+      case CHAIN_SOLANA_DEVNET.backendName:
+        solanaDevnetHoldings = chainHoldings;
+        break;
       case CHAIN_HYPERLIQUID.backendName:
         if (hyperliquidHoldings) {
           hyperliquidHoldings.totalHoldings.push(
@@ -446,6 +457,7 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     coreum: coreumHoldings as ChainHoldings,
     injective: injectiveHoldings as ChainHoldings,
     solana: solanaHoldings as ChainHoldings,
+    solana_devnet: solanaDevnetHoldings,
     hyperliquid: hyperliquidHoldings ?? {
       totalBalance: 0,
       totalUnverifiedBalance: 0,

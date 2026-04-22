@@ -76,7 +76,7 @@ const RenderOptions = ({
       <CyDTouchView
         testID={testID}
         className={clsx(
-          'rounded-full border !border-base80 p-[12px] items-center justify-center',
+          'w-[48px] h-[48px] rounded-full border !border-base80 items-center justify-center',
           {
             'opacity-60': apiDependent && isLoading,
           },

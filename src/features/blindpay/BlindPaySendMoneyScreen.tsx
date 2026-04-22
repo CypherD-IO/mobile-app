@@ -1,12 +1,11 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Keyboard, Modal, StyleSheet } from 'react-native';
+import { ActivityIndicator, Keyboard, StyleSheet } from 'react-native';
 import {
   NavigationProp,
   ParamListBase,
   useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
-import Animated, { SlideInDown } from 'react-native-reanimated';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -29,6 +28,8 @@ import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvi
 import type { Holding } from '../../core/portfolio';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
+import AppImages from '../../../assets/images/appImages';
+import { getPortfolioData } from '../../core/asyncStorage';
 
 
 const RAIL_FLAGS: Record<string, string> = {
@@ -61,7 +62,7 @@ const PROD_TOKEN_SYMBOLS = ['USDC', 'USDT'];
 const TEST_TOKEN_SYMBOLS = ['USDB'];
 
 function getSupportedChains() {
-  return isNonProdEnv() ? [...PROD_CHAINS, 'base_sepolia'] : PROD_CHAINS;
+  return isNonProdEnv() ? [...PROD_CHAINS, 'base_sepolia', 'solana_devnet'] : PROD_CHAINS;
 }
 function getTokenSymbols() {
   return isNonProdEnv() ? [...PROD_TOKEN_SYMBOLS, ...TEST_TOKEN_SYMBOLS] : PROD_TOKEN_SYMBOLS;
@@ -69,7 +70,7 @@ function getTokenSymbols() {
 
 const CHAIN_TO_NETWORK: Record<string, string> = {
   eth: 'ethereum', arbitrum: 'arbitrum', polygon: 'polygon', base: 'base',
-  solana: 'solana', base_sepolia: 'base_sepolia',
+  solana: 'solana', base_sepolia: 'base_sepolia', solana_devnet: 'solana_devnet',
 };
 
 const FIAT_CONFIG: Record<string, { code: string; symbol: string; name: string; flag: string }> = {
@@ -85,6 +86,13 @@ const RAIL_TO_FIAT: Record<string, string> = {
   international_swift: 'USD',
 };
 
+// Minimum amount per rail (cents, sender USD-equivalent).
+// SWIFT has high flat + partner fees — small amounts fail partner_fee_exceeded.
+const RAIL_MIN_CENTS: Record<string, number> = {
+  international_swift: 10000,
+};
+const DEFAULT_MIN_CENTS = 500;
+
 function formatCents(c: number) {
   return (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -94,6 +102,48 @@ function formatTimer(ms: number) {
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
   return `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Self-ticking review footer. The sheet content is captured once at open time,
+ * so rendering {quoteTimeLeft} from parent state would freeze. This component
+ * drives its own interval off the absolute `expiresAtMs`.
+ */
+function ReviewFooter({
+  expiresAtMs, onConfirm,
+}: { expiresAtMs: number; onConfirm: () => void }) {
+  const insets = useSafeAreaInsets();
+  const [left, setLeft] = React.useState(() => Math.max(0, expiresAtMs - Date.now()));
+  React.useEffect(() => {
+    setLeft(Math.max(0, expiresAtMs - Date.now()));
+    const id = setInterval(() => {
+      const remaining = Math.max(0, expiresAtMs - Date.now());
+      setLeft(remaining);
+      if (remaining <= 0) clearInterval(id);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [expiresAtMs]);
+  const disabled = left <= 0;
+  return (
+    <CyDView
+      className='px-[16px] pt-[12px] gap-[8px] border-t border-n30 bg-n20'
+      style={{ paddingBottom: Math.max(48, insets.bottom + 40) }}>
+      <CyDText className='text-[14px] font-medium text-base200 text-center tracking-[-0.6px]'>
+        Your quote will get refreshed in{' '}
+        <CyDText style={{ fontVariant: ['tabular-nums'] }} className='text-[14px] font-medium text-base200 tracking-[-0.6px]'>
+          {formatTimer(left)}
+        </CyDText>
+      </CyDText>
+      <CyDTouchView
+        onPress={onConfirm}
+        disabled={disabled}
+        className={`rounded-full h-[48px] items-center justify-center ${disabled ? 'bg-n40' : 'bg-[#F7C645]'}`}>
+        <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
+          Continue
+        </CyDText>
+      </CyDTouchView>
+    </CyDView>
+  );
 }
 
 // ── Token logo with chain badge overlay ──
@@ -174,13 +224,13 @@ function NumPad({ onPress }: { onPress: (key: string) => void }) {
 export default function BlindPaySendMoneyScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
-  const { getStatus, createQuote } = useBlindPayApi();
+  const { getStatus, createQuote, getFxQuote } = useBlindPayApi();
   const getStatusRef = useRef(getStatus);
   getStatusRef.current = getStatus;
   const hdWallet = useContext(HdWalletContext) as any;
   const evmAddress = hdWallet?.state?.wallet?.ethereum?.address ?? '';
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
-  const { openDropdown: openRecipientSheet } = useBlindPaySheet();
+  const { openDropdown: openRecipientSheet, openSheet, close: closeBlindPaySheet } = useBlindPaySheet();
 
   // Data
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -200,13 +250,12 @@ export default function BlindPaySendMoneyScreen() {
   const [quoteExpiryMs, setQuoteExpiryMs] = useState(0);
   const [quoteTimeLeft, setQuoteTimeLeft] = useState(0);
 
-  // Pickers
-  const [tokenPickerOpen, setTokenPickerOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
 
   const hasRecipient = !!selectedAccount;
-  const fiatCode = RAIL_TO_FIAT[selectedAccount?.type] ?? 'USD';
+  const [previewFiatCode, setPreviewFiatCode] = useState<string>('USD');
+  const [fxQuote, setFxQuote] = useState<any>(null);
+  const fiatCode = selectedAccount ? (RAIL_TO_FIAT[selectedAccount.type] ?? 'USD') : previewFiatCode;
   const fiat = FIAT_CONFIG[fiatCode] ?? FIAT_CONFIG.USD;
 
   // Fetch accounts + portfolio tokens
@@ -223,7 +272,6 @@ export default function BlindPaySendMoneyScreen() {
         try {
           const addr = evmAddress;
           if (!addr) return;
-          const { getPortfolioData } = await import('../../core/asyncStorage');
           const portfolio = await getPortfolioData(addr);
           if (!portfolio?.data || cancelled) return;
           const items: TokenChainItem[] = [];
@@ -256,12 +304,56 @@ export default function BlindPaySendMoneyScreen() {
     }, [evmAddress]),
   );
 
-  const filteredTokens = useMemo(() => {
-    if (!searchQuery.trim()) return allTokens;
-    const q = searchQuery.toLowerCase();
-    return allTokens.filter(t =>
-      t.symbol.toLowerCase().includes(q) || t.chain.toLowerCase().includes(q));
-  }, [allTokens, searchQuery]);
+  const openTokenPicker = useCallback(() => {
+    const onPick = (item: TokenChainItem) => {
+      setSelectedToken(item);
+      setQuote(null);
+      setFxQuote(null);
+      closeBlindPaySheet();
+    };
+    openSheet({
+      scrollable: true,
+      snapPoints: ['65%', '95%'],
+      content: (
+        <CyDView>
+          <CyDView className='px-[16px] pb-[10px] flex-row items-center gap-[5px]'>
+            <CyDIcons name='coins-stacked' size={16} className='text-n90' />
+            <CyDText className='text-[16px] font-semibold text-n90 tracking-[-0.8px]'>
+              Supported Tokens
+            </CyDText>
+          </CyDView>
+          {allTokens.length === 0 ? (
+            <CyDView className='items-center py-[24px]'>
+              <CyDText className='text-[14px] text-n200'>No tokens found</CyDText>
+            </CyDView>
+          ) : (
+            allTokens.map((item, idx) => (
+              <CyDTouchView
+                key={`${item.symbol}-${item.chain}-${idx}`}
+                onPress={() => onPick(item)}
+                className='bg-n0 px-[16px] py-[16px] flex-row items-center gap-[14px] border-b border-n40'>
+                <TokenLogoWithChain logoUrl={item.logoUrl} chainLogoSource={item.chainLogo} size={44} />
+                <CyDView className='flex-1'>
+                  <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.4px]'>
+                    {item.symbol}
+                  </CyDText>
+                  <CyDText className='text-[13px] font-medium text-n200'>
+                    {item.chainName}
+                  </CyDText>
+                </CyDView>
+                <CyDView className='items-end'>
+                  <CyDTokenValue className='text-[16px]'>{item.balance}</CyDTokenValue>
+                  <CyDText className='text-[13px] !font-gambetta font-normal text-n200'>
+                    {Number(item.balanceToken).toFixed(2)} {item.symbol}
+                  </CyDText>
+                </CyDView>
+              </CyDTouchView>
+            ))
+          )}
+        </CyDView>
+      ),
+    });
+  }, [allTokens, openSheet, closeBlindPaySheet]);
 
   // Numpad handler
   const handleNumPad = useCallback((key: string, setter: (v: string) => void, current: string) => {
@@ -279,14 +371,60 @@ export default function BlindPaySendMoneyScreen() {
 
   // Get quote
   const handleGetQuote = useCallback(async () => {
-    if (!selectedAccount || !selectedToken) return;
+    if (!selectedToken) return;
     const coverFees = lastInputMode === 'fiat';
     const amount = coverFees ? fiatAmount : cryptoAmount;
     if (!amount || Number(amount) <= 0) return;
 
     const amountCents = Math.round(Number(amount) * 100);
-    if (amountCents < 500) {
-      showToast('Minimum amount is $5.00', 'error');
+    const minCents = selectedAccount
+      ? (RAIL_MIN_CENTS[selectedAccount.type] ?? DEFAULT_MIN_CENTS)
+      : DEFAULT_MIN_CENTS;
+    // Silent guard — min is already shown inline in UI.
+    if (amountCents < minCents) return;
+
+    // Preview-only fx flow when no bank account selected
+    if (!selectedAccount) {
+      setQuoteLoading(true);
+      const res = await getFxQuote({
+        from: selectedToken.symbol,
+        to: fiatCode,
+        requestAmount: amountCents,
+        currencyType: coverFees ? 'receiver' : 'sender',
+      });
+      setQuoteLoading(false);
+      if (res.isError) {
+        setFxQuote(null);
+        showToast(res.errorMessage ?? 'Failed to get quote', 'error');
+        return;
+      }
+      // Derive fee from server delta (authoritative) rather than re-computing flat + pct,
+      // because fx indicative doesn't always apply both fees the same way.
+      const quotation = res.data?.blindpayQuotation ?? 0;
+      const resultAmount = res.data?.resultAmount ?? 0;
+      let totalFeeCents = 0;
+      let feeCurrency: 'crypto' | 'fiat' = 'fiat';
+      if (quotation > 0) {
+        if (coverFees) {
+          // receiver mode: requestAmount=fiat cents, resultAmount=sender/crypto cents (inc. fees)
+          const grossSender = Math.round((amountCents * 100) / quotation);
+          totalFeeCents = Math.max(0, resultAmount - grossSender);
+          feeCurrency = 'crypto';
+        } else {
+          // sender mode: requestAmount=sender cents, resultAmount=fiat cents (post fees)
+          const grossFiat = Math.round((amountCents * quotation) / 100);
+          totalFeeCents = Math.max(0, grossFiat - resultAmount);
+          feeCurrency = 'fiat';
+        }
+      }
+      setFxQuote({ ...res.data, totalFeeCents, feeCurrency });
+      if (res.data?.resultAmount) {
+        if (coverFees) {
+          setCryptoAmount((res.data.resultAmount / 100).toFixed(2));
+        } else {
+          setFiatAmount((res.data.resultAmount / 100).toFixed(2));
+        }
+      }
       return;
     }
 
@@ -302,7 +440,14 @@ export default function BlindPaySendMoneyScreen() {
     setQuoteLoading(false);
 
     if (res.isError) {
-      showToast(res.errorMessage ?? 'Failed to get quote', 'error');
+      const raw = res.errorMessage ?? '';
+      const friendly = /partner_fee_exceeded/i.test(raw)
+        ? 'Amount too small for this rail — fees exceed the transfer. Try a larger amount.'
+        : raw || 'Failed to get quote';
+      setQuote(null);
+      setQuoteExpiryMs(0);
+      setQuoteTimeLeft(0);
+      showToast(friendly, 'error');
       return;
     }
     setQuote(res.data);
@@ -319,7 +464,7 @@ export default function BlindPaySendMoneyScreen() {
     if (coverFees && res.data?.senderAmount) {
       setCryptoAmount((res.data.senderAmount / 100).toFixed(2));
     }
-  }, [selectedAccount, selectedToken, cryptoAmount, fiatAmount, lastInputMode, createQuote]);
+  }, [selectedAccount, selectedToken, cryptoAmount, fiatAmount, lastInputMode, fiatCode, createQuote, getFxQuote]);
 
   // Quote countdown timer
   useEffect(() => {
@@ -366,16 +511,29 @@ export default function BlindPaySendMoneyScreen() {
     if (!quote) return;
     const settlement = RAIL_SETTLEMENT[selectedAccount?.type] ?? '~2 business days';
     const isInstant = settlement === 'Instant';
-    const totalFee = (quote.flatFee ?? 0) + (quote.billingFeeAmount ?? 0) + (quote.partnerFeeAmount ?? 0);
-    const isFree = totalFee === 0;
     const senderPaysFee = lastInputMode === 'fiat';
+    const quotation = quote.blindpayQuotation ?? 0;
+    let totalFee = 0;
+    if (quotation > 0) {
+      if (senderPaysFee) {
+        // receiver mode: fee in sender/crypto cents
+        const grossSender = Math.round(((quote.receiverAmount ?? 0) * 100) / quotation);
+        totalFee = Math.max(0, (quote.senderAmount ?? 0) - grossSender);
+      } else {
+        // sender mode: fee in fiat cents
+        const grossFiat = Math.round(((quote.senderAmount ?? 0) * quotation) / 100);
+        totalFee = Math.max(0, grossFiat - (quote.receiverAmount ?? 0));
+      }
+    }
+    const isFree = totalFee === 0;
     const feeDisplay = senderPaysFee
       ? `${formatCents(totalFee)} ${selectedToken?.symbol ?? 'USDC'}`
       : `${fiat.symbol}${formatCents(totalFee)}`;
 
+    const isSwift = selectedAccount?.type === 'international_swift';
     showBottomSheet({
       id: 'blindpay-review',
-      snapPoints: ['65%', '95%'],
+      snapPoints: isSwift ? ['95%'] : ['75%', '95%'],
       showHandle: true,
       showCloseButton: false,
       scrollable: false,
@@ -467,37 +625,37 @@ export default function BlindPaySendMoneyScreen() {
 
           {/* SWIFT compliance notice */}
           {selectedAccount?.type === 'international_swift' ? (
-            <CyDView className='bg-n0 rounded-[10px] p-[12px] flex-row items-start gap-[8px]'>
-              <CyDMaterialDesignIcons name='file-document-outline' size={18} className='text-p100' />
-              <CyDText className='text-[12px] font-normal text-n200 flex-1 tracking-[-0.24px]'>
-                SWIFT transfers require compliance documents after submission. You'll be asked to upload them on the transaction detail page.
-              </CyDText>
+            <CyDView className='bg-n0 rounded-[10px] p-[12px] gap-[10px]'>
+              <CyDView className='flex-row items-start gap-[8px]'>
+                <CyDMaterialDesignIcons name='file-document-outline' size={18} className='text-p100' />
+                <CyDView className='flex-1'>
+                  <CyDText className='text-[13px] font-semibold text-base400 tracking-[-0.24px]'>
+                    Compliance documents required
+                  </CyDText>
+                  <CyDText className='text-[12px] font-normal text-n200 mt-[2px] tracking-[-0.24px]'>
+                    After you continue, you will be asked to upload at least one of these. Keep them handy.
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+              <CyDView className='flex-row flex-wrap gap-[6px] pl-[26px]'>
+                {['Invoice', 'Purchase Order', 'Delivery Slip', 'Contract', 'Customs Declaration', 'Bill of Lading'].map(doc => (
+                  <CyDView key={doc} className='bg-n20 rounded-full px-[10px] py-[4px]'>
+                    <CyDText className='text-[11px] font-medium text-n200 tracking-[-0.2px]'>{doc}</CyDText>
+                  </CyDView>
+                ))}
+              </CyDView>
             </CyDView>
           ) : null}
         </BottomSheetScrollView>
       ),
       footer: (
-        <CyDView className='px-[16px] pt-[12px] pb-[16px] gap-[12px] border-t border-n30 bg-n20'>
-          <CyDText className='text-[14px] font-medium text-base200 text-center tracking-[-0.6px]'>
-            Your quote will get refreshed in{' '}
-            <CyDText style={{ fontVariant: ['tabular-nums'] }} className='text-[14px] font-medium text-base200 tracking-[-0.6px]'>
-              {formatTimer(quoteTimeLeft)}
-            </CyDText>
-          </CyDText>
-          <CyDTouchView
-            onPress={handleConfirm}
-            disabled={quoteTimeLeft <= 0}
-            className={`rounded-full h-[48px] items-center justify-center shadow-sm ${
-              quoteTimeLeft > 0 ? 'bg-p50' : 'bg-n40'
-            }`}>
-            <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
-              Continue
-            </CyDText>
-          </CyDTouchView>
-        </CyDView>
+        <ReviewFooter
+          expiresAtMs={quoteExpiryMs || (quote?.expiresAt ? new Date(quote.expiresAt).getTime() - 30_000 : 0)}
+          onConfirm={handleConfirm}
+        />
       ),
     });
-  }, [quote, selectedAccount, selectedToken, cryptoAmount, fiatAmount, fiatCode, fiat.symbol, lastInputMode, quoteTimeLeft, handleConfirm, showBottomSheet, hideBottomSheet]);
+  }, [quote, quoteExpiryMs, selectedAccount, selectedToken, cryptoAmount, fiatAmount, fiatCode, fiat.symbol, lastInputMode, handleConfirm, showBottomSheet, hideBottomSheet]);
 
   // ── Amount input screens (Figma-matched) ──
   if (inputMode === 'crypto') {
@@ -518,7 +676,7 @@ export default function BlindPaySendMoneyScreen() {
         <CyDView className='flex-1 items-center justify-center gap-[8px]'>
           {/* Token pill with chain badge */}
           {selectedToken ? (
-            <CyDTouchView onPress={() => setTokenPickerOpen(true)}
+            <CyDTouchView onPress={() => openTokenPicker()}
               className='flex-row items-center gap-[6px] bg-n0 rounded-full px-[6px] py-[5px] pr-[10px]'>
               <TokenLogoWithChain logoUrl={selectedToken.logoUrl} chainLogoSource={selectedToken.chainLogo} size={26} />
               <CyDText className='text-[14px] font-semibold text-base400 tracking-[-0.6px]'>
@@ -551,8 +709,8 @@ export default function BlindPaySendMoneyScreen() {
           <CyDTouchView
             onPress={() => { setInputMode(null); void handleGetQuote(); }}
             disabled={!cryptoAmount || Number(cryptoAmount) <= 0}
-            className={`rounded-full h-[58px] items-center justify-center ${
-              cryptoAmount && Number(cryptoAmount) > 0 ? 'bg-[#FFDE59]' : 'bg-n40'
+            className={`rounded-full h-[48px] items-center justify-center ${
+              cryptoAmount && Number(cryptoAmount) > 0 ? 'bg-[#F7C645]' : 'bg-n40'
             }`}>
             <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
               Get Quote
@@ -560,7 +718,6 @@ export default function BlindPaySendMoneyScreen() {
           </CyDTouchView>
         </CyDView>
 
-        {tokenPickerOpen ? renderTokenPicker() : null}
       </CyDSafeAreaView>
     );
   }
@@ -604,8 +761,8 @@ export default function BlindPaySendMoneyScreen() {
           <CyDTouchView
             onPress={() => { setInputMode(null); void handleGetQuote(); }}
             disabled={!fiatAmount || Number(fiatAmount) <= 0}
-            className={`rounded-full h-[58px] items-center justify-center ${
-              fiatAmount && Number(fiatAmount) > 0 ? 'bg-[#FFDE59]' : 'bg-n40'
+            className={`rounded-full h-[48px] items-center justify-center ${
+              fiatAmount && Number(fiatAmount) > 0 ? 'bg-[#F7C645]' : 'bg-n40'
             }`}>
             <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
               Get Quote
@@ -616,67 +773,6 @@ export default function BlindPaySendMoneyScreen() {
     );
   }
 
-  // ── Token picker renderer ──
-  function renderTokenPicker() {
-    return (
-      <Modal visible transparent animationType='fade'
-        onRequestClose={() => setTokenPickerOpen(false)}>
-        <CyDView className='flex-1 justify-end bg-black/50'>
-          <CyDTouchView className='flex-1' onPress={() => setTokenPickerOpen(false)} />
-          <Animated.View entering={SlideInDown.duration(300)}>
-            <CyDView className='bg-n20 rounded-t-[24px] max-h-[60%]'>
-              {/* Drag handle */}
-              <CyDView className='items-center pt-[12px] pb-[8px]'>
-                <CyDView className='w-[32px] h-[4px] bg-n50 rounded-[5px]' />
-              </CyDView>
-              {/* Header */}
-              <CyDView className='px-[16px] pb-[10px] flex-row items-center gap-[5px]'>
-                <CyDIcons name='coins-stacked' size={16} className='text-n90' />
-                <CyDText className='text-[16px] font-semibold text-n90 tracking-[-0.8px]'>
-                  Supported Tokens
-                </CyDText>
-              </CyDView>
-              <FlatList
-                data={filteredTokens}
-                keyExtractor={(item, idx) => `${item.symbol}-${item.chain}-${idx}`}
-                keyboardShouldPersistTaps='handled'
-                contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
-            ListEmptyComponent={
-              <CyDView className='items-center py-[24px]'>
-                <CyDText className='text-[14px] text-n200'>No tokens found</CyDText>
-              </CyDView>
-            }
-            renderItem={({ item }) => (
-              <CyDTouchView
-                onPress={() => {
-                  setSelectedToken(item);
-                  setTokenPickerOpen(false);
-                  setQuote(null);
-                }}
-                className='bg-n0 px-[16px] py-[16px] flex-row items-center gap-[14px] border-b border-n40'>
-                <TokenLogoWithChain logoUrl={item.logoUrl} chainLogoSource={item.chainLogo} size={44} />
-                <CyDView className='flex-1'>
-                  <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.4px]'>
-                    {item.symbol}
-                  </CyDText>
-                  <CyDText className='text-[13px] font-medium text-n200'>
-                    {item.chainName}
-                  </CyDText>
-                </CyDView>
-                <CyDView className='items-end'>
-                  <CyDTokenValue className='text-[16px]'>{item.balance}</CyDTokenValue>
-                  <CyDText className='text-[13px] !font-gambetta font-normal text-n200'>{Number(item.balanceToken).toFixed(2)} {item.symbol}
-                  </CyDText>
-                </CyDView>
-              </CyDTouchView>
-            )}
-              />
-            </CyDView>
-          </Animated.View>
-        </CyDView>
-      </Modal>
-    );
-  }
 
   // ── Main send money page ──
   return (
@@ -704,31 +800,33 @@ export default function BlindPaySendMoneyScreen() {
           </CyDView>
           <CyDView className='h-px bg-n30' />
           <CyDTouchView onPress={() => {
-            if (accounts.length === 0) navigation.navigate(screenTitle.BLINDPAY_ADD_RECIPIENT);
-            else {
-              openRecipientSheet({
-                title: 'Select Recipient',
-                options: accounts.map(a => {
-                  const railLabel = RAIL_LABELS[a.type] ?? a.type;
-                  const lastFour = a.lastFour ? `**** ${a.lastFour}` : '';
-                  const beneficiary = a.beneficiaryName ? a.beneficiaryName : '';
-                  // Build subtitle: rail · beneficiary · ****1234
-                  const parts = [railLabel, beneficiary, lastFour].filter(Boolean);
-                  return {
-                    value: a.id,
-                    label: a.name ?? 'Account',
-                    icon: RAIL_FLAGS[a.type] ?? '\uD83C\uDF10',
-                    subtitle: parts.join(' · '),
-                  };
-                }),
-                selected: selectedAccount?.id ?? '',
-                searchable: true,
-                onSelect: (id) => {
-                  const acct = accounts.find(a => a.id === id);
-                  if (acct) { setSelectedAccount(acct); setQuote(null); }
+            openRecipientSheet({
+              title: 'Select Recipient',
+              options: accounts.map(a => {
+                const railLabel = RAIL_LABELS[a.type] ?? a.type;
+                const lastFour = a.lastFour ? `**** ${a.lastFour}` : '';
+                const beneficiary = a.beneficiaryName ? a.beneficiaryName : '';
+                const parts = [railLabel, beneficiary, lastFour].filter(Boolean);
+                return {
+                  value: a.id,
+                  label: a.name ?? 'Account',
+                  icon: RAIL_FLAGS[a.type] ?? '\uD83C\uDF10',
+                  subtitle: parts.join(' · '),
+                };
+              }),
+              selected: selectedAccount?.id ?? '',
+              searchable: accounts.length > 0,
+              addAction: {
+                label: 'Add Recipient',
+                onPress: () => {
+                  navigation.navigate(screenTitle.BLINDPAY_ADD_RECIPIENT);
                 },
-              });
-            }
+              },
+              onSelect: (id) => {
+                const acct = accounts.find(a => a.id === id);
+                if (acct) { setSelectedAccount(acct); setQuote(null); setFxQuote(null); }
+              },
+            });
           }} className='px-[16px] py-[12px] flex-row items-center justify-between'>
             {selectedAccount ? (
               <CyDView className='flex-row items-center gap-[10px] flex-1'>
@@ -756,13 +854,12 @@ export default function BlindPaySendMoneyScreen() {
         </CyDView>
 
         {/* Amount card */}
-        <CyDView className={`bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[14px] ${!hasRecipient ? 'opacity-40' : ''}`}
-          pointerEvents={hasRecipient ? 'auto' : 'none'}>
+        <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[14px]'>
           {/* You send */}
           <CyDView className='gap-[6px]'>
             <CyDText className='text-[14px] font-medium text-n90 tracking-[-0.6px]'>You send exactly</CyDText>
             <CyDView className='flex-row items-center justify-between'>
-              <CyDTouchView onPress={() => setTokenPickerOpen(true)}
+              <CyDTouchView onPress={() => openTokenPicker()}
                 className='flex-row items-center gap-[6px] bg-n30 rounded-[24px] px-[8px] py-[4px] pr-[10px]'>
                 {selectedToken ? (
                   <TokenLogoWithChain logoUrl={selectedToken.logoUrl} chainLogoSource={selectedToken.chainLogo} size={28} />
@@ -791,24 +888,68 @@ export default function BlindPaySendMoneyScreen() {
             </CyDView>
           ) : null}
 
+          {/* Rail minimum hint */}
+          {selectedAccount && RAIL_MIN_CENTS[selectedAccount.type] ? (() => {
+            const minCents = RAIL_MIN_CENTS[selectedAccount.type];
+            const current = Math.round(Number(cryptoAmount || 0) * 100);
+            const below = current > 0 && current < minCents;
+            return (
+              <CyDView className={`flex-row items-start gap-[8px] rounded-[8px] p-[10px] ${below ? 'bg-red10' : 'bg-n10'}`}>
+                <CyDMaterialDesignIcons
+                  name='information-outline'
+                  size={16}
+                  className={below ? 'text-errorText mt-[1px]' : 'text-n200 mt-[1px]'}
+                />
+                <CyDText className={`text-[12px] font-medium flex-1 leading-[1.45] ${below ? 'text-errorText' : 'text-n200'}`}>
+                  {RAIL_LABELS[selectedAccount.type] ?? selectedAccount.type} minimum is ${(minCents / 100).toFixed(2)}.
+                </CyDText>
+              </CyDView>
+            );
+          })() : null}
+
           <CyDView className='h-px bg-n30' />
 
           {/* Recipient gets */}
           <CyDView className='gap-[6px]'>
             <CyDText className='text-[14px] font-medium text-n90 tracking-[-0.6px]'>Recipient gets</CyDText>
             <CyDView className='flex-row items-center justify-between'>
-              <CyDView className='flex-row items-center gap-[4px] bg-n30 rounded-[24px] px-[10px] py-[5px]'>
-                <CyDText className='text-[14px]'>{fiat.flag}</CyDText>
-                <CyDText className='text-[14px] font-semibold text-base400'>
-                  {fiatCode}
-                </CyDText>
-              </CyDView>
+              {selectedAccount ? (
+                <CyDView className='flex-row items-center gap-[4px] bg-n30 rounded-[24px] px-[10px] py-[5px]'>
+                  <CyDText className='text-[14px]'>{fiat.flag}</CyDText>
+                  <CyDText className='text-[14px] font-semibold text-base400'>
+                    {fiatCode}
+                  </CyDText>
+                </CyDView>
+              ) : (
+                <CyDTouchView
+                  onPress={() => openRecipientSheet({
+                    title: 'Preview Currency',
+                    options: Object.keys(FIAT_CONFIG).map(code => ({
+                      value: code,
+                      label: `${FIAT_CONFIG[code].name} (${code})`,
+                      icon: FIAT_CONFIG[code].flag,
+                    })),
+                    selected: previewFiatCode,
+                    onSelect: (code) => {
+                      setPreviewFiatCode(code);
+                      setFxQuote(null);
+                      setFiatAmount('');
+                    },
+                  })}
+                  className='flex-row items-center gap-[4px] bg-n30 rounded-[24px] px-[10px] py-[5px]'>
+                  <CyDText className='text-[14px]'>{fiat.flag}</CyDText>
+                  <CyDText className='text-[14px] font-semibold text-base400'>
+                    {fiatCode}
+                  </CyDText>
+                  <CyDMaterialDesignIcons name='chevron-down' size={16} className='text-base400' />
+                </CyDTouchView>
+              )}
               <CyDTouchView onPress={() => { setLastInputMode('fiat'); setInputMode('fiat'); }}>
                 {quoteLoading ? (
                   <ActivityIndicator size='small' />
                 ) : (
                   <CyDTokenValue prefix={fiat.symbol} className='text-[28px]'>
-                    {quote ? quote.receiverAmount / 100 : Number(fiatAmount || 0)}
+                    {quote ? quote.receiverAmount / 100 : (fxQuote?.resultAmount ? fxQuote.resultAmount / 100 : Number(fiatAmount || 0))}
                   </CyDTokenValue>
                 )}
               </CyDTouchView>
@@ -816,13 +957,52 @@ export default function BlindPaySendMoneyScreen() {
           </CyDView>
         </CyDView>
 
+        {/* FX preview details (no bank account selected) */}
+        {!selectedAccount && fxQuote ? (
+          <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[14px]'>
+            <CyDView className='flex-row items-center justify-between'>
+              <CyDText className='text-[14px] font-medium text-n90'>Exchange rate</CyDText>
+              <CyDText className='text-[14px] font-semibold text-base400'>
+                1 {selectedToken?.symbol ?? 'USDC'} = {((fxQuote.blindpayQuotation ?? 0) / 100).toFixed(4)} {fiatCode}
+              </CyDText>
+            </CyDView>
+            <CyDView className='h-px bg-n30' />
+            <CyDView className='flex-row items-center justify-between'>
+              <CyDText className='text-[14px] font-medium text-n90'>Fees</CyDText>
+              <CyDText className='text-[14px] font-semibold text-base400'>
+                {fxQuote.totalFeeCents != null
+                  ? (fxQuote.feeCurrency === 'crypto'
+                      ? `${formatCents(fxQuote.totalFeeCents)} ${selectedToken?.symbol ?? 'USDC'}`
+                      : `${fiat.symbol}${formatCents(fxQuote.totalFeeCents)}`)
+                  : '—'}
+              </CyDText>
+            </CyDView>
+            <CyDView className='flex-row items-start gap-[8px] bg-n10 rounded-[8px] p-[10px]'>
+              <CyDMaterialDesignIcons name='information-outline' size={16} className='text-n200 mt-[1px]' />
+              <CyDText className='text-[12px] font-medium text-n200 flex-1 leading-[1.45]'>
+                Excludes bank/payment-rail processing fee (e.g. ACH, SWIFT, PIX). Final binding quote available after adding a recipient.
+              </CyDText>
+            </CyDView>
+          </CyDView>
+        ) : null}
+
         {/* Details */}
         {quote ? (() => {
           const settlement = RAIL_SETTLEMENT[selectedAccount?.type] ?? '~2 business days';
           const isInstant = settlement === 'Instant';
-          const totalFee = (quote.flatFee ?? 0) + (quote.partnerFeeAmount ?? 0) + (quote.billingFeeAmount ?? 0);
-          const isFree = totalFee === 0;
           const senderPaysFee = lastInputMode === 'fiat'; // cover_fees: true = sender pays
+          const quotation = quote.blindpayQuotation ?? 0;
+          let totalFee = 0;
+          if (quotation > 0) {
+            if (senderPaysFee) {
+              const grossSender = Math.round(((quote.receiverAmount ?? 0) * 100) / quotation);
+              totalFee = Math.max(0, (quote.senderAmount ?? 0) - grossSender);
+            } else {
+              const grossFiat = Math.round(((quote.senderAmount ?? 0) * quotation) / 100);
+              totalFee = Math.max(0, grossFiat - (quote.receiverAmount ?? 0));
+            }
+          }
+          const isFree = totalFee === 0;
           const feeDisplay = senderPaysFee
             ? `${formatCents(totalFee)} ${selectedToken?.symbol ?? 'USDC'}`
             : `${fiat.symbol}${formatCents(totalFee)}`;
@@ -832,7 +1012,7 @@ export default function BlindPaySendMoneyScreen() {
               <CyDView className='flex-row items-center justify-between'>
                 <CyDText className='text-[14px] font-medium text-n90'>Exchange rate</CyDText>
                 <CyDText className='text-[14px] font-semibold text-base400'>
-                  1 {selectedToken?.symbol ?? 'USDC'} = {((quote.blindpayQuotation ?? quote.exchangeRate ?? 0) / 100).toFixed(2)} {fiatCode}
+                  1 {selectedToken?.symbol ?? 'USDC'} = {((quote.blindpayQuotation ?? quote.exchangeRate ?? 0) / 100).toFixed(4)} {fiatCode}
                 </CyDText>
               </CyDView>
               <CyDView className='h-px bg-n30' />
@@ -879,12 +1059,25 @@ export default function BlindPaySendMoneyScreen() {
               </CyDText>
             </CyDTouchView>
           </>
-        ) : (
+        ) : !selectedAccount && fxQuote ? (
+          <CyDTouchView
+            onPress={() => navigation.navigate(screenTitle.BLINDPAY_ADD_RECIPIENT)}
+            className='rounded-full h-[48px] items-center justify-center bg-[#F7C645]'>
+            <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
+              Add Recipient to Continue
+            </CyDText>
+          </CyDTouchView>
+        ) : (() => {
+          const railMin = selectedAccount ? (RAIL_MIN_CENTS[selectedAccount.type] ?? DEFAULT_MIN_CENTS) : DEFAULT_MIN_CENTS;
+          const enteredCents = Math.round(Number((lastInputMode === 'fiat' ? fiatAmount : cryptoAmount) || 0) * 100);
+          const belowMin = enteredCents > 0 && enteredCents < railMin;
+          const disabled = quoteLoading || !selectedToken || (!cryptoAmount && !fiatAmount) || belowMin;
+          return (
           <CyDTouchView
             onPress={() => { void handleGetQuote(); }}
-            disabled={quoteLoading || !hasRecipient || !selectedToken || (!cryptoAmount && !fiatAmount)}
+            disabled={disabled}
             className={`rounded-full h-[48px] items-center justify-center ${
-              hasRecipient && selectedToken && (cryptoAmount || fiatAmount) && !quoteLoading ? 'bg-[#F7C645]' : 'bg-n40'
+              !disabled ? 'bg-[#F7C645]' : 'bg-n40'
             }`}>
             <CyDView className='relative items-center justify-center'>
               <CyDText className={`text-[16px] font-bold text-black tracking-[-0.16px] ${quoteLoading ? 'opacity-0' : ''}`}>
@@ -895,12 +1088,9 @@ export default function BlindPaySendMoneyScreen() {
               </CyDView> : null}
             </CyDView>
           </CyDTouchView>
-        )}
+          );
+        })()}
       </CyDView>
-
-      {/* Token picker */}
-      {tokenPickerOpen ? renderTokenPicker() : null}
-
 
     </CyDSafeAreaView>
   );
