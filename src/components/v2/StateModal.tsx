@@ -147,14 +147,24 @@ const StateModal: React.FC<State> = (store: State) => {
       <CyDView className={'w-[100%]'}>
         <Button
           style='h-[54px] mt-[35px]'
-          title={t('OK')}
+          title={store.modalButtonText?.success ?? t('OK')}
           onPress={() => {
             onSuccess();
           }}
         />
+        {store.modalButtonText?.failure ? (
+          <Button
+            style='h-[54px] mt-[15px]'
+            title={store.modalButtonText.failure}
+            onPress={() => {
+              onFailure();
+            }}
+            type={ButtonType.SECONDARY}
+          />
+        ) : null}
       </CyDView>
     );
-  }, [store.type, onSuccess, onFailure]);
+  }, [store.type, store.modalButtonText, onSuccess, onFailure]);
 
   return (
     <CyDModalLayout

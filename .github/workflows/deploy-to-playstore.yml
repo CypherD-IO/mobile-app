@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
-      ENVIROINMENT: ${{secrets.ENVIROINMENT}}
+      ENVIRONMENT: ${{secrets.ENVIRONMENT}}
       INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
       INTERCOM_ANDROID_SDK_KEY: ${{secrets.INTERCOM_ANDROID_SDK_KEY}}
       MOBILE_WALLETKIT_PROJECTID: ${{secrets.MOBILE_WALLETKIT_PROJECTID}}
@@ -68,7 +68,7 @@ jobs:
           echo "INTERCOM_APP_KEY=${{ secrets.INTERCOM_APP_KEY }}" >> .env
           echo "INTERCOM_ANDROID_SDK_KEY=${{ secrets.INTERCOM_ANDROID_SDK_KEY }}" >> .env
           echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
-          echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env
+          echo "ENVIRONMENT=${{ secrets.ENVIRONMENT }}" >> .env
           echo "RA_PUB_KEY=${{ secrets.RA_PUB_KEY }}" >> .env
           echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
           echo "WEB3_AUTH_CLIENT_ID=${{ secrets.WEB3_AUTH_CLIENT_ID }}" >> .env

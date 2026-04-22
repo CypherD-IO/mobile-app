@@ -14,6 +14,16 @@ import { signIn } from './Keychain';
 import { useGlobalModalContext } from '../components/v2/GlobalModal';
 import { AxiosRequestConfig } from 'axios';
 import RNExitApp from 'react-native-exit-app';
+import {
+  getIntegrityToken,
+  handleBackendIntegrityRejection,
+} from '../hooks/useIntegrityService';
+import {
+  clearAuthTokens,
+  getRefreshToken,
+  setAuthToken,
+  setRefreshToken,
+} from './asyncStorage';
 type RequestMethod =
   | 'GET'
   | 'GET_WITHOUT_AUTH'
@@ -32,12 +42,83 @@ interface IHttpResponse {
   status?: number;
   error?: any;
 }
+
+// TODO(CYP-3000): confirm backend refresh endpoint contract — current assumption
+// is POST /v1/authentication/refresh with { refreshToken } body returning
+// { token, refreshToken }. If backend expects the refresh token via header/cookie
+// or a different response shape, adjust here.
+async function refreshSession(): Promise<{
+  token: string;
+  refreshToken: string;
+} | null> {
+  const stored = await getRefreshToken();
+  if (!stored) return null;
+  try {
+    const refreshToken = JSON.parse(String(stored));
+    const host = hostWorker.getHost('ARCH_HOST');
+    const { data } = await axios.post(`${host}/v1/authentication/refresh`, {
+      refreshToken,
+    });
+    if (data?.token) {
+      await setAuthToken(data.token);
+      if (data.refreshToken) {
+        await setRefreshToken(data.refreshToken);
+      }
+      return data;
+    }
+    return null;
+  } catch (e) {
+    // Refresh token dead or endpoint returned 401 — clear tokens so caller falls
+    // through to the full login flow (Case 5).
+    await clearAuthTokens();
+    return null;
+  }
+}
+
 export default function useAxios() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { showModal, hideModal } = useGlobalModalContext();
 
   let token = globalContext.globalState.token;
+
+  // Refresh-first, then re-login with integrity (Cases 4 & 5 in the auth flow).
+  // Returns a new access token string on success, or null if both paths failed.
+  const acquireValidToken = async (): Promise<string | null> => {
+    const refreshed = await refreshSession();
+    if (refreshed?.token) {
+      globalContext.globalDispatch({
+        type: GlobalContextType.SIGN_IN,
+        sessionToken: refreshed.token,
+      });
+      return refreshed.token;
+    }
+    let integrityUsed: { isAssertion?: boolean } | null = null;
+    try {
+      const integrity = await getIntegrityToken();
+      integrityUsed = integrity;
+      const signInResponse = await signIn(hdWalletContext, integrity);
+      if (
+        signInResponse?.message === SignMessageValidationType.VALID &&
+        has(signInResponse, 'token')
+      ) {
+        globalContext.globalDispatch({
+          type: GlobalContextType.SIGN_IN,
+          sessionToken: signInResponse.token,
+        });
+        return signInResponse.token;
+      }
+    } catch (e: any) {
+      Sentry.captureException(e?.message ?? e);
+    }
+    // If signIn failed after we sent an assertion, the backend may have lost the
+    // attestation record (DB wipe, stale keyId). Clear the stored keyId so the
+    // next request attests fresh instead of retrying the same dead assertion.
+    if (integrityUsed?.isAssertion) {
+      await handleBackendIntegrityRejection();
+    }
+    return null;
+  };
 
   // Create a fresh response object per request to avoid cross-call mutations
 
@@ -66,22 +147,11 @@ export default function useAxios() {
   axiosInstance.interceptors.request.use(
     async (req: any) => {
       if (!isTokenValid(token)) {
-        try {
-          const signInResponse = await signIn(hdWalletContext);
-          if (
-            signInResponse?.message === SignMessageValidationType.VALID &&
-            has(signInResponse, 'token')
-          ) {
-            token = signInResponse?.token;
-            globalContext.globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: token,
-            });
-            req.headers.Authorization = `Bearer ${String(token)}`;
-            return req;
-          }
-        } catch (e: any) {
-          Sentry.captureException(e.message);
+        const newToken = await acquireValidToken();
+        if (newToken) {
+          token = newToken;
+          req.headers.Authorization = `Bearer ${String(token)}`;
+          return req;
         }
       } else {
         req.headers.Authorization = `Bearer ${String(token)}`;
@@ -97,22 +167,11 @@ export default function useAxios() {
   axiosFormInstance.interceptors.request.use(
     async (req: any) => {
       if (!isTokenValid(token)) {
-        try {
-          const signInResponse = await signIn(hdWalletContext);
-          if (
-            signInResponse?.message === SignMessageValidationType.VALID &&
-            has(signInResponse, 'token')
-          ) {
-            token = signInResponse?.token;
-            globalContext.globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: token,
-            });
-            req.headers.Authorization = `Bearer ${String(token)}`;
-            return req;
-          }
-        } catch (e: any) {
-          Sentry.captureException(e.message);
+        const newToken = await acquireValidToken();
+        if (newToken) {
+          token = newToken;
+          req.headers.Authorization = `Bearer ${String(token)}`;
+          return req;
         }
       } else {
         req.headers.Authorization = `Bearer ${String(token)}`;
@@ -208,20 +267,9 @@ export default function useAxios() {
       } catch (error: any) {
         const errorCode = error?.response?.status;
         if (errorCode === 401) {
-          try {
-            const signInResponse = await signIn(hdWalletContext);
-            if (
-              signInResponse?.message === SignMessageValidationType.VALID &&
-              has(signInResponse, 'token')
-            ) {
-              token = signInResponse?.token;
-              globalContext.globalDispatch({
-                type: GlobalContextType.SIGN_IN,
-                sessionToken: token,
-              });
-            }
-          } catch (e: any) {
-            Sentry.captureException(e.message);
+          const newToken = await acquireValidToken();
+          if (newToken) {
+            token = newToken;
           }
           shouldRetry += 1;
         } else if (errorCode === 444 || errorCode === 403) {

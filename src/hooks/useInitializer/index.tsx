@@ -69,6 +69,12 @@ import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
 import useCustomerIO from '../useCustomerIO';
 import useWeb3Auth from '../useWeb3Auth';
+import {
+  getIntegrityToken,
+  handleBackendIntegrityRejection,
+} from '../useIntegrityService';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { t } from 'i18next';
 
 export default function useInitializer() {
   const { getWithoutAuth, postWithAuth } = useAxios();
@@ -81,8 +87,77 @@ export default function useInitializer() {
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile } = useCardUtilities();
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
+  const { showModal, hideModal } = useGlobalModalContext();
   const [isMigrating, setIsMigrating] = useState(false);
 
+  // One attempt at integrity + signIn. On failure, surface an informational
+  // modal; user decides to Retry (loop) or Exit (RNExitApp.exitApp).
+  // Lower layers already handle single-step recoveries (INVALID_KEY inside
+  // getIntegrityToken; stale-keyId cleared here before retry).
+  const signInWithIntegrity = async (
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
+  ): Promise<any> => {
+    const performOnce = async (): Promise<
+      { kind: 'success'; response: any } | { kind: 'failed' }
+    > => {
+      try {
+        const integrity = await getIntegrityToken();
+        const response = await signIn(
+          hdWallet,
+          integrity,
+          setShowDefaultAuthRemoveModal,
+        );
+        if (
+          response?.message === SignMessageValidationType.VALID &&
+          has(response, 'token')
+        ) {
+          return { kind: 'success', response };
+        }
+        // signIn swallows backend errors into `undefined`. If we were asserting,
+        // the backend may have rejected the stored keyId — clear it so the next
+        // retry attests fresh.
+        if (integrity.isAssertion) {
+          await handleBackendIntegrityRejection();
+        }
+        return { kind: 'failed' };
+      } catch (err) {
+        Sentry.captureException(err);
+        return { kind: 'failed' };
+      }
+    };
+
+    const askUserToRetry = () =>
+      new Promise<boolean>(resolve => {
+        showModal('state', {
+          type: 'error',
+          title: t('INTEGRITY_FAILED_TITLE'),
+          description: t('INTEGRITY_FAILED_DESCRIPTION'),
+          modalButtonText: {
+            success: t('INTEGRITY_RETRY'),
+            failure: t('INTEGRITY_EXIT'),
+          },
+          onSuccess: () => {
+            hideModal();
+            resolve(true);
+          },
+          onFailure: () => {
+            hideModal();
+            resolve(false);
+          },
+        });
+      });
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const outcome = await performOnce();
+      if (outcome.kind === 'success') return outcome.response;
+      const shouldRetry = await askUserToRetry();
+      if (!shouldRetry) {
+        RNExitApp.exitApp();
+        return undefined;
+      }
+    }
+  };
 
   // Data scrubbing is now handled in App.tsx Sentry initialization
 
@@ -572,8 +647,7 @@ export default function useInitializer() {
     try {
       const isSessionTokenValid = await verifySessionToken();
       if (!isSessionTokenValid) {
-        const signInResponse = await signIn(
-          hdWallet,
+        const signInResponse = await signInWithIntegrity(
           setShowDefaultAuthRemoveModal,
         );
         if (signInResponse) {

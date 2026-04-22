@@ -32,6 +32,8 @@ import { get } from 'lodash';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { retryOnNetworkError } from '../../utils/walletConnectModalUtils';
+import { getIntegrityToken } from '../../hooks/useIntegrityService';
+import * as Sentry from '@sentry/react-native';
 /**
  * AsyncStorage key to check if we're in onboarding WalletConnect flow
  * If this key is set, we should NOT automatically load the wallet on connection
@@ -78,12 +80,22 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
         if (!address) {
           return;
         }
+        let integrity;
+        try {
+          integrity = await getIntegrityToken();
+        } catch (err) {
+          // Without a valid integrity token the backend will reject auth. Abort
+          // this WC sign-in attempt and let Sentry record the failure.
+          Sentry.captureException(err);
+          return;
+        }
         const verifyMessageResponse = await retryOnNetworkError(
           async () =>
             await axios.post(
-              `${ARCH_HOST}/v1/authentication/verify-message/${address.toLowerCase()}?format=ERC-4361`,
+              `${ARCH_HOST}/v1/authentication/verify-message/integrity/${address.toLowerCase()}?format=ERC-4361`,
               {
                 signature: data,
+                integrity,
               },
             ),
         );

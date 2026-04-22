@@ -58,6 +58,7 @@ import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
 import { KeychainErrors } from '../constants/KeychainErrors';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
+import { IIntegrity } from '../models/integrity.interface';
 import {
   ConnectionTypes,
   EcosystemsEnum,
@@ -919,6 +920,7 @@ export function decryptMnemonic(encryptedMnemonic: string, pin: string) {
 
 export async function signIn(
   hdWallet: HdWalletContextDef,
+  integrity: IIntegrity,
   setShowDefaultAuthRemoveModal?: Dispatch<SetStateAction<boolean>>,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -981,9 +983,10 @@ export async function signIn(
         }
 
         const result = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${address}/${ecosystem}`,
+          `${ARCH_HOST}/v1/authentication/verify-message/integrity/${address}`,
           {
             signature,
+            integrity,
           },
         );
         return {

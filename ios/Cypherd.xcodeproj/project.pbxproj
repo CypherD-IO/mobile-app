@@ -20,6 +20,7 @@
 		3DD5DE89F8020F4A4511AA2F /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */; };
 		3F382AF518AA4B8AB57A4372 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6F574E6668A94945B50DABE0 /* CydFont.ttf */; };
 		40B6B27B03EF7247E362AAF2 /* NotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DDCC26B2DB1D2CD3F58F545D /* NotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		437E13192F973C45007270A8 /* RCTDeviceCheckBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 437E13182F973C45007270A8 /* RCTDeviceCheckBridge.m */; };
 		5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C433F5A28E49B2100FA84F8 /* Dynamic.swift */; };
 		5C433F6528E585ED00FA84F8 /* splash.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C433F6428E585ED00FA84F8 /* splash.json */; };
 		62B1A8A06522436897F795CC /* CypherNord.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A29F23708E9E4C56AAC109CA /* CypherNord.ttf */; };
@@ -105,6 +106,8 @@
 		411B234B971E4DBDB7CCAA08 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
 		55947639C014E41E94118770 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		588CC48887F9E2917B86C885 /* CioPushBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CioPushBridge.swift; path = Cypherd/CioPushBridge.swift; sourceTree = "<group>"; };
+		437E13172F973C45007270A8 /* RCTDeviceCheckBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTDeviceCheckBridge.h; sourceTree = "<group>"; };
+		437E13182F973C45007270A8 /* RCTDeviceCheckBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTDeviceCheckBridge.m; sourceTree = "<group>"; };
 		5C433F5928E49B2100FA84F8 /* Cypherd-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Cypherd-Bridging-Header.h"; sourceTree = "<group>"; };
 		5C433F5A28E49B2100FA84F8 /* Dynamic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dynamic.swift; sourceTree = "<group>"; };
 		5C433F6428E585ED00FA84F8 /* splash.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = splash.json; sourceTree = "<group>"; };
@@ -230,6 +233,8 @@
 		13B07FAE1A68108700A75B9A /* Cypherd */ = {
 			isa = PBXGroup;
 			children = (
+				437E13172F973C45007270A8 /* RCTDeviceCheckBridge.h */,
+				437E13182F973C45007270A8 /* RCTDeviceCheckBridge.m */,
 				5C433F6428E585ED00FA84F8 /* splash.json */,
 				BCB0BC6E280DF93100441CE3 /* Cypherd.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
@@ -717,6 +722,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */,
+				437E13192F973C45007270A8 /* RCTDeviceCheckBridge.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				D89317ACE46091B17900C65F /* CioAppPushNotificationsHandler.swift in Sources */,
@@ -844,7 +850,7 @@
 				CLANG_ENABLE_EXPLICIT_MODULES = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_SCAN_DEPENDENCIES = NO;
-				CODE_SIGN_ENTITLEMENTS = Cypherd/Cypherd.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "Cypherd/Cypherd-Release.entitlements";
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 7FZT7KSBXD;
