@@ -12,7 +12,14 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { capitalize, get, isEmpty, trim } from 'lodash';
 import moment from 'moment';
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   StyleSheet,
@@ -145,6 +152,39 @@ import CustomizeContainersBottomSheet, {
   CardContainer,
   DEFAULT_CARD_CONTAINERS,
 } from './CustomizeContainersBottomSheet';
+import SpendAnalyticsWidget, { type SpendPeriod } from './SpendAnalyticsWidget';
+
+const INITIAL_CARD_SECRETS = {
+  cvv: 'xxx',
+  expiryMonth: 'xx',
+  expiryYear: 'xxxx',
+  cardNumber: 'xxxx xxxx xxxx xxxx',
+} as const;
+
+interface CardSecrets {
+  cvv: string;
+  expiryMonth: string;
+  expiryYear: string;
+  cardNumber: string;
+}
+
+interface CardDetailsModalState {
+  showCardDetailsModal: boolean;
+  card: Card | null;
+  cardDetails: CardSecrets;
+  webviewUrl: string;
+  userName: string;
+  loading: boolean;
+}
+
+const INITIAL_CARD_DETAILS_STATE: CardDetailsModalState = {
+  showCardDetailsModal: false,
+  card: null,
+  cardDetails: { ...INITIAL_CARD_SECRETS },
+  webviewUrl: '',
+  userName: '',
+  loading: false,
+};
 
 const STACK_COMPRESSION_PER_CARD = 340;
 
@@ -367,6 +407,9 @@ const collapseStyles = StyleSheet.create({
     right: 0,
     zIndex: 50,
     overflow: 'visible',
+  },
+  overlayTop: {
+    top: 8,
   },
 });
 
@@ -762,6 +805,11 @@ export default function CypherCardScreen() {
     DEFAULT_CARD_CONTAINERS,
   );
 
+  const [selectedSpendPeriod, setSelectedSpendPeriod] =
+    useState<SpendPeriod>('this_month');
+  const [spendChartData, setSpendChartData] = useState<number[]>([]);
+  const [totalMonthlySpend, setTotalMonthlySpend] = useState<number>(0);
+
   // Restore saved container order from AsyncStorage on mount
   useEffect(() => {
     const loadContainerOrder = async (): Promise<void> => {
@@ -1022,6 +1070,8 @@ export default function CypherCardScreen() {
       });
     }
 
+    void fetchSpendAnalyticsSummary(selectedSpendPeriod);
+
     setCardBalance('0');
     if (cardId !== CARD_IDS.HIDDEN_CARD) {
       await fetchCardBalance();
@@ -1046,6 +1096,14 @@ export default function CypherCardScreen() {
     }
   };
 
+  /**
+   * Handles spend period dropdown change — updates state and re-fetches chart data.
+   */
+  const handleSpendPeriodChange = useCallback((period: SpendPeriod): void => {
+    setSelectedSpendPeriod(period);
+    void fetchSpendAnalyticsSummary(period);
+  }, []);
+
   const handleOpenArrangeCards = (): void => {
     reorderedCardsRef.current = null;
     showBottomSheet({
@@ -1061,7 +1119,7 @@ export default function CypherCardScreen() {
       fixedHeaderContent: (
         <CyDView className='bg-n0'>
           <CyDView className='px-[16px] pb-[16px] pt-[8px]'>
-            <CyDText className='font-manrope text-[16px] font-medium text-base400 leading-[140%] tracking-[-0.8px]'>
+            <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
               {t('ARRANGE_CARDS')}
             </CyDText>
           </CyDView>
@@ -1115,7 +1173,7 @@ export default function CypherCardScreen() {
       fixedHeaderContent: (
         <CyDView className='bg-n0'>
           <CyDView className='px-[16px] pb-[16px] pt-[8px]'>
-            <CyDText className='font-manrope text-[16px] font-medium text-base400 leading-[140%] tracking-[-0.8px]'>
+            <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
               {t('CUSTOMIZE_CARD_CONTAINERS')}
             </CyDText>
           </CyDView>
@@ -1211,6 +1269,30 @@ export default function CypherCardScreen() {
       setCardBalance('NA');
     }
     setBalanceLoading(false);
+  };
+
+  /**
+   * Fetches the spend analytics summary for the widget chart.
+   * Retrieves chart data points and total spend for the given period.
+   */
+  const fetchSpendAnalyticsSummary = async (
+    period: SpendPeriod,
+  ): Promise<void> => {
+    try {
+      const response = await getWithAuth(
+        `/v1/cards/spend-analytics/summary?period=${period}`,
+      );
+      if (!response.isError && response.data) {
+        const { chartData, totalSpend } = response.data as {
+          chartData: number[];
+          totalSpend: number;
+        };
+        setSpendChartData(chartData ?? []);
+        setTotalMonthlySpend(totalSpend ?? 0);
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+    }
   };
 
   const fetchRecentTransactions = async () => {
@@ -1444,28 +1526,15 @@ export default function CypherCardScreen() {
   };
 
   // ----- Card Reveal flow -----
-  const [isFetchingCardDetails, setIsFetchingCardDetails] = useState(false);
+  // Unified state avoids cascading re-renders from separate isFetchingCardDetails / cardDetailsModal updates.
+  const [cardDetailsModal, setCardDetailsModal] =
+    useState<CardDetailsModalState>(INITIAL_CARD_DETAILS_STATE);
 
-  const initialCardSecrets = {
-    cvv: 'xxx',
-    expiryMonth: 'xx',
-    expiryYear: 'xxxx',
-    cardNumber: 'xxxx xxxx xxxx xxxx',
-  };
-
-  const [cardDetailsModal, setCardDetailsModal] = useState<{
-    showCardDetailsModal: boolean;
-    card: Card | null;
-    cardDetails: typeof initialCardSecrets;
-    webviewUrl: string;
-    userName: string;
-  }>({
-    showCardDetailsModal: false,
-    card: null,
-    cardDetails: initialCardSecrets,
-    webviewUrl: '',
-    userName: '',
-  });
+  // Stable ref keeps the last-used Card so the modal doesn't unmount/remount when card goes null → non-null.
+  const lastRevealCardRef = useRef<Card | null>(null);
+  if (cardDetailsModal.card) {
+    lastRevealCardRef.current = cardDetailsModal.card;
+  }
 
   const decryptMessage = async (
     {
@@ -1483,7 +1552,7 @@ export default function CypherCardScreen() {
   ): Promise<void> => {
     try {
       await sleepFor(1000);
-      setIsFetchingCardDetails(true);
+      setCardDetailsModal(prev => ({ ...prev, loading: true }));
       if (reuseToken) {
         await setCardRevealReuseToken(card.cardId, reuseToken);
       }
@@ -1496,14 +1565,16 @@ export default function CypherCardScreen() {
       setCardDetailsModal({
         showCardDetailsModal: true,
         card,
-        cardDetails: initialCardSecrets,
+        cardDetails: { ...INITIAL_CARD_SECRETS },
         webviewUrl: trim(decryptedBuffer, '"'),
         userName: userNameValue ?? '',
+        loading: false,
       });
     } catch (error) {
       setCardDetailsModal(prev => ({
         ...prev,
         showCardDetailsModal: false,
+        loading: false,
       }));
       showModal('state', {
         type: 'error',
@@ -1513,8 +1584,6 @@ export default function CypherCardScreen() {
         onFailure: hideModal,
       });
       Sentry.captureException(error);
-    } finally {
-      setIsFetchingCardDetails(false);
     }
   };
 
@@ -1538,7 +1607,7 @@ export default function CypherCardScreen() {
     card: Card,
   ): Promise<void> => {
     try {
-      setIsFetchingCardDetails(true);
+      setCardDetailsModal(prev => ({ ...prev, loading: true }));
       const decryptedPan = decryptWithSecretKey(
         secretKey,
         encryptedPan.data,
@@ -1560,11 +1629,13 @@ export default function CypherCardScreen() {
         },
         webviewUrl: '',
         userName: userNameValue,
+        loading: false,
       });
     } catch (error) {
       setCardDetailsModal(prev => ({
         ...prev,
         showCardDetailsModal: false,
+        loading: false,
       }));
       showModal('state', {
         type: 'error',
@@ -1574,8 +1645,6 @@ export default function CypherCardScreen() {
         onFailure: hideModal,
       });
       Sentry.captureException(error);
-    } finally {
-      setIsFetchingCardDetails(false);
     }
   };
 
@@ -1594,7 +1663,7 @@ export default function CypherCardScreen() {
     card: Card,
   ): Promise<void> => {
     try {
-      setIsFetchingCardDetails(true);
+      setCardDetailsModal(prev => ({ ...prev, loading: true }));
       await sleepFor(1000);
       if (reuseToken) {
         await setCardRevealReuseToken(card.cardId, reuseToken);
@@ -1617,11 +1686,13 @@ export default function CypherCardScreen() {
           },
           webviewUrl: '',
           userName: '',
+          loading: false,
         });
       } else {
         setCardDetailsModal(prev => ({
           ...prev,
           showCardDetailsModal: false,
+          loading: false,
         }));
         showModal('state', {
           type: 'error',
@@ -1635,27 +1706,23 @@ export default function CypherCardScreen() {
       setCardDetailsModal(prev => ({
         ...prev,
         showCardDetailsModal: false,
+        loading: false,
       }));
       Sentry.captureException(error);
-    } finally {
-      setIsFetchingCardDetails(false);
     }
   };
 
   const validateReuseToken = async (card: Card): Promise<void> => {
     const resolvedProvider = card.cardProvider || cardProfile?.provider;
     const cardRevealReuseToken = await getCardRevealReuseToken(card.cardId);
-    if (
-      resolvedProvider === CardProviders.REAP_CARD &&
-      cardRevealReuseToken
-    ) {
-      setIsFetchingCardDetails(true);
+    if (resolvedProvider === CardProviders.REAP_CARD && cardRevealReuseToken) {
       setCardDetailsModal({
         showCardDetailsModal: true,
         card,
-        cardDetails: initialCardSecrets,
+        cardDetails: { ...INITIAL_CARD_SECRETS },
         webviewUrl: '',
         userName: '',
+        loading: true,
       });
 
       const verifyReuseTokenUrl = `/v1/cards/${resolvedProvider}/card/${String(
@@ -1676,11 +1743,11 @@ export default function CypherCardScreen() {
             setCardDetailsModal({
               showCardDetailsModal: true,
               card,
-              cardDetails: initialCardSecrets,
+              cardDetails: { ...INITIAL_CARD_SECRETS },
               webviewUrl: trim(response.data.token, '"'),
               userName: response.data.userName,
+              loading: false,
             });
-            setIsFetchingCardDetails(false);
           } else {
             void sendCardDetailsForPaycaddy(response.data, card);
           }
@@ -1689,11 +1756,11 @@ export default function CypherCardScreen() {
       } catch (error) {
         Sentry.captureException(error);
       }
-      setIsFetchingCardDetails(false);
-      setCardDetailsModal({
-        ...cardDetailsModal,
+      setCardDetailsModal(prev => ({
+        ...prev,
         showCardDetailsModal: false,
-      });
+        loading: false,
+      }));
     }
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
       onSuccess: (data: any, providerArg: CardProviders) => {
@@ -1701,9 +1768,10 @@ export default function CypherCardScreen() {
         setCardDetailsModal({
           showCardDetailsModal: true,
           card,
-          cardDetails: initialCardSecrets,
+          cardDetails: { ...INITIAL_CARD_SECRETS },
           webviewUrl: '',
           userName: '',
+          loading: true,
         });
         // Prefer the provider arg passed by the OTP screen (truth at OTP-screen
         // time), fall back to the captured `resolvedProvider`. Without an
@@ -2214,62 +2282,22 @@ export default function CypherCardScreen() {
 
         {allDisplayableCards.length > 1 && (
           <CyDTouchView
-            className='mt-[12px] bg-n0 rounded-[16px] py-[14px] flex-row items-center justify-center'
+            className='mt-[12px] self-center h-[36px] bg-n0 border-[1px] border-[#A6AEBB] rounded-[24px] py-[4px] px-[16px] flex-row items-center justify-center gap-[10px]'
             onPress={handleOpenArrangeCards}>
             <CyDMaterialDesignIcons
-              name='swap-vertical'
-              size={18}
-              className='text-base400 mr-[6px]'
+              name='tune'
+              size={16}
+              className='text-base400'
             />
-            <CyDText className='text-[14px] font-semibold text-base400'>
+            <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
               {t('ARRANGE_CARDS')}
             </CyDText>
           </CyDTouchView>
         )}
 
-        {/* Card Details Reveal Modal */}
-        {cardDetailsModal.card && (
-          <CardDetailsModal
-            isModalVisible={cardDetailsModal.showCardDetailsModal}
-            setShowModal={(isModalVisible: boolean) => {
-              setIsFetchingCardDetails(false);
-              setCardDetailsModal({
-                ...cardDetailsModal,
-                cardDetails: initialCardSecrets,
-                showCardDetailsModal: isModalVisible,
-              });
-            }}
-            card={cardDetailsModal.card}
-            cardDetails={cardDetailsModal.cardDetails}
-            webviewUrl={cardDetailsModal.webviewUrl}
-            manageLimits={() => {
-              setCardDetailsModal({
-                ...cardDetailsModal,
-                cardDetails: initialCardSecrets,
-                showCardDetailsModal: false,
-              });
-              setTimeout(() => {
-                navigation.navigate(screenTitle.CARD_CONTROLS, {
-                  currentCardProvider: cardProvider,
-                  cardId: cardDetailsModal.card?.cardId,
-                });
-              }, MODAL_HIDE_TIMEOUT_250);
-            }}
-            userName={cardDetailsModal.userName}
-            loading={isFetchingCardDetails}
-          />
-        )}
       </CyDView>
     ),
-    [
-      cardProfile,
-      cardProvider,
-      cardDesignData,
-      cardBalance,
-      cardDetailsModal,
-      isFetchingCardDetails,
-      allDisplayableCards,
-    ],
+    [cardProfile, cardProvider, cardDesignData, cardBalance, allDisplayableCards],
   );
 
   const cardListItemSeparator = React.useCallback(
@@ -2470,97 +2498,16 @@ export default function CypherCardScreen() {
                 ) : null;
 
               case 'spend_analytics':
-                return planInfo?.planId !== CypherPlanId.PRO_PLAN ? (
-                  <CyDView
+                return (
+                  <SpendAnalyticsWidget
                     key='spend_analytics'
-                    className='bg-p10 p-6 rounded-xl'>
-                    <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
-                      <CyDText className='font-extrabold text-[20px]'>
-                        {'Cypher'}
-                      </CyDText>
-                      <GradientText
-                        textElement={
-                          <CyDText className='font-extrabold text-[20px]'>
-                            {'Premium'}
-                          </CyDText>
-                        }
-                        gradientColors={['#FA9703', '#F89408', '#F6510A']}
-                      />
-                    </CyDView>
-                    <CyDView className='mt-[16px]'>
-                      {spendStats.amount > 20 ? (
-                        <CyDView>
-                          <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
-                            <CyDText className='font-medium text-[14px] text-base200'>
-                              {'You could have saved'}
-                            </CyDText>
-                            <CyDView style={style.gradientStyle}>
-                              <LinearGradient
-                                colors={['#FA9703', '#F7510A', '#FA9703']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                locations={[0, 0.5, 1]}
-                                style={StyleSheet.absoluteFill}
-                              />
-                              <CyDText className='font-semibold text-[14px] text-white'>
-                                {`$${spendStats.amount}`}
-                              </CyDText>
-                            </CyDView>
-                            <CyDText className='font-medium text-[14px] text-base200 text-center'>
-                              {'in'}
-                            </CyDText>
-                          </CyDView>
-                          <CyDText className='font-medium text-[14px] text-base200 text-center'>
-                            {`last ${spendStats.timePeriod} and also get a free \nMetal card`}
-                          </CyDText>
-                        </CyDView>
-                      ) : (
-                        <CyDView className='self-center'>
-                          <CyDText className='font-medium text-[14px] text-center text-base200'>
-                            {'Save more on each transaction and'}
-                          </CyDText>
-                          <CyDText className='text-[14px] font-medium text-center text-base200'>
-                            {'get a free premium metal card'}
-                          </CyDText>
-                        </CyDView>
-                      )}
-                    </CyDView>
-                    <CyDView className='mt-[16px] flex flex-row justify-between items-center mx-[16px]'>
-                      <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
-                        <CyDMaterialDesignIcons
-                          name='check-bold'
-                          size={18}
-                          className='text-base400'
-                        />
-                        <CyDText className='font-semibold text-[12px]'>
-                          {'0.75% Forex Markup'}
-                        </CyDText>
-                      </CyDView>
-                      <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
-                        <CyDMaterialDesignIcons
-                          name='check-bold'
-                          size={18}
-                          className='text-base400'
-                        />
-                        <CyDText className='font-semibold text-[12px]'>
-                          {'Zero USDC Load Fee'}
-                        </CyDText>
-                      </CyDView>
-                    </CyDView>
-                    <Button
-                      title={'Explore Premium'}
-                      type={ButtonType.DARK}
-                      onPress={() => {
-                        setPlanChangeModalVisible(true);
-                        void logAnalyticsToFirebase(
-                          AnalyticEvent.EXPLORE_PREMIUM_CARD_PAGE_CTA,
-                        );
-                      }}
-                      style='h-[42px] py-[8px] px-[12px] rounded-[4px] mt-[16px] bg-black'
-                      titleStyle='text-[14px] text-white font-semibold'
-                    />
-                  </CyDView>
-                ) : null;
+                    spendData={spendChartData}
+                    totalSpend={totalMonthlySpend}
+                    selectedPeriod={selectedSpendPeriod}
+                    onPeriodChange={handleSpendPeriodChange}
+                    navigation={navigation}
+                  />
+                );
 
               default:
                 return null;
@@ -2592,15 +2539,106 @@ export default function CypherCardScreen() {
             </CyDView>
           )}
 
+          {/* Premium upsell — always last, not reorderable */}
+          {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
+            <CyDView className='bg-p10 p-6 rounded-xl'>
+              <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
+                <CyDText className='font-extrabold text-[20px]'>
+                  {'Cypher'}
+                </CyDText>
+                <GradientText
+                  textElement={
+                    <CyDText className='font-extrabold text-[20px]'>
+                      {'Premium'}
+                    </CyDText>
+                  }
+                  gradientColors={['#FA9703', '#F89408', '#F6510A']}
+                />
+              </CyDView>
+              <CyDView className='mt-[16px]'>
+                {spendStats.amount > 20 ? (
+                  <CyDView>
+                    <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                      <CyDText className='font-medium text-[14px] text-base200'>
+                        {'You could have saved'}
+                      </CyDText>
+                      <CyDView style={style.gradientStyle}>
+                        <LinearGradient
+                          colors={['#FA9703', '#F7510A', '#FA9703']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          locations={[0, 0.5, 1]}
+                          style={StyleSheet.absoluteFill}
+                        />
+                        <CyDText className='font-semibold text-[14px] text-white'>
+                          {`$${spendStats.amount}`}
+                        </CyDText>
+                      </CyDView>
+                      <CyDText className='font-medium text-[14px] text-base200 text-center'>
+                        {'in'}
+                      </CyDText>
+                    </CyDView>
+                    <CyDText className='font-medium text-[14px] text-base200 text-center'>
+                      {`last ${spendStats.timePeriod} and also get a free \nMetal card`}
+                    </CyDText>
+                  </CyDView>
+                ) : (
+                  <CyDView className='self-center'>
+                    <CyDText className='font-medium text-[14px] text-center text-base200'>
+                      {'Save more on each transaction and'}
+                    </CyDText>
+                    <CyDText className='text-[14px] font-medium text-center text-base200'>
+                      {'get a free premium metal card'}
+                    </CyDText>
+                  </CyDView>
+                )}
+              </CyDView>
+              <CyDView className='mt-[16px] flex flex-row justify-between items-center mx-[16px]'>
+                <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                  <CyDMaterialDesignIcons
+                    name='check-bold'
+                    size={18}
+                    className='text-base400'
+                  />
+                  <CyDText className='font-semibold text-[12px]'>
+                    {'0.75% Forex Markup'}
+                  </CyDText>
+                </CyDView>
+                <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                  <CyDMaterialDesignIcons
+                    name='check-bold'
+                    size={18}
+                    className='text-base400'
+                  />
+                  <CyDText className='font-semibold text-[12px]'>
+                    {'Zero USDC Load Fee'}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+              <Button
+                title={'Explore Premium'}
+                type={ButtonType.DARK}
+                onPress={() => {
+                  setPlanChangeModalVisible(true);
+                  void logAnalyticsToFirebase(
+                    AnalyticEvent.EXPLORE_PREMIUM_CARD_PAGE_CTA,
+                  );
+                }}
+                style='h-[42px] py-[8px] px-[12px] rounded-[4px] mt-[16px] bg-black'
+                titleStyle='text-[14px] text-white font-semibold'
+              />
+            </CyDView>
+          )}
+
           <CyDTouchView
-            className='bg-n0 border-[1px] border-n40 rounded-[16px] py-[14px] flex-row items-center justify-center'
+            className='self-center h-[36px] bg-n0 border-[1px] border-[#A6AEBB] rounded-[24px] py-[4px] px-[16px] flex-row items-center justify-center gap-[10px]'
             onPress={handleOpenCustomizeContainers}>
             <CyDMaterialDesignIcons
-              name='tune-vertical'
-              size={18}
-              className='text-base400 mr-[6px]'
+              name='tune'
+              size={16}
+              className='text-base400'
             />
-            <CyDText className='text-[14px] font-semibold text-base400'>
+            <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
               {t('CUSTOMIZE_CARD_CONTAINERS')}
             </CyDText>
           </CyDTouchView>
@@ -2624,6 +2662,10 @@ export default function CypherCardScreen() {
     allDisplayableCards,
     showTooltip,
     containerOrder,
+    spendChartData,
+    totalMonthlySpend,
+    selectedSpendPeriod,
+    handleSpendPeriodChange,
   ]);
 
   useEffect(() => {
@@ -2895,12 +2937,13 @@ export default function CypherCardScreen() {
               </CyDView>
             )}
 
+            {renderBalanceSection()}
+
             {showAllCards ? (
               <FlatList<Card>
                 data={allDisplayableCards}
                 keyExtractor={cardListKeyExtractor}
                 renderItem={renderCardItem}
-                ListHeaderComponent={renderBalanceSection}
                 ListFooterComponent={renderCardListFooter}
                 ItemSeparatorComponent={cardListItemSeparator}
                 showsVerticalScrollIndicator={false}
@@ -2909,7 +2952,11 @@ export default function CypherCardScreen() {
                 }}
                 contentContainerStyle={[
                   style.cardListContent,
-                  { paddingBottom: tabBarTotalHeight + 36 },
+                  {
+                    paddingBottom:
+                      tabBarTotalHeight +
+                      (Platform.OS === 'android' ? 100 : 40),
+                  },
                 ]}
                 style={style.cardListContainer}
                 initialNumToRender={5}
@@ -2919,7 +2966,6 @@ export default function CypherCardScreen() {
               />
             ) : (
               <CyDView className='mt-[2px]'>
-                {renderBalanceSection()}
                 {cardDesignData && !hasCollapsedOnce && !isDeckingUp && (
                   <Animated.View
                     key='stacked-cards'
@@ -2939,10 +2985,7 @@ export default function CypherCardScreen() {
 
                 {(isDeckingUp || hasCollapsedOnce) && (
                   <CyDView
-                    style={[
-                      collapseStyles.overlay,
-                      { top: balanceBottomY.current + 24 },
-                    ]}
+                    style={[collapseStyles.overlay, collapseStyles.overlayTop]}
                     pointerEvents={isDeckingUp ? 'none' : 'auto'}
                     className='bg-n40'>
                     <CyDTouchView
@@ -2958,7 +3001,7 @@ export default function CypherCardScreen() {
                       {allDisplayableCards.length > 3 && (
                         <CollapsingNeutralShade deckProgress={deckProgress} />
                       )}
-                      {allDisplayableCards.map((card, idx) => (
+                      {allDisplayableCards.slice(0, 3).map((card, idx) => (
                         <CollapsingCardImage
                           key={card.cardId || `collapse-${idx}`}
                           imageSource={getCardImage(card)}
@@ -2990,6 +3033,41 @@ export default function CypherCardScreen() {
             )}
           </CyDView>
         </CyDView>
+
+        {/* Card Details Reveal Modal — rendered at top level to avoid FlatList re-renders */}
+        {lastRevealCardRef.current && (
+          <CardDetailsModal
+            isModalVisible={cardDetailsModal.showCardDetailsModal}
+            setShowModal={(isModalVisible: boolean) => {
+              setCardDetailsModal(prev => ({
+                ...prev,
+                cardDetails: { ...INITIAL_CARD_SECRETS },
+                showCardDetailsModal: isModalVisible,
+                loading: false,
+              }));
+            }}
+            card={lastRevealCardRef.current}
+            cardDetails={cardDetailsModal.cardDetails}
+            webviewUrl={cardDetailsModal.webviewUrl}
+            manageLimits={() => {
+              const revealCardId = cardDetailsModal.card?.cardId;
+              setCardDetailsModal(prev => ({
+                ...prev,
+                cardDetails: { ...INITIAL_CARD_SECRETS },
+                showCardDetailsModal: false,
+                loading: false,
+              }));
+              setTimeout(() => {
+                navigation.navigate(screenTitle.CARD_CONTROLS, {
+                  currentCardProvider: cardProvider,
+                  cardId: revealCardId,
+                });
+              }, MODAL_HIDE_TIMEOUT_250);
+            }}
+            userName={cardDetailsModal.userName}
+            loading={cardDetailsModal.loading}
+          />
+        )}
 
         {/* Activity Bottom Bar - Fixed at bottom */}
         <ActivityBottomBar
@@ -3029,10 +3107,6 @@ const style = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  loadCardGradientContainer: {
-    borderRadius: 12,
-    padding: 16,
   },
   premiumPill: {
     width: 90,

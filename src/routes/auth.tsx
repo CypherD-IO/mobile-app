@@ -129,6 +129,7 @@ import AllReferralCodes from '../containers/Referrals/AllReferralCodes';
 import MerchantRewardListScreen from '../containers/DebitCard/CardV2/MerchantRewardListScreen';
 import PremiumScreen from '../containers/Premium';
 import CypherAgentScreen from '../containers/CypherAgent';
+import SpendAnalyticsScreen from '../containers/DebitCard/CardV2/SpendAnalyticsScreen';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -840,6 +841,13 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.PREMIUM_SCREEN}
         component={PremiumScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SPEND_ANALYTICS_SCREEN}
+        component={SpendAnalyticsScreen}
         options={{
           headerShown: false,
         }}

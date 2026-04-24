@@ -163,6 +163,7 @@ export const screenTitle = {
   PREMIUM_SCREEN: 'PremiumScreen',
   CYPHER_AGENT: 'CypherAgent',
   CYPHER_AGENT_SCREEN: 'CypherAgentScreen',
+  SPEND_ANALYTICS_SCREEN: 'SpendAnalyticsScreen',
 };
 
 export const fontsName = {

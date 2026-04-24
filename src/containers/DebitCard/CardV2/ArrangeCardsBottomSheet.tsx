@@ -11,10 +11,6 @@ import { CardType, PhysicalCardType } from '../../../constants/enum';
 import { parseCardTag } from '../../../constants/cardTags';
 import { truncate } from 'lodash';
 
-/**
- * Approximate height of each card row (py-16 top + py-16 bottom + text ≈ 52px)
- * plus the 1px separator.
- */
 const ITEM_HEIGHT = 53;
 
 interface ArrangeCardsBottomSheetProps {
@@ -55,12 +51,6 @@ export default function ArrangeCardsBottomSheet({
     onOrderChangedRef.current = onOrderChanged;
   }, [onOrderChanged]);
 
-  /**
-   * Returns a cached Pan gesture for the given card.  Gestures are created
-   * once per cardId and reused across re-renders so that an active drag is
-   * never interrupted by React reconciliation.  All mutable state is read
-   * through refs to stay up-to-date.
-   */
   const getGesture = useCallback((cardId: string) => {
     if (!gestureCache.current.has(cardId)) {
       const gesture = Gesture.Pan()

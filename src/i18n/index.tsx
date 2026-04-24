@@ -2466,7 +2466,7 @@ const resources = {
       LOAD_CARD: 'Load Card',
       VIEW_ALL_CARDS: 'View all cards',
       ARRANGE_CARDS: 'Arrange Cards',
-      CUSTOMIZE_CARD_CONTAINERS: 'Customize card containers',
+      CUSTOMIZE_CARD_CONTAINERS: 'Customise',
       TAP_CARD_HINT: 'Just tap the card to see your card controls!',
       AVAILABLE_TO_SPEND: 'Available to spend',
       AVAILABLE_TO_SPEND_INFO:
