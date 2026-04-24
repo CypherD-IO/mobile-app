@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/react-native';
 import JailMonkey from 'jail-monkey';
 import RNExitApp from 'react-native-exit-app';
 import {
+  CardProviders,
   ConnectionTypes,
   AllChainsEnum,
   GlobalContextType,
@@ -64,11 +65,12 @@ import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
-import { identifyCustomerIOUser } from '../../services/customerio';
+import useCustomerIO from '../useCustomerIO';
 import useWeb3Auth from '../useWeb3Auth';
 
 export default function useInitializer() {
-  const { getWithoutAuth, postWithAuth } = useAxios();
+  const { getWithoutAuth, getWithAuth, postWithAuth } = useAxios();
+  const { identifyCustomerIOUser } = useCustomerIO();
   const globalContext = useContext<any>(GlobalContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
@@ -79,7 +81,6 @@ export default function useInitializer() {
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
   const [isMigrating, setIsMigrating] = useState(false);
 
-  let pendingWalletAddresses: Record<string, string> = {};
 
   // Data scrubbing is now handled in App.tsx Sentry initialization
 
@@ -110,8 +111,6 @@ export default function useInitializer() {
         // throws error if user is already registered
       });
     }
-
-    pendingWalletAddresses = { ...walletAddresses };
 
     void setAnalyticsCollectionEnabled(getAnalytics(), !devMode);
   }
@@ -381,9 +380,45 @@ export default function useInitializer() {
     const email = data?.email?.trim();
     const cioUserId = data?.rcAccountId;
     if (cioUserId) {
+      const allCards = [
+        ...(data?.[CardProviders.REAP_CARD]?.cards ?? []),
+        ...(data?.[CardProviders.PAYCADDY]?.cards ?? []),
+      ];
+      const virtualCardCount = allCards.filter(
+        c => c.type === 'virtual',
+      ).length;
+      const physicalCardCount = allCards.filter(
+        c => c.type === 'physical',
+      ).length;
+      const metalCardCount = allCards.filter(c => c.type === 'metal').length;
+
+      let country = '';
+      let cardProgram = '';
+      const provider = data?.provider;
+      if (provider) {
+        try {
+          const appResponse = await getWithAuth(
+            `/v1/cards/${provider}/application`,
+          );
+          if (!appResponse.isError && appResponse.data) {
+            country = appResponse.data.country ?? '';
+            cardProgram = appResponse.data.programId ?? '';
+          }
+        } catch (error) {
+          Sentry.captureException(error);
+        }
+      }
+
       void identifyCustomerIOUser(cioUserId, {
         email: email ?? '',
         appVersion: DeviceInfo.getVersion(),
+        country,
+        cardProvider: provider ?? '',
+        cardProgram,
+        planId: data?.planInfo?.planId ?? '',
+        virtualCardCount,
+        physicalCardCount,
+        metalCardCount,
       });
     }
   };

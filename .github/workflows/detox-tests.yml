@@ -127,6 +127,13 @@ jobs:
           # runs and banners cover Detox button taps.
           echo "CI=true" >> .env
           echo "IS_TESTING=true" >> .env
+          echo "CUSTOMERIO_CDP_API_KEY=${{ secrets.CUSTOMERIO_CDP_API_KEY }}" >> .env
+          echo "CUSTOMERIO_SITE_ID=${{ secrets.CUSTOMERIO_SITE_ID }}" >> .env
+
+      - name: Create CioSecrets.xcconfig
+        run: |
+          echo "CUSTOMERIO_CDP_API_KEY = ${{ secrets.CUSTOMERIO_CDP_API_KEY }}" > ios/CioSecrets.xcconfig
+          chmod 600 ios/CioSecrets.xcconfig
 
       - name: Check Xcode version and available simulators
         run: |

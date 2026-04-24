@@ -25,8 +25,6 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>NotificationService</string>
 	</dict>
-	<key>RCTNewArchEnabled</key>
-	<true/>
 	<key>CUSTOMERIO_CDP_API_KEY</key>
 	<string>$(CUSTOMERIO_CDP_API_KEY)</string>
 </dict>

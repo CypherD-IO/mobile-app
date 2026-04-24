@@ -46,7 +46,7 @@ import { screenTitle } from '../../constants';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import { CustomerIO } from 'customerio-reactnative';
-import { initializeCustomerIO } from '../../services/customerio';
+import useCustomerIO from '../../hooks/useCustomerIO';
 
 interface UseInitializerReturn {
   exitIfJailBroken: () => Promise<void>;
@@ -87,6 +87,7 @@ export const InitializeAppProvider = ({
     checkAPIAccessibility,
     isMigrating,
   } = useInitializer() as UseInitializerReturn;
+  const { initializeCustomerIO } = useCustomerIO();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [pinAuthenticated, setPinAuthenticated] = useState(false);

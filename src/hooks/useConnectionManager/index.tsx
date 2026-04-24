@@ -35,11 +35,12 @@ import useWalletConnectMobile from '../useWalletConnectMobile';
 // import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
 import Web3Auth from '@web3auth/react-native-sdk/dist/types/Web3Auth';
 import useWeb3Auth from '../useWeb3Auth';
-import { clearCustomerIOUser } from '../../services/customerio';
+import useCustomerIO from '../useCustomerIO';
 
 export default function useConnectionManager() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { t } = useTranslation();
+  const { clearCustomerIOUser } = useCustomerIO();
   const { openWalletConnectModal, disconnectWalletConnect } =
     useWalletConnectMobile();
   const hdWalletContext = useContext<any>(HdWalletContext);
