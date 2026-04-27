@@ -109,7 +109,7 @@ export default function BlindPayFxPreviewScreen() {
       if (!current.includes('.')) setter(current + '.');
     } else {
       const dotIdx = current.indexOf('.');
-      if (dotIdx >= 0 && current.length - dotIdx >= 2) return;
+      if (dotIdx >= 0 && current.length - dotIdx - 1 >= 2) return;
       setter(current + key);
     }
   }, []);
@@ -120,49 +120,61 @@ export default function BlindPayFxPreviewScreen() {
     if (!amount || Number(amount) <= 0) return;
 
     const cents = Math.round(Number(amount) * 100);
-    if (cents < 500) {
+    const enforceUsdMin = !isFiatMode || toFiatCode === 'USD';
+    if (enforceUsdMin && cents < 500) {
       showToast('Minimum amount is $5.00', 'error');
       return;
     }
 
     setQuoteLoading(true);
-    const res = await getFxQuote({
-      from: fromToken,
-      to: toFiatCode,
-      requestAmount: cents,
-      currencyType: isFiatMode ? 'receiver' : 'sender',
-    });
-    setQuoteLoading(false);
-
-    if (res.isError) {
-      showToast(res.errorMessage ?? 'Failed to get quote', 'error');
-      return;
-    }
-    setQuoteResult(res.data);
-    // Fill the other amount
-    if (res.data?.resultAmount) {
-      if (!isFiatMode) {
-        setFiatAmount((res.data.resultAmount / 100).toFixed(2));
-      } else {
-        setCryptoAmount((res.data.resultAmount / 100).toFixed(2));
+    try {
+      const res = await getFxQuote({
+        from: fromToken,
+        to: toFiatCode,
+        requestAmount: cents,
+        currencyType: isFiatMode ? 'receiver' : 'sender',
+      });
+      if (res.isError) {
+        showToast(res.errorMessage ?? 'Failed to get quote', 'error');
+        return;
       }
+      setQuoteResult(res.data);
+      // Fill the other amount
+      if (res.data?.resultAmount) {
+        if (!isFiatMode) {
+          setFiatAmount((res.data.resultAmount / 100).toFixed(2));
+        } else {
+          setCryptoAmount((res.data.resultAmount / 100).toFixed(2));
+        }
+      }
+    } catch (e: any) {
+      showToast(String(e?.message ?? 'Failed to get quote'), 'error');
+      return;
+    } finally {
+      setQuoteLoading(false);
     }
   }, [fromToken, toFiatCode, cryptoAmount, fiatAmount, lastInputMode, getFxQuote]);
 
   const handleCompleteKyc = useCallback(async () => {
     Keyboard.dismiss();
     setTosLoading(true);
-    const init = await initiateTerms();
-    setTosLoading(false);
-    if (init.isError) {
-      showToast(init.errorMessage ?? 'Something went wrong', 'error');
+    try {
+      const init = await initiateTerms();
+      if (init.isError) {
+        showToast(init.errorMessage ?? 'Something went wrong', 'error');
+        return;
+      }
+      if (init.data?.url) {
+        navigation.navigate(screenTitle.BLINDPAY_TOS_WEBVIEW, {
+          url: init.data.url,
+          idempotencyKey: init.data.idempotencyKey,
+        });
+      }
+    } catch (e: any) {
+      showToast(String(e?.message ?? 'Something went wrong'), 'error');
       return;
-    }
-    if (init.data?.url) {
-      navigation.navigate(screenTitle.BLINDPAY_TOS_WEBVIEW, {
-        url: init.data.url,
-        idempotencyKey: init.data.idempotencyKey,
-      });
+    } finally {
+      setTosLoading(false);
     }
   }, [initiateTerms, navigation]);
 

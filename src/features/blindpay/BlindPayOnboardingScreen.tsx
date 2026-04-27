@@ -480,8 +480,17 @@ export default function BlindPayOnboardingScreen() {
         .then(result => {
           if (cancelled) return;
           if (result.isError) {
-            // Error or 404 — treat as new user, show FX playground
-            setScreenPhase('fx_preview');
+            if (result.status === 404) {
+              // No BlindPay profile yet — show FX preview inline for new users.
+              setScreenPhase('fx_preview');
+              return;
+            }
+            showToast(
+              result.errorMessage ??
+                t('UNEXPECTED_ERROR', 'Something went wrong'),
+              'error',
+            );
+            setScreenPhase('onboarding');
             return;
           }
           const bp = result.data?.blindpay;
@@ -520,7 +529,7 @@ export default function BlindPayOnboardingScreen() {
       return () => {
         cancelled = true;
       };
-    }, [resolvePhase]),
+    }, [resolvePhase, extractWarnings]),
   );
 
   // Poll status every 30s while on the in_progress screen and focused

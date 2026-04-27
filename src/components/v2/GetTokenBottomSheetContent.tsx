@@ -96,10 +96,15 @@ const GetTokenBottomSheetContent: React.FC<GetTokenBottomSheetContentProps> = ({
 
   const options = getOptions();
 
+  const title =
+    mode === 'getToken'
+      ? t('GET_TOKEN_SHEET_TITLE', 'Get Token')
+      : t('MORE_OPTIONS', 'More Options');
+
   return (
     <CyDView className='px-[16px] pb-[16px]'>
       <CyDText className='text-[18px] font-semibold text-base400 tracking-[-0.4px] mb-[16px]'>
-        More Options
+        {title}
       </CyDText>
       <CyDView className='bg-n10 rounded-[12px] overflow-hidden'>
         {options.map((option, idx) => {

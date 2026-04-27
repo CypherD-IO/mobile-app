@@ -37,8 +37,10 @@ function FileRow({ label, uploaded }: { label: string; uploaded: boolean }) {
     <CyDView className='flex-row items-center justify-between py-[10px] border-b border-n40'>
       <CyDText className='text-[12px] font-medium text-n200'>{label}</CyDText>
       <CyDText
-        className={`text-[13px] font-semibold ${uploaded ? 'text-green-600' : 'text-errorText'}`}>
-        {uploaded ? 'Uploaded' : 'Missing'}
+        className={`text-[13px] font-semibold ${uploaded ? 'text-successTextGreen' : 'text-errorText'}`}>
+        {uploaded
+          ? String(t('BLINDPAY_REVIEW_UPLOADED', 'Uploaded'))
+          : String(t('BLINDPAY_REVIEW_MISSING', 'Missing'))}
       </CyDText>
     </CyDView>
   );
@@ -107,26 +109,55 @@ export function BlindPayKycReviewStep({
       <ReviewCard
         title={String(t('BLINDPAY_REVIEW_PERSONAL', 'Personal Details'))}
         rows={[
-          { label: 'Name', value: `${d.firstName ?? ''} ${d.lastName ?? ''}`.trim() },
-          { label: 'DOB', value: d.dateOfBirth ?? '—' },
-          { label: 'Email', value: d.email ?? '—' },
+          {
+            label: String(t('BLINDPAY_REVIEW_NAME', 'Name')),
+            value: [d.firstName, d.lastName].filter(Boolean).join(' ') || '—',
+          },
+          {
+            label: String(t('BLINDPAY_REVIEW_DOB', 'DOB')),
+            value: d.dateOfBirth ?? '—',
+          },
+          {
+            label: String(t('BLINDPAY_REVIEW_EMAIL', 'Email')),
+            value: d.email ?? '—',
+          },
         ]}
       />
 
       <ReviewCard
         title={String(t('BLINDPAY_REVIEW_TAX', 'Tax Information'))}
         rows={[
-          { label: 'Tax ID', value: d.taxId ?? '—' },
+          {
+            label: String(t('BLINDPAY_REVIEW_TAX_ID', 'Tax ID')),
+            value: d.taxId ?? '—',
+          },
         ]}
       />
 
       <ReviewCard
         title={String(t('BLINDPAY_REVIEW_ADDR', 'Address'))}
         rows={[
-          { label: 'Street', value: [d.addressLine1, d.addressLine2].filter(Boolean).join(', ') || '—' },
-          { label: 'Location', value: [d.city, d.stateProvinceRegion, d.postalCode].filter(Boolean).join(', ') || '—' },
-          { label: 'Country', value: d.country ?? '—' },
-          { label: 'Phone', value: d.phoneNumber ?? '—' },
+          {
+            label: String(t('BLINDPAY_REVIEW_STREET', 'Street')),
+            value:
+              [d.addressLine1, d.addressLine2].filter(Boolean).join(', ') ||
+              '—',
+          },
+          {
+            label: String(t('BLINDPAY_REVIEW_LOCATION', 'Location')),
+            value:
+              [d.city, d.stateProvinceRegion, d.postalCode]
+                .filter(Boolean)
+                .join(', ') || '—',
+          },
+          {
+            label: String(t('BLINDPAY_REVIEW_COUNTRY', 'Country')),
+            value: d.country ?? '—',
+          },
+          {
+            label: String(t('BLINDPAY_REVIEW_PHONE', 'Phone')),
+            value: d.phoneNumber ?? '—',
+          },
         ]}
       />
 

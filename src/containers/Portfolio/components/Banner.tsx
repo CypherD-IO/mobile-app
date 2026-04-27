@@ -8,7 +8,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import CyDTokenValue from '../../../components/v2/tokenValue';
-import { Chain } from '../../../constants/server';
+import { Chain, ChainBackendNames } from '../../../constants/server';
 import { capitalize } from 'lodash';
 import { IconNames } from '../../../customFonts';
 
@@ -42,6 +42,10 @@ export const Banner = ({
   onMorePress,
 }: BannerProps) => {
   const { t } = useTranslation();
+  const isAllChains = selectedChain.backendName === ChainBackendNames.ALL;
+  const selectedChainLabel = isAllChains
+    ? t('ALL_CHAINS', 'All Chains')
+    : capitalize(selectedChain.name);
 
   const actionButtons: ActionButton[] = [
     {
@@ -78,7 +82,7 @@ export const Banner = ({
       {/* Balance section */}
       <CyDView className='items-center py-[20px] gap-[9px]'>
         <CyDText className='text-[13px] font-medium text-n200 tracking-[0.26px] text-center'>
-          Total Portfolio Value
+          {t('TOTAL_PORTFOLIO_VALUE', 'Total Portfolio Value')}
         </CyDText>
 
         <CyDTokenValue testID='portfolio-balance' className='text-[40px]' parentClass='justify-center'>
@@ -90,7 +94,7 @@ export const Banner = ({
           onPress={onChainPress}
           className='bg-n20 border border-n40 rounded-[16px] h-[30px] flex-row items-center px-[11px] gap-[4px]'>
           <CyDText className='text-[13px] font-semibold text-base400 text-center'>
-            {selectedChain.name === 'All Chains' ? 'All Chains' : capitalize(selectedChain.name)}
+            {selectedChainLabel}
           </CyDText>
           <CyDIcons name='chevron-down' size={10} className='text-base400' />
         </CyDTouchView>
@@ -103,7 +107,7 @@ export const Banner = ({
             key={button.id}
             onPress={button.onPress}
             activeOpacity={0.7}
-            className='w-[80px] items-center gap-[8px]'>
+            className='flex-1 max-w-[80px] items-center gap-[8px]'>
             <CyDView className='w-[56px] h-[56px] rounded-[16px] bg-n20 border border-n40 items-center justify-center'>
               {button.isText ? (
                 <CyDText className='text-[24px] font-normal text-base400'>⋯</CyDText>

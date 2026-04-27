@@ -30,7 +30,7 @@ interface BlindPayIdCaptureModalProps {
   visible: boolean;
   docTypeName: string;
   side: 'front' | 'back';
-  onContinue: (file: CapturedFile) => void;
+  onContinue: (file: CapturedFile) => void | Promise<void>;
   onClose: () => void;
 }
 
@@ -64,6 +64,7 @@ export default function BlindPayIdCaptureModal({
   const [state, setState] = useState<CaptureState>('options');
   const [capturedFile, setCapturedFile] = useState<CapturedFile | null>(null);
   const [showTips, setShowTips] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -115,11 +116,20 @@ export default function BlindPayIdCaptureModal({
     setState('capture');
   }, []);
 
-  const handleContinue = useCallback(() => {
-    if (capturedFile) {
-      onContinue(capturedFile);
+  const handleContinue = useCallback(async () => {
+    if (!capturedFile || submitting) return;
+    setSubmitting(true);
+    try {
+      await onContinue(capturedFile);
+    } catch (e: any) {
+      showToast(
+        String(e?.message ?? t('UNEXPECTED_ERROR', 'Something went wrong')),
+        'error',
+      );
+    } finally {
+      setSubmitting(false);
     }
-  }, [capturedFile, onContinue]);
+  }, [capturedFile, onContinue, submitting]);
 
   const handleClose = useCallback(() => {
     setCapturedFile(null);
@@ -438,16 +448,26 @@ export default function BlindPayIdCaptureModal({
         <CyDView className='px-[16px] gap-[16px] pb-[16px]'>
           <CyDTouchView
             onPress={handleRetake}
-            className='h-[58px] rounded-full border border-n30 bg-n0 items-center justify-center'>
+            disabled={submitting}
+            className={`h-[58px] rounded-full border border-n30 bg-n0 items-center justify-center ${
+              submitting ? 'opacity-50' : ''
+            }`}>
             <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
               {String(t('BLINDPAY_RETAKE', 'Retake photo'))}
             </CyDText>
           </CyDTouchView>
           <CyDTouchView
-            onPress={handleContinue}
-            className='h-[58px] rounded-full bg-[#FFDE59] items-center justify-center'>
+            onPress={() => {
+              void handleContinue();
+            }}
+            disabled={!capturedFile || submitting}
+            className={`h-[58px] rounded-full bg-[#FFDE59] items-center justify-center ${
+              !capturedFile || submitting ? 'opacity-60' : ''
+            }`}>
             <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
-              {String(t('CONTINUE', 'Continue'))}
+              {submitting
+                ? String(t('UPLOADING', 'Uploading…'))
+                : String(t('CONTINUE', 'Continue'))}
             </CyDText>
           </CyDTouchView>
         </CyDView>

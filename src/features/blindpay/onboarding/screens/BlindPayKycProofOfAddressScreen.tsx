@@ -57,18 +57,25 @@ export function BlindPayKycProofOfAddressStep({
         name: file.name,
         type: file.type,
       };
-      const res = await uploadDocument(filePart, BlindpayUploadBucket.ONBOARDING);
-      setUploading(false);
-      if (res.isError || !res.data?.fileUrl) {
-        const msg = String(res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
+      try {
+        const res = await uploadDocument(filePart, BlindpayUploadBucket.ONBOARDING);
+        if (res.isError || !res.data?.fileUrl) {
+          const msg = String(res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
+          setUploadError(msg);
+          showToast(msg, 'error');
+          return;
+        }
+        setFileUrl(res.data.fileUrl);
+        mergeDraft({ proofOfAddressDocFile: res.data.fileUrl });
+        setFieldErrors(prev => omitFieldError(prev, 'proofOfAddressDocFile'));
+        setUploadError('');
+      } catch (e: any) {
+        const msg = String(e?.message ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
         setUploadError(msg);
         showToast(msg, 'error');
-        return;
+      } finally {
+        setUploading(false);
       }
-      setFileUrl(res.data.fileUrl);
-      mergeDraft({ proofOfAddressDocFile: res.data.fileUrl });
-      setFieldErrors(prev => omitFieldError(prev, 'proofOfAddressDocFile'));
-      setUploadError('');
     },
     [mergeDraft, uploadDocument],
   );

@@ -3,7 +3,7 @@ import { Config } from 'react-native-config';
 import usePortfolio from '../usePortfolio';
 import * as Sentry from '@sentry/react-native';
 
-export function usePortfolioRefresh() {
+export function usePortfolioRefresh(enabled = true) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
   const { fetchPortfolio } = usePortfolio();
@@ -30,6 +30,8 @@ export function usePortfolioRefresh() {
   };
 
   useEffect(() => {
+    if (!enabled) return;
+
     void refreshPortfolio();
 
     // Skip the 2-minute background refresh under E2E tests. Detox treats the
@@ -45,7 +47,7 @@ export function usePortfolioRefresh() {
     }, 120000); // 2 minutes
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [enabled]);
 
   return {
     isRefreshing,
