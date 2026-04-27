@@ -5,13 +5,14 @@ import RNExitApp from 'react-native-exit-app';
 import {
   CardProviders,
   ConnectionTypes,
+  CypherCardPrograms,
   AllChainsEnum,
   GlobalContextType,
   PinPresentStates,
   RPCPreference,
   SignMessageValidationType,
 } from '../../constants/enum';
-import { initializeHostsFromAsync } from '../../global';
+import { hostWorker, initializeHostsFromAsync } from '../../global';
 import {
   getActivities,
   getAuthToken,
@@ -33,6 +34,7 @@ import {
 } from '../../core/globalContext';
 import { get, has, set } from 'lodash';
 import useAxios from '../../core/HttpRequest';
+import axios from '../../core/Http';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
   isBiometricEnabled,
@@ -69,7 +71,7 @@ import useCustomerIO from '../useCustomerIO';
 import useWeb3Auth from '../useWeb3Auth';
 
 export default function useInitializer() {
-  const { getWithoutAuth, getWithAuth, postWithAuth } = useAxios();
+  const { getWithoutAuth, postWithAuth } = useAxios();
   const { identifyCustomerIOUser } = useCustomerIO();
   const globalContext = useContext<any>(GlobalContext);
   const hdWallet = useContext<any>(HdWalletContext);
@@ -393,33 +395,46 @@ export default function useInitializer() {
       const metalCardCount = allCards.filter(c => c.type === 'metal').length;
 
       let country = '';
-      let cardProgram = '';
       const provider = data?.provider;
+
       if (provider) {
+        const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+        const authHeaders = {
+          headers: { Authorization: `Bearer ${String(token)}` },
+        };
+
         try {
-          const appResponse = await getWithAuth(
-            `/v1/cards/${provider}/application`,
+          const userDataResponse = await axios.get(
+            `${ARCH_HOST}/v1/cards/${provider}/user-data`,
+            authHeaders,
           );
-          if (!appResponse.isError && appResponse.data) {
-            country = appResponse.data.country ?? '';
-            cardProgram = appResponse.data.programId ?? '';
+          if (userDataResponse.data) {
+            country = userDataResponse.data.country ?? '';
           }
-        } catch (error) {
+        } catch (error: any) {
           Sentry.captureException(error);
         }
       }
 
-      void identifyCustomerIOUser(cioUserId, {
+      const appVersion = DeviceInfo.getVersion();
+      const traits: Record<string, unknown> = {
         email: email ?? '',
-        appVersion: DeviceInfo.getVersion(),
+        iosAppVersion: Platform.OS === 'ios' ? appVersion : '',
+        androidAppVersion: Platform.OS === 'android' ? appVersion : '',
         country,
         cardProvider: provider ?? '',
-        cardProgram,
+        cardProgram: CypherCardPrograms.CYPHER,
         planId: data?.planInfo?.planId ?? '',
         virtualCardCount,
         physicalCardCount,
         metalCardCount,
-      });
+      };
+      if (Platform.OS === 'ios') {
+        traits.iosAppVersion = appVersion;
+      } else {
+        traits.androidAppVersion = appVersion;
+      }
+      void identifyCustomerIOUser(cioUserId, traits);
     }
   };
 
