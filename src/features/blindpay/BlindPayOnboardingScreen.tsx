@@ -24,7 +24,7 @@ import { screenTitle } from '../../constants';
 import { navigateToBlindPayKycStack } from './navigateToBlindPayKyc';
 import BlindPayFxPreviewScreen from './BlindPayFxPreviewScreen';
 import useBlindPayApi from './api';
-import { BLINDPAY_FIGMA_ASSETS } from './figmaAssets';
+import AppImages from '../../../assets/images/appImages';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { parseErrorMessage } from '../../core/util';
 import type { BlindpayUserConfig } from './types';
@@ -45,7 +45,7 @@ function KycInProgressScreen({
     <CyDScrollView className='flex-1' contentContainerClassName='pb-[24px]'>
       <CyDView className='items-center pt-[16px] pb-[8px]'>
         <CyDImage
-          source={{ uri: BLINDPAY_FIGMA_ASSETS.kycInProgress }}
+          source={AppImages.DOCUMENT_VERIFICATION}
           className='h-[160px] w-[160px]'
           resizeMode='contain'
         />
@@ -161,7 +161,7 @@ function KycVerifyingScreen({
     <CyDScrollView className='flex-1' contentContainerClassName='pb-[40px]'>
       <CyDView className='items-center pt-[24px] pb-[16px]'>
         <CyDImage
-          source={{ uri: BLINDPAY_FIGMA_ASSETS.kycReview }}
+          source={AppImages.DOCUMENT_SCANNING}
           className='h-[208px] w-[208px]'
           resizeMode='contain'
         />
@@ -269,7 +269,7 @@ function KycApprovedScreen({ onContinue }: { onContinue: () => void }) {
       <CyDView className='flex-1 items-center justify-center px-[16px]'>
         <CyDView className='items-center gap-[33px]'>
           <CyDImage
-            source={{ uri: BLINDPAY_FIGMA_ASSETS.kycApproved }}
+            source={AppImages.DOCUMENT_APPROVED}
             className='h-[171px] w-[183px]'
             resizeMode='contain'
           />
@@ -336,7 +336,7 @@ function KycRejectedScreen({
       <CyDScrollView className='flex-1' contentContainerClassName='pb-[24px]'>
         <CyDView className='items-center pt-[40px] pb-[24px]'>
           <CyDImage
-            source={{ uri: BLINDPAY_FIGMA_ASSETS.kycRejected }}
+            source={AppImages.REJECTED}
             className='h-[166px] w-[166px]'
             resizeMode='contain'
           />
@@ -395,10 +395,10 @@ interface StepRowProps {
   step: string;
   title: string;
   subtitle: string;
-  imageUri: string;
+  image: AppImages;
 }
 
-const StepRow = ({ step, title, subtitle, imageUri }: StepRowProps) => (
+const StepRow = ({ step, title, subtitle, image }: StepRowProps) => (
   <CyDView className='flex-row items-center justify-between px-[16px] py-[20px]'>
     <CyDView className='flex-row items-start flex-1 gap-[12px] pr-[8px]'>
       <CyDText className='text-[20px] font-semibold text-base400 tracking-[-1px]'>
@@ -415,7 +415,7 @@ const StepRow = ({ step, title, subtitle, imageUri }: StepRowProps) => (
     </CyDView>
     <CyDView className='w-[86px] h-[86px] items-center justify-center'>
       <CyDImage
-        source={{ uri: imageUri }}
+        source={image}
         className='h-[82px] w-[82px]'
         resizeMode='contain'
       />
@@ -698,7 +698,7 @@ export default function BlindPayOnboardingScreen() {
                 'BLINDPAY_STEP_1_SUBTITLE',
                 'Share a few basic details to help us get to know you.',
               )}
-              imageUri={BLINDPAY_FIGMA_ASSETS.step1Doc}
+              image={AppImages.NOTE}
             />
             <CyDView className='h-px bg-n40 w-full' />
             <StepRow
@@ -708,7 +708,7 @@ export default function BlindPayOnboardingScreen() {
                 'BLINDPAY_STEP_2_SUBTITLE',
                 'Upload a valid ID to complete your KYC verification.',
               )}
-              imageUri={BLINDPAY_FIGMA_ASSETS.step2Id}
+              image={AppImages.ID_CARD}
             />
             <CyDView className='h-px bg-n40 w-full' />
             <StepRow
@@ -718,7 +718,7 @@ export default function BlindPayOnboardingScreen() {
                 'BLINDPAY_STEP_3_SUBTITLE',
                 'Receive your card and activate it in just a few taps!',
               )}
-              imageUri={BLINDPAY_FIGMA_ASSETS.step3Cash}
+              image={AppImages.CASH}
             />
           </CyDScrollView>
 
