@@ -68,7 +68,7 @@ fi
 
 # ── Ensure CydFont.ttf is in Info.plist UIAppFonts ──
 # The pod bundles the font file, but iOS needs it in UIAppFonts to register it.
-INFOPLIST="$ROOT_DIR/ios/cypherd/Info.plist"
+INFOPLIST="$ROOT_DIR/ios/Cypherd/Info.plist"
 if [ -f "$INFOPLIST" ] && ! grep -q '<string>CydFont.ttf</string>' "$INFOPLIST"; then
   echo "  Adding CydFont.ttf to Info.plist UIAppFonts..."
   sed -i '' '/<key>UIAppFonts<\/key>/,/<\/array>/ {

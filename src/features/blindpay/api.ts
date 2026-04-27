@@ -1,6 +1,3 @@
-import { useContext } from 'react';
-import { GlobalContext } from '../../core/globalContext';
-import { hostWorker } from '../../global';
 import useAxios from '../../core/HttpRequest';
 import { parseErrorMessage } from '../../core/util';
 import type {
@@ -51,20 +48,21 @@ export interface BlindPayUploadFilePart {
 
 export default function useBlindPayApi() {
   const { getWithAuth, postWithAuth, putWithAuth, deleteWithAuth, postFormWithAuth } = useAxios();
-  const globalContext = useContext<any>(GlobalContext);
-  const token = globalContext.globalState.token;
-  const baseURL = hostWorker.getHost('ARCH_HOST');
+  const UPLOAD_TIMEOUT_MS = 60_000;
 
   async function getStatus(): Promise<{
     isError: boolean;
     data?: BlindpayStatusResponse;
     errorMessage?: string;
+    status?: number;
   }> {
     const response = await getWithAuth(ENDPOINTS.STATUS);
     if (response.isError) {
       return {
         isError: true,
-        errorMessage: parseErrorMessage(response.error),
+        errorMessage:
+          response.error != null ? parseErrorMessage(response.error) : undefined,
+        status: response.status,
       };
     }
     return { isError: false, data: response.data as BlindpayStatusResponse };
@@ -154,45 +152,30 @@ export default function useBlindPayApi() {
     } as unknown as Blob);
     form.append('bucket', bucket);
 
-    // Use fetch directly — axios v0.24 sends Content-Type without the
-    // multipart boundary, which prevents multer from parsing the file.
-    try {
-      const res = await fetch(`${baseURL}${ENDPOINTS.DOCUMENTS}`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${String(token)}`,
-          // Do NOT set Content-Type — fetch auto-sets it with boundary
-        },
-        body: form,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        return {
-          isError: true,
-          errorMessage:
-            data?.errors?.[0]?.message ??
-            data?.message ??
-            'Upload failed',
-        };
-      }
-      const fileUrl = (data as UploadDocumentResponse)?.fileUrl;
-      if (!fileUrl) {
-        return {
-          isError: true,
-          errorMessage: 'Upload failed — no file URL returned.',
-        };
-      }
-      return {
-        isError: false,
-        data: data as UploadDocumentResponse,
-      };
-    } catch (error: any) {
+    // Use the shared axios instance so the auth interceptor handles token
+    // refresh, and a request timeout is enforced.
+    const response = await postFormWithAuth(
+      ENDPOINTS.DOCUMENTS,
+      form,
+      UPLOAD_TIMEOUT_MS,
+    );
+    if (response.isError) {
       return {
         isError: true,
-        errorMessage: error?.message ?? 'Upload failed',
+        errorMessage:
+          response.error != null
+            ? parseErrorMessage(response.error)
+            : 'Upload failed',
       };
     }
+    const data = response.data as UploadDocumentResponse | undefined;
+    if (!data?.fileUrl) {
+      return {
+        isError: true,
+        errorMessage: 'Upload failed — no file URL returned.',
+      };
+    }
+    return { isError: false, data };
   }
 
   async function onboard(body: CreateReceiverRequest): Promise<{
@@ -329,7 +312,10 @@ export default function useBlindPayApi() {
   async function listPayouts(query?: ListPayoutsQuery): Promise<{ isError: boolean; data?: BlindpayPayoutResponse[]; errorMessage?: string }> {
     let url = ENDPOINTS.PAYOUTS;
     if (query) {
-      const params = Object.entries(query).filter(([, v]) => v != null).map(([k, v]) => `${k}=${v}`).join('&');
+      const params = Object.entries(query)
+        .filter(([, v]) => v != null)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&');
       if (params) url += `?${params}`;
     }
     const response = await getWithAuth(url);
@@ -457,7 +443,7 @@ export default function useBlindPayApi() {
   }
 
   async function getBankAccountFields(railType: string): Promise<{ isError: boolean; data?: ApiFieldSchema[]; errorMessage?: string }> {
-    const response = await getWithAuth(`${ENDPOINTS.AVAILABLE_BANK_DETAILS}?rail=${railType}`);
+    const response = await getWithAuth(`${ENDPOINTS.AVAILABLE_BANK_DETAILS}?rail=${encodeURIComponent(railType)}`);
     if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
     const data = response.data;
     const list = Array.isArray(data) ? data : (data as any)?.fields ?? [];

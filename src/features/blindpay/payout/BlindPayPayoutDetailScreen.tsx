@@ -235,19 +235,46 @@ export default function BlindPayPayoutDetailScreen() {
 
   const [payout, setPayout] = useState<BlindpayPayoutResponse | null>(route.params?.payout ?? null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'details' | 'updates'>('details');
 
   const payoutId = route.params?.payoutId ?? route.params?.payout?.id;
 
+  const loadPayout = async (
+    id: string,
+    showErrorToast = false,
+    shouldApply = () => true,
+  ) => {
+    const res = await getPayoutRef.current(id);
+    if (!shouldApply()) return;
+    if (res.isError || !res.data) {
+      const msg = res.errorMessage ?? 'Unable to load payout details';
+      setError(msg);
+      if (showErrorToast) showToast(msg, 'error');
+      return;
+    }
+    setPayout(res.data);
+    setError('');
+  };
+
   useEffect(() => {
-    if (!payoutId) { setLoading(false); return; }
-    void getPayoutRef.current(payoutId).then(res => {
-      if (!res.isError && res.data) setPayout(res.data);
+    let cancelled = false;
+    if (!payoutId) {
+      setError('Payout details are unavailable');
       setLoading(false);
-    });
+      return;
+    }
+    setLoading(true);
+    void (async () => {
+      await loadPayout(payoutId, false, () => !cancelled);
+      if (!cancelled) setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [payoutId]);
 
-  if (loading || !payout) {
+  if (loading) {
     return (
       <CyDSafeAreaView className='flex-1 bg-n20' edges={['top']}>
         <CyDView className='flex-row items-center gap-[4px] px-[4px] py-[8px] h-[64px]'>
@@ -258,6 +285,32 @@ export default function BlindPayPayoutDetailScreen() {
         </CyDView>
         <CyDView className='flex-1 items-center justify-center'>
           <ActivityIndicator size='large' color='#FBC02D' />
+        </CyDView>
+      </CyDSafeAreaView>
+    );
+  }
+
+  if (error || !payout) {
+    return (
+      <CyDSafeAreaView className='flex-1 bg-n20' edges={['top']}>
+        <CyDView className='flex-row items-center gap-[4px] px-[4px] py-[8px] h-[64px]'>
+          <CyDTouchView onPress={() => navigation.goBack()} hitSlop={12}
+            className='w-[48px] h-[48px] items-center justify-center'>
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
+          </CyDTouchView>
+        </CyDView>
+        <CyDView className='flex-1 items-center justify-center px-[24px] gap-[12px]'>
+          <CyDMaterialDesignIcons
+            name='alert-circle-outline'
+            size={40}
+            className='text-errorText'
+          />
+          <CyDText className='text-[16px] font-semibold text-base400 text-center'>
+            Unable to load payout details
+          </CyDText>
+          <CyDText className='text-[13px] font-medium text-n200 text-center'>
+            {error || 'Please try again later.'}
+          </CyDText>
         </CyDView>
       </CyDSafeAreaView>
     );
@@ -407,9 +460,7 @@ export default function BlindPayPayoutDetailScreen() {
                   onPress={() => openDocumentUpload({
                     payoutId: payout.id,
                     onSuccess: () => {
-                      void getPayoutRef.current(payout.id).then(res => {
-                        if (!res.isError && res.data) setPayout(res.data);
-                      });
+                      void loadPayout(payout.id, true);
                     },
                   })}
                   className='bg-p50 rounded-full h-[36px] items-center justify-center'>

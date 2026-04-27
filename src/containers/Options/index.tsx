@@ -72,7 +72,7 @@ const RenderOptions = ({
   testID?: string;
 }) => {
   return (
-    <CyDView className='items-center justify-start px-[4px]' style={{ width: '33.33%' }}>
+    <CyDView className='w-1/3 items-center justify-start px-[4px]'>
       <CyDTouchView
         testID={testID}
         className={clsx(
@@ -431,12 +431,14 @@ export default function OptionsHub() {
     if (isFocused) {
       void refreshProfile();
       void getBlindpayStatus().then(res => {
-        if (!res.isError && res.data?.blindpay) {
-          const bp = res.data.blindpay;
-          setBlindpayReceiverStatus(
-            (bp.receiverStatus ?? bp.kycStatus ?? '').toLowerCase() || null,
-          );
+        if (res.isError || !res.data?.blindpay) {
+          setBlindpayReceiverStatus(null);
+          return;
         }
+        const bp = res.data.blindpay;
+        setBlindpayReceiverStatus(
+          (bp.receiverStatus ?? bp.kycStatus ?? '').toLowerCase() || null,
+        );
       });
     }
   }, [isFocused]);

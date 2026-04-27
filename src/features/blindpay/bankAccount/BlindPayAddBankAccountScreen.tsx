@@ -263,6 +263,8 @@ export default function BlindPayAddBankAccountScreen() {
       setSwiftLookupLoading(true);
       setSwiftLookupInfo(null);
       void lookupSwift(code).then(res => {
+        // Stale-response guard: ignore if user changed BIC since this lookup started
+        if (lastSwiftLookup.current !== code) return;
         setSwiftLookupLoading(false);
         if (!res.isError && res.data) {
           // Resolve country name (e.g. "India") to 2-letter code (e.g. "IN")
@@ -414,22 +416,31 @@ export default function BlindPayAddBankAccountScreen() {
     if (purposeCode) body.swiftPaymentCode = purposeCode;
 
     setSubmitting(true);
-    const res = await addBankAccount(body as AddBankAccountRequest);
-    setSubmitting(false);
+    try {
+      const res = await addBankAccount(body as AddBankAccountRequest);
 
-    if (res.isError) {
-      // Strip backend field-key prefix like "pix_safe_cpf_cnpj: Invalid CPF or CNPJ" → "Invalid CPF or CNPJ"
-      const raw = res.errorMessage ?? '';
-      const cleaned = raw.replace(/^[a-z_][a-z0-9_]*:\s*/i, '').trim();
+      if (res.isError) {
+        // Strip backend field-key prefix like "pix_safe_cpf_cnpj: Invalid CPF or CNPJ" → "Invalid CPF or CNPJ"
+        const raw = res.errorMessage ?? '';
+        const cleaned = raw.replace(/^[a-z_][a-z0-9_]*:\s*/i, '').trim();
+        showToast(
+          cleaned || String(t('UNEXPECTED_ERROR', 'Something went wrong')),
+          'error',
+        );
+        return;
+      }
+
+      showToast(t('BANK_ACCOUNT_ADDED', 'Bank account added successfully'));
+      navigation.goBack();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
       showToast(
-        cleaned || String(t('UNEXPECTED_ERROR', 'Something went wrong')),
+        message || String(t('UNEXPECTED_ERROR', 'Something went wrong')),
         'error',
       );
-      return;
+    } finally {
+      setSubmitting(false);
     }
-
-    showToast(t('BANK_ACCOUNT_ADDED', 'Bank account added successfully'));
-    navigation.goBack();
   }, [
     validateCurrentStep,
     isLastStep,

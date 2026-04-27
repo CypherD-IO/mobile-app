@@ -1354,7 +1354,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             setModalVisible={setChooseChain}
             data={hdWallet ? getAvailableChains(hdWallet) : []}
             title={t('CHOOSE_CHAIN') ?? 'Choose Chain'}
-            selectedItem={selectedChain.name}
+            selectedItem={String(selectedChain.id)}
             onPress={(item: { item: Chain }) => {
               setSelectedChain(item.item);
               setChooseChain(false);

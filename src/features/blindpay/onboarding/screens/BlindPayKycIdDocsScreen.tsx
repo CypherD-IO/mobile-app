@@ -83,22 +83,33 @@ export function BlindPayKycIdDocsStep({
         name: file.name,
         type: file.type,
       };
-      const res = await uploadDocument(
-        filePart,
-        BlindpayUploadBucket.ONBOARDING,
-      );
-      setUploading(false);
-      if (res.isError || !res.data?.fileUrl) {
+      try {
+        const res = await uploadDocument(
+          filePart,
+          BlindpayUploadBucket.ONBOARDING,
+        );
+        if (res.isError || !res.data?.fileUrl) {
+          const msg = String(
+            res.errorMessage ??
+              t('UNEXPECTED_ERROR', 'Something went wrong'));
+          setUploadError(prev => ({ ...prev, front: msg }));
+          showToast(msg, 'error');
+          return;
+        }
+        setFrontUrl(res.data.fileUrl);
+        mergeDraft({ idDocFrontFile: res.data.fileUrl });
+        clearKey('idDocFrontFile');
+        setUploadError(prev => ({ ...prev, front: '' }));
+      } catch (error) {
         const msg = String(
-          res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
+          error instanceof Error && error.message
+            ? error.message
+            : t('UNEXPECTED_ERROR', 'Something went wrong'));
         setUploadError(prev => ({ ...prev, front: msg }));
         showToast(msg, 'error');
-        return;
+      } finally {
+        setUploading(false);
       }
-      setFrontUrl(res.data.fileUrl);
-      mergeDraft({ idDocFrontFile: res.data.fileUrl });
-      clearKey('idDocFrontFile');
-      setUploadError(prev => ({ ...prev, front: '' }));
     },
     [clearKey, mergeDraft, uploadDocument],
   );
@@ -113,22 +124,33 @@ export function BlindPayKycIdDocsStep({
         name: file.name,
         type: file.type,
       };
-      const res = await uploadDocument(
-        filePart,
-        BlindpayUploadBucket.ONBOARDING,
-      );
-      setUploading(false);
-      if (res.isError || !res.data?.fileUrl) {
+      try {
+        const res = await uploadDocument(
+          filePart,
+          BlindpayUploadBucket.ONBOARDING,
+        );
+        if (res.isError || !res.data?.fileUrl) {
+          const msg = String(
+            res.errorMessage ??
+              t('UNEXPECTED_ERROR', 'Something went wrong'));
+          setUploadError(prev => ({ ...prev, back: msg }));
+          showToast(msg, 'error');
+          return;
+        }
+        setBackUrl(res.data.fileUrl);
+        mergeDraft({ idDocBackFile: res.data.fileUrl });
+        clearKey('idDocBackFile');
+        setUploadError(prev => ({ ...prev, back: '' }));
+      } catch (error) {
         const msg = String(
-          res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
+          error instanceof Error && error.message
+            ? error.message
+            : t('UNEXPECTED_ERROR', 'Something went wrong'));
         setUploadError(prev => ({ ...prev, back: msg }));
         showToast(msg, 'error');
-        return;
+      } finally {
+        setUploading(false);
       }
-      setBackUrl(res.data.fileUrl);
-      mergeDraft({ idDocBackFile: res.data.fileUrl });
-      clearKey('idDocBackFile');
-      setUploadError(prev => ({ ...prev, back: '' }));
     },
     [clearKey, mergeDraft, uploadDocument],
   );

@@ -187,7 +187,14 @@ export function getCurrentChainHoldings(
     case CHAIN_BASE.backendName:
       return portfolio.base;
     case CHAIN_BASE_SEPOLIA.backendName:
-      return portfolio.base_sepolia ?? portfolio.base;
+      return (
+        portfolio.base_sepolia ?? {
+          totalBalance: 0,
+          totalUnverifiedBalance: 0,
+          totalHoldings: [],
+          timestamp: '',
+        }
+      );
     case CHAIN_COREUM.backendName:
       return portfolio.coreum;
     case CHAIN_INJECTIVE.backendName:

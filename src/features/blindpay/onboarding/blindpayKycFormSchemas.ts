@@ -54,6 +54,79 @@ function ageInvalid(): string {
   );
 }
 
+function parseYmdParts(val: string): { y: number; m: number; d: number } | null {
+  const parts = val.split('-');
+  if (parts.length !== 3) return null;
+  const y = Number(parts[0]);
+  const m = Number(parts[1]);
+  const d = Number(parts[2]);
+  if (!Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d)) {
+    return null;
+  }
+  if (m < 1 || m > 12 || d < 1 || d > 31) return null;
+  const utc = new Date(Date.UTC(y, m - 1, d));
+  if (
+    utc.getUTCFullYear() !== y ||
+    utc.getUTCMonth() !== m - 1 ||
+    utc.getUTCDate() !== d
+  ) {
+    return null;
+  }
+  return { y, m, d };
+}
+
+function ymdNumeric(y: number, m: number, d: number): number {
+  return y * 10000 + m * 100 + d;
+}
+
+const dobOptionalSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, invalidDate())
+  .refine(val => parseYmdParts(val) !== null, { message: invalidDate() })
+  .refine(
+    val => {
+      const parts = parseYmdParts(val);
+      if (!parts) return true;
+      const now = new Date();
+      const todayNum = ymdNumeric(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        now.getDate(),
+      );
+      const cutoffNum = ymdNumeric(
+        now.getFullYear() - 18,
+        now.getMonth() + 1,
+        now.getDate(),
+      );
+      const dobNum = ymdNumeric(parts.y, parts.m, parts.d);
+      return dobNum <= cutoffNum && dobNum <= todayNum;
+    },
+    { message: ageInvalid() },
+  )
+  .refine(
+    val => {
+      const parts = parseYmdParts(val);
+      if (!parts) return true;
+      const now = new Date();
+      const minNum = ymdNumeric(
+        now.getFullYear() - 120,
+        now.getMonth() + 1,
+        now.getDate(),
+      );
+      const dobNum = ymdNumeric(parts.y, parts.m, parts.d);
+      return dobNum >= minNum;
+    },
+    { message: invalidDate() },
+  )
+  .optional();
+
+const phoneOptionalSchema = z
+  .string()
+  .trim()
+  .regex(/^\+\d{7,15}$/, invalidPhone())
+  .optional();
+
 export const blindPayKycBasicSchema = z.object({
   firstName: z.string().trim().min(1, req()),
   lastName: z.string().trim().min(1, req()),
@@ -62,28 +135,39 @@ export const blindPayKycBasicSchema = z.object({
     .trim()
     .min(1, req())
     .regex(/^\d{4}-\d{2}-\d{2}$/, invalidDate())
+    .refine(val => parseYmdParts(val) !== null, { message: invalidDate() })
     .refine(
       val => {
-        const d = new Date(`${val}T12:00:00`);
-        return !Number.isNaN(d.getTime());
-      },
-      { message: invalidDate() },
-    )
-    .refine(
-      val => {
-        const d = new Date(`${val}T12:00:00`);
-        const max = new Date();
-        max.setFullYear(max.getFullYear() - 18);
-        return d <= max;
+        const parts = parseYmdParts(val);
+        if (!parts) return true;
+        const now = new Date();
+        const todayNum = ymdNumeric(
+          now.getFullYear(),
+          now.getMonth() + 1,
+          now.getDate(),
+        );
+        const cutoffNum = ymdNumeric(
+          now.getFullYear() - 18,
+          now.getMonth() + 1,
+          now.getDate(),
+        );
+        const dobNum = ymdNumeric(parts.y, parts.m, parts.d);
+        return dobNum <= cutoffNum && dobNum <= todayNum;
       },
       { message: ageInvalid() },
     )
     .refine(
       val => {
-        const d = new Date(`${val}T12:00:00`);
-        const min = new Date();
-        min.setFullYear(min.getFullYear() - 120);
-        return d >= min;
+        const parts = parseYmdParts(val);
+        if (!parts) return true;
+        const now = new Date();
+        const minNum = ymdNumeric(
+          now.getFullYear() - 120,
+          now.getMonth() + 1,
+          now.getDate(),
+        );
+        const dobNum = ymdNumeric(parts.y, parts.m, parts.d);
+        return dobNum >= minNum;
       },
       { message: invalidDate() },
     ),
@@ -228,12 +312,8 @@ export const blindPayOnboardRequestSchema = z
     // Personal
     firstName: z.string().trim().min(1).optional(),
     lastName: z.string().trim().min(1).optional(),
-    dateOfBirth: z
-      .string()
-      .trim()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter date as YYYY-MM-DD')
-      .optional(),
-    phoneNumber: z.string().trim().optional(),
+    dateOfBirth: dobOptionalSchema,
+    phoneNumber: phoneOptionalSchema,
     imageUrl: z.string().url().optional(),
     taxId: z.string().trim().optional(),
     occupation: z.string().trim().max(255).optional(),
@@ -274,6 +354,29 @@ export const blindPayOnboardRequestSchema = z
       message: 'Please specify the account purpose',
       path: ['accountPurposeOther'],
     },
+  )
+  .refine(
+    data =>
+      data.purposeOfTransactions !== BlindpayPurposeOfTransactions.OTHER ||
+      (data.purposeOfTransactionsExplanation?.trim() ?? '').length > 0,
+    {
+      message: String(
+        t('BLINDPAY_ZOD_PURPOSE_EXPLAIN', 'Please explain the purpose'),
+      ),
+      path: ['purposeOfTransactionsExplanation'],
+    },
+  )
+  .refine(
+    data =>
+      !data.idDocType ||
+      !idNeedsBack(data.idDocType) ||
+      (data.idDocBackFile?.trim() ?? '').length > 0,
+    {
+      message: String(
+        t('BLINDPAY_ZOD_UPLOAD_BACK', 'Upload the back of your ID'),
+      ),
+      path: ['idDocBackFile'],
+    },
   );
 
 export type BlindPayOnboardRequest = z.infer<typeof blindPayOnboardRequestSchema>;
@@ -290,8 +393,8 @@ export const blindPayUpdateReceiverRequestSchema = z
     // Personal
     firstName: z.string().trim().min(1).optional(),
     lastName: z.string().trim().min(1).optional(),
-    dateOfBirth: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter date as YYYY-MM-DD').optional(),
-    phoneNumber: z.string().trim().optional(),
+    dateOfBirth: dobOptionalSchema,
+    phoneNumber: phoneOptionalSchema,
     imageUrl: z.string().url().optional(),
     taxId: z.string().trim().optional(),
     occupation: z.string().trim().max(255).optional(),
@@ -331,6 +434,29 @@ export const blindPayUpdateReceiverRequestSchema = z
     {
       message: 'Please specify the account purpose',
       path: ['accountPurposeOther'],
+    },
+  )
+  .refine(
+    data =>
+      data.purposeOfTransactions !== BlindpayPurposeOfTransactions.OTHER ||
+      (data.purposeOfTransactionsExplanation?.trim() ?? '').length > 0,
+    {
+      message: String(
+        t('BLINDPAY_ZOD_PURPOSE_EXPLAIN', 'Please explain the purpose'),
+      ),
+      path: ['purposeOfTransactionsExplanation'],
+    },
+  )
+  .refine(
+    data =>
+      !data.idDocType ||
+      !idNeedsBack(data.idDocType) ||
+      (data.idDocBackFile?.trim() ?? '').length > 0,
+    {
+      message: String(
+        t('BLINDPAY_ZOD_UPLOAD_BACK', 'Upload the back of your ID'),
+      ),
+      path: ['idDocBackFile'],
     },
   );
 

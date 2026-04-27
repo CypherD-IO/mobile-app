@@ -44,18 +44,28 @@ export default function SwipeToConfirmBar({
   const initialTravel = Math.max(100, fallbackW - KNOB_SLOT - SIDE_MARGINS);
   const maxTravelSv = useSharedValue(initialTravel);
   const translateX = useSharedValue(0);
+  const lockedSv = useSharedValue(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
+  const resetKnob = useCallback(() => {
+    translateX.value = withSpring(0);
+    lockedSv.value = false;
+  }, [translateX, lockedSv]);
+
   const fireComplete = useCallback(async () => {
+    lockedSv.value = true;
     setSubmitting(true);
     try {
       await onSwipeComplete();
-    } finally {
-      setSubmitting(false);
       setDone(true);
+      setSubmitting(false);
+    } catch (err) {
+      setSubmitting(false);
+      resetKnob();
+      throw err;
     }
-  }, [onSwipeComplete]);
+  }, [onSwipeComplete, resetKnob, lockedSv]);
 
   useEffect(() => {
     const w = trackWidth > 0 ? trackWidth : fallbackW - SIDE_MARGINS;
@@ -67,13 +77,16 @@ export default function SwipeToConfirmBar({
     .failOffsetY([-12, 12])
     .onUpdate(event => {
       'worklet';
+      if (lockedSv.value) return;
       const cap = maxTravelSv.value;
       translateX.value = Math.max(0, Math.min(event.translationX, cap));
     })
     .onEnd(() => {
       'worklet';
+      if (lockedSv.value) return;
       const cap = maxTravelSv.value;
       if (translateX.value > cap * 0.88) {
+        lockedSv.value = true;
         translateX.value = withSpring(cap);
         runOnJS(fireComplete)();
       } else {

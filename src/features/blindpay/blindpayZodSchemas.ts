@@ -26,6 +26,7 @@ export const blindPayCreateQuoteSchema = z.object({
   token: z.nativeEnum(BlindpayToken),
   coverFees: z.boolean().optional(),
   description: z.string().trim().max(128).optional(),
+  partnerFeeId: z.string().trim().min(1).max(64).optional(),
   transactionDocumentType: z.nativeEnum(BlindpayDocumentType).optional(),
   transactionDocumentId: z.string().trim().max(512).optional(),
   transactionDocumentFile: z.string().trim().min(1).optional(),
@@ -69,9 +70,9 @@ export type BlindPaySubmitPayoutDocumentsInput = z.infer<typeof blindPaySubmitPa
 const MAX_LIMIT_CENTS = 100_000_000_000;
 
 export const blindPayRequestLimitIncreaseSchema = z.object({
-  perTransaction: z.number().int().max(MAX_LIMIT_CENTS).nullable(),
-  daily: z.number().int().max(MAX_LIMIT_CENTS).nullable(),
-  monthly: z.number().int().max(MAX_LIMIT_CENTS).nullable(),
+  perTransaction: z.number().int().min(0).max(MAX_LIMIT_CENTS).optional(),
+  daily: z.number().int().min(0).max(MAX_LIMIT_CENTS).optional(),
+  monthly: z.number().int().min(0).max(MAX_LIMIT_CENTS).optional(),
   supportingDocumentType: z.nativeEnum(BlindpaySupportingDocumentType),
   supportingDocumentFile: z.string().trim().min(1, 'Supporting document is required'),
 });

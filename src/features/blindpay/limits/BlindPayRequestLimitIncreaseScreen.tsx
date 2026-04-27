@@ -161,13 +161,43 @@ export default function BlindPayRequestLimitIncreaseScreen() {
       else if (daily && dNum > maxDollars) e.daily = `Maximum is $${maxDollars.toLocaleString()}`;
       if (monthly && (isNaN(mNum) || mNum <= 0)) e.monthly = 'Enter a valid amount';
       else if (monthly && mNum > maxDollars) e.monthly = `Maximum is $${maxDollars.toLocaleString()}`;
+
+      // Increase-only: reject values less than current limits
+      const pCents = perTx ? Math.round(pNum * 100) : null;
+      const dCents = daily ? Math.round(dNum * 100) : null;
+      const mCents = monthly ? Math.round(mNum * 100) : null;
+      if (pCents != null && currentLimits.perTransaction != null && pCents < currentLimits.perTransaction) {
+        e.perTx = `Must be at least ${formatCents(currentLimits.perTransaction)}`;
+      }
+      if (dCents != null && currentLimits.daily != null && dCents < currentLimits.daily) {
+        e.daily = `Must be at least ${formatCents(currentLimits.daily)}`;
+      }
+      if (mCents != null && currentLimits.monthly != null && mCents < currentLimits.monthly) {
+        e.monthly = `Must be at least ${formatCents(currentLimits.monthly)}`;
+      }
+
+      // Require at least one strictly greater than current
+      if (!e.general && !e.perTx && !e.daily && !e.monthly) {
+        const pIncreased =
+          pCents != null &&
+          (currentLimits.perTransaction == null || pCents > currentLimits.perTransaction);
+        const dIncreased =
+          dCents != null &&
+          (currentLimits.daily == null || dCents > currentLimits.daily);
+        const mIncreased =
+          mCents != null &&
+          (currentLimits.monthly == null || mCents > currentLimits.monthly);
+        if (!pIncreased && !dIncreased && !mIncreased) {
+          e.general = 'Enter a higher value for at least one limit';
+        }
+      }
     } else if (step === 1) {
       if (!docType) e.docType = req;
       if (!docUrl) e.docFile = 'Upload a supporting document';
     }
     setErrors(e);
     return Object.keys(e).length === 0;
-  }, [step, perTx, daily, monthly, docType, docUrl]);
+  }, [step, perTx, daily, monthly, docType, docUrl, currentLimits]);
 
   const handleCapture = useCallback(
     async (file: CapturedFile) => {
@@ -175,17 +205,24 @@ export default function BlindPayRequestLimitIncreaseScreen() {
       setUploading(true);
       setUploadError('');
       const filePart: BlindPayUploadFilePart = { uri: file.uri, name: file.name, type: file.type };
-      const res = await uploadDocument(filePart, BlindpayUploadBucket.LIMIT_INCREASE);
-      setUploading(false);
-      if (res.isError || !res.data?.fileUrl) {
-        const msg = res.errorMessage ?? 'Upload failed';
+      try {
+        const res = await uploadDocument(filePart, BlindpayUploadBucket.LIMIT_INCREASE);
+        if (res.isError || !res.data?.fileUrl) {
+          const msg = res.errorMessage ?? 'Upload failed';
+          setUploadError(msg);
+          showToast(msg, 'error');
+          return;
+        }
+        setDocUrl(res.data.fileUrl);
+        clearError('docFile');
+        setUploadError('');
+      } catch (e: any) {
+        const msg = String(e?.message ?? 'Upload failed');
         setUploadError(msg);
         showToast(msg, 'error');
-        return;
+      } finally {
+        setUploading(false);
       }
-      setDocUrl(res.data.fileUrl);
-      clearError('docFile');
-      setUploadError('');
     },
     [uploadDocument, clearError],
   );
@@ -198,25 +235,45 @@ export default function BlindPayRequestLimitIncreaseScreen() {
       return;
     }
 
-    // Submit
+    // Submit — only include strictly increased fields
     setSubmitting(true);
     const body: any = {
       supportingDocumentType: docType,
       supportingDocumentFile: docUrl,
     };
-    if (perTx) body.perTransaction = Math.round(Number(perTx) * 100);
-    if (daily) body.daily = Math.round(Number(daily) * 100);
-    if (monthly) body.monthly = Math.round(Number(monthly) * 100);
-
-    const res = await requestLimitIncrease(body);
-    setSubmitting(false);
-    if (res.isError) {
-      showToast(res.errorMessage ?? 'Something went wrong', 'error');
-      return;
+    if (perTx) {
+      const pCents = Math.round(Number(perTx) * 100);
+      if (currentLimits.perTransaction == null || pCents > currentLimits.perTransaction) {
+        body.perTransaction = pCents;
+      }
     }
-    showToast('Limit increase request submitted');
-    navigation.goBack();
-  }, [validateStep, step, perTx, daily, monthly, docType, docUrl, requestLimitIncrease, navigation]);
+    if (daily) {
+      const dCents = Math.round(Number(daily) * 100);
+      if (currentLimits.daily == null || dCents > currentLimits.daily) {
+        body.daily = dCents;
+      }
+    }
+    if (monthly) {
+      const mCents = Math.round(Number(monthly) * 100);
+      if (currentLimits.monthly == null || mCents > currentLimits.monthly) {
+        body.monthly = mCents;
+      }
+    }
+
+    try {
+      const res = await requestLimitIncrease(body);
+      if (res.isError) {
+        showToast(res.errorMessage ?? 'Something went wrong', 'error');
+        return;
+      }
+      showToast('Limit increase request submitted');
+      navigation.goBack();
+    } catch (e: any) {
+      showToast(String(e?.message ?? 'Something went wrong'), 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [validateStep, step, perTx, daily, monthly, docType, docUrl, requestLimitIncrease, navigation, currentLimits]);
 
   const handleBack = useCallback(() => {
     if (step > 0) setStep(s => s - 1);

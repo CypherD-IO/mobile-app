@@ -166,7 +166,7 @@ const SPEI_INSTITUTION_OPTIONS = [
 
 const US_ADDRESS_FIELDS: FieldDef[] = [
   { key: 'addressLine1', label: 'Street Address', placeholder: 'Street address', type: 'text', required: true, maxLength: 256 },
-  { key: 'addressLine2', label: 'Apt / Suite', placeholder: 'Apartment, Suite', type: 'text', required: true, maxLength: 256 },
+  { key: 'addressLine2', label: 'Apt / Suite', placeholder: 'Apartment, Suite', type: 'text', required: false, maxLength: 256 },
   { key: 'city', label: 'City', placeholder: 'City', type: 'text', required: true },
   { key: 'stateProvinceRegion', label: 'State', placeholder: 'e.g. CA, NY', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter state code' },
   { key: 'country', label: 'Country', placeholder: 'Select country', type: 'dropdown', required: true, options: BLINDPAY_COUNTRIES, searchable: true },

@@ -364,7 +364,7 @@ export default function BlindPaySendMoneyScreen() {
     } else {
       // Limit to 2 decimal places
       const dotIdx = current.indexOf('.');
-      if (dotIdx >= 0 && current.length - dotIdx >= 2) return;
+      if (dotIdx >= 0 && current.length - dotIdx > 2) return;
       setter(current + key);
     }
   }, []);

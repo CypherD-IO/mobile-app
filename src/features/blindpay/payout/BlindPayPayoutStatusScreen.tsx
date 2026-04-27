@@ -4,9 +4,11 @@ import {
   NavigationProp,
   ParamListBase,
   RouteProp,
+  StackActions,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { screenTitle } from '../../../constants';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDLottieView,
@@ -101,22 +103,34 @@ export default function BlindPayPayoutStatusScreen() {
   useEffect(() => {
     if (phase !== 'processing' || !payoutId) return;
 
-    function resolvePhase(data: any) {
+    function resolvePhase(data: any): ScreenPhase | 'on_hold' | null {
       if (data.trackingTransaction?.transactionHash) setTxHash(data.trackingTransaction.transactionHash);
       // Use payout.status as primary — it reflects the real state
       const s = data.status;
-      if (s === 'completed') return 'success' as const;
-      if (s === 'failed' || s === 'refunded') return 'failed' as const;
-      if (s === 'on_hold') return 'success' as const; // on_hold = payout created, show detail
+      if (s === 'completed') return 'success';
+      if (s === 'failed' || s === 'refunded') return 'failed';
+      // on_hold needs compliance/document upload — route to detail screen
+      if (s === 'on_hold') return 'on_hold';
       return null;
+    }
+
+    function applyResolved(next: ScreenPhase | 'on_hold' | null): boolean {
+      if (!next) return false;
+      if (next === 'on_hold') {
+        navigation.dispatch(
+          StackActions.replace(screenTitle.BLINDPAY_PAYOUT_DETAIL, { payoutId }),
+        );
+      } else {
+        setPhase(next);
+      }
+      return true;
     }
 
     // Initial fetch
     void getPayoutRef.current(payoutId).then(res => {
       if (!res.isError && res.data) {
         setPayoutData(res.data);
-        const next = resolvePhase(res.data);
-        if (next) setPhase(next);
+        applyResolved(resolvePhase(res.data));
       }
     });
 
@@ -124,8 +138,7 @@ export default function BlindPayPayoutStatusScreen() {
       const res = await getPayoutRef.current(payoutId);
       if (!res.isError && res.data) {
         setPayoutData(res.data);
-        const next = resolvePhase(res.data);
-        if (next) { setPhase(next); clearInterval(interval); }
+        if (applyResolved(resolvePhase(res.data))) clearInterval(interval);
       }
     }, 10_000);
     return () => clearInterval(interval);
