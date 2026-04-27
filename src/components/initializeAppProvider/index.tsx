@@ -114,7 +114,8 @@ export const InitializeAppProvider = ({
   const { url: initialUrl, updateUrl } = useInitialIntentURL();
   const { referrerData } = useInstallReferrer();
   const [discordToken, setDiscordToken] = useState<string>('');
-  usePortfolioRefresh();
+  const [hostsInitialized, setHostsInitialized] = useState(false);
+  usePortfolioRefresh(hostsInitialized);
 
   // State to track if wallet data is still loading
   const [walletLoading, setWalletLoading] = useState<boolean>(true);
@@ -280,14 +281,32 @@ export const InitializeAppProvider = ({
   }, [referrerData]);
 
   useEffect(() => {
-    if (address) {
-      void getHosts(
-        setForcedUpdate,
-        setTamperedSignMessageModal,
-        setUpdateModal,
-        setShowDefaultAuthRemoveModal,
-      );
-    }
+    let cancelled = false;
+    setHostsInitialized(false);
+
+    const initializeHosts = async () => {
+      if (!address) return;
+
+      try {
+        await getHosts(
+          setForcedUpdate,
+          setTamperedSignMessageModal,
+          setUpdateModal,
+          setShowDefaultAuthRemoveModal,
+        );
+        if (!cancelled) {
+          setHostsInitialized(true);
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+      }
+    };
+
+    void initializeHosts();
+
+    return () => {
+      cancelled = true;
+    };
   }, [address]);
 
   useEffect(() => {

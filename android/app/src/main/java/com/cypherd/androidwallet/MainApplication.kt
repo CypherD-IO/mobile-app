@@ -96,7 +96,8 @@ class MainApplication : Application(), MainApplicationContracts {
     // Guarded so a font packaging issue doesn't crash startup.
     try {
       ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope)
-      ReactFontManager.getInstance().addCustomFont(this, "CydFont", R.font.cydfont)
+      // CydFont is registered automatically by @react-native-vector-icons/icomoon v13
+      // (sourced from rnvi-fonts/icomoon/CydFont.ttf via the gradle plugin).
       ReactFontManager.getInstance().addCustomFont(this, "Cypher Nord", R.font.cypher_nord)
       // NOTE:
       // JS uses NativeWind/Tailwind `font-gambetta` which maps to the family name "Gambetta"

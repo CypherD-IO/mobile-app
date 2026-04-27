@@ -4,7 +4,10 @@
 # and Xcode later fails with missing `Pods-*.xcconfig` / `.xcfilelist` files during the Analyze/Build phase.
 set -euo pipefail
 
-# Prevent Homebrew from auto-cleanup
+# Prevent Homebrew from auto-updating and auto-cleanup.
+# Auto-update downloads the full formula index from ghcr.io on every `brew install`,
+# adding minutes to the build for no benefit in CI.
+export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 
 # Install CocoaPods using Homebrew
@@ -71,16 +74,21 @@ npm -v
 echo "Node.js binary: $(which node)"
 
 # Install JS dependencies from repo root (package.json lives there).
+# ELECTRON_SKIP_BINARY_DOWNLOAD skips electron's postinstall binary fetch from
+# release-assets.githubusercontent.com, which Xcode Cloud blocks. We don't need
+# the electron binary for iOS builds — it's only pulled in as a transitive dev dep.
 cd "$REPO_ROOT"
-npm install --legacy-peer-deps
+ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install --legacy-peer-deps
 
 # Clean up DerivedData folder if it exists
 rm -rf /Volumes/workspace/DerivedData
 
-# Deintegrate and reinstall CocoaPods dependencies from `ios/`
+# Reinstall CocoaPods dependencies from `ios/`.
+# Skip --repo-update since Podfile.lock pins exact versions; the spec repo
+# shipped with the CocoaPods bottle is sufficient.
 cd "${REPO_ROOT}/ios"
 pod deintegrate
-pod install --repo-update
+pod install
 
 
 # Create .env file in project root (REPO_ROOT, not relative to current directory)

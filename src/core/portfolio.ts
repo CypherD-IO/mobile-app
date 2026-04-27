@@ -12,9 +12,11 @@ import {
   CHAIN_NOBLE,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
+  CHAIN_BASE_SEPOLIA,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_SOLANA,
+  CHAIN_SOLANA_DEVNET,
   CHAIN_HYPERLIQUID,
 } from '../constants/server';
 import axios from './Http';
@@ -113,9 +115,11 @@ export interface WalletHoldings {
   noble: ChainHoldings;
   zksync_era: ChainHoldings;
   base: ChainHoldings;
+  base_sepolia?: ChainHoldings;
   coreum: ChainHoldings;
   injective: ChainHoldings;
   solana: ChainHoldings;
+  solana_devnet?: ChainHoldings;
   totalHoldings: Holding[];
   hyperliquid: ChainHoldings;
   timestamp: string;
@@ -182,12 +186,23 @@ export function getCurrentChainHoldings(
       return portfolio.zksync_era;
     case CHAIN_BASE.backendName:
       return portfolio.base;
+    case CHAIN_BASE_SEPOLIA.backendName:
+      return (
+        portfolio.base_sepolia ?? {
+          totalBalance: 0,
+          totalUnverifiedBalance: 0,
+          totalHoldings: [],
+          timestamp: '',
+        }
+      );
     case CHAIN_COREUM.backendName:
       return portfolio.coreum;
     case CHAIN_INJECTIVE.backendName:
       return portfolio.injective;
     case CHAIN_SOLANA.backendName:
       return portfolio.solana;
+    case CHAIN_SOLANA_DEVNET.backendName:
+      return portfolio.solana_devnet ?? portfolio.solana;
     case CHAIN_HYPERLIQUID.backendName:
       return portfolio.hyperliquid;
     default:
@@ -224,7 +239,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let optimismHoldings;
   let zksyncEraHoldings;
   let baseHoldings;
+  let baseSepoliaHoldings;
   let solanaHoldings;
+  let solanaDevnetHoldings;
   let hyperliquidHoldings;
 
   const tempHyperliquidBalances: any[] = Array.isArray(
@@ -320,6 +337,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         case CHAIN_BASE.backendName:
           tokenHolding.chainDetails = CHAIN_BASE;
           break;
+        case CHAIN_BASE_SEPOLIA.backendName:
+          tokenHolding.chainDetails = CHAIN_BASE_SEPOLIA;
+          break;
         case CHAIN_COREUM.backendName:
           tokenHolding.chainDetails = CHAIN_COREUM;
           break;
@@ -328,6 +348,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
           break;
         case CHAIN_SOLANA.backendName:
           tokenHolding.chainDetails = CHAIN_SOLANA;
+          break;
+        case CHAIN_SOLANA_DEVNET.backendName:
+          tokenHolding.chainDetails = CHAIN_SOLANA_DEVNET;
           break;
         case CHAIN_HYPERLIQUID.backendName:
           tokenHolding.accountType = allholdings[+i]?.accountType;
@@ -391,6 +414,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
       case CHAIN_BASE.backendName:
         baseHoldings = chainHoldings;
         break;
+      case CHAIN_BASE_SEPOLIA.backendName:
+        baseSepoliaHoldings = chainHoldings;
+        break;
       case CHAIN_COREUM.backendName:
         coreumHoldings = chainHoldings;
         break;
@@ -399,6 +425,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         break;
       case CHAIN_SOLANA.backendName:
         solanaHoldings = chainHoldings;
+        break;
+      case CHAIN_SOLANA_DEVNET.backendName:
+        solanaDevnetHoldings = chainHoldings;
         break;
       case CHAIN_HYPERLIQUID.backendName:
         if (hyperliquidHoldings) {
@@ -431,9 +460,11 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     arbitrum: arbitrumHoldings as ChainHoldings,
     zksync_era: zksyncEraHoldings as ChainHoldings,
     base: baseHoldings as ChainHoldings,
+    base_sepolia: baseSepoliaHoldings,
     coreum: coreumHoldings as ChainHoldings,
     injective: injectiveHoldings as ChainHoldings,
     solana: solanaHoldings as ChainHoldings,
+    solana_devnet: solanaDevnetHoldings,
     hyperliquid: hyperliquidHoldings ?? {
       totalBalance: 0,
       totalUnverifiedBalance: 0,

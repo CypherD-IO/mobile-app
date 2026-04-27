@@ -46,7 +46,10 @@ export default function ChooseChainModal({
    * Shows chain logo and name in a card format
    */
   const renderFromList = ({ item, index }: { item: any; index: number }) => {
-    const isSelected = item.name === selectedItem;
+    const isSelected =
+      String(item.id) === selectedItem ||
+      item.chain_id === selectedItem ||
+      item.name === selectedItem;
 
     return (
       <CyDTouchView

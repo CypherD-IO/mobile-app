@@ -18,6 +18,7 @@ const OPTIMISM = require('./optimism.png');
 const LOADING_IMAGE = require('./loading_animation_lottie.json');
 const LOADING_SPINNER = require('./loadingSpinner.json');
 const BRIDGE_LOADER = require('./bridgeLoader.json');
+const MONEY_TRANSFER = require('./moneyTransfer.json');
 const APP_LOGO = require('./appLogo.png');
 const CARD = require('./card.png');
 const ETHEREUM = require('./ethereum.png');
@@ -807,6 +808,39 @@ const SAFEPAL_CLAIM_MODAL_NON_PREMIUM = {
   uri: `${S3_BUCKET_URL_ICONS}/safepalClaimModalNonPremium.png`,
 };
 
+const DOCUMENT_VERIFICATION = {
+  uri: `${S3_BUCKET_URL_ICONS}/docVerification.png`,
+};
+
+const DOCUMENT_APPROVED = {
+  uri: `${S3_BUCKET_URL_ICONS}/docsApproved.png`,
+};
+
+const DOCUMENT_SCANNING = {
+  uri: `${S3_BUCKET_URL_ICONS}/docScanning.png`,
+};
+
+const ID_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/idCard.png`,
+}
+
+const NOTE = {
+  uri: `${S3_BUCKET_URL_ICONS}/note.png`,
+};
+
+const REJECTED = {
+  uri: `${S3_BUCKET_URL_ICONS}/rejected.png`,
+};
+
+const CASH = {
+  uri: `${S3_BUCKET_URL_ICONS}/cash.png`,
+};
+
+const SELFIE_VERIFICATION = {
+  uri: `${S3_BUCKET_URL_ICONS}/selfieVerification.png`,
+};
+
+
 export const AppImagesMap = {
   common: {
     EMPTY_PERSON,
@@ -878,6 +912,7 @@ export const AppImagesMap = {
     INSIGHT_BULB,
     LOADING_SPINNER,
     BRIDGE_LOADER,
+    MONEY_TRANSFER,
     COINS,
     NEW,
     GIFT_BOX_PNG,
@@ -1140,6 +1175,14 @@ export const AppImagesMap = {
     SAFEPAL_CLAIM_MODAL,
     SAFEPAL_CLAIM_MODAL_NON_PREMIUM,
     TX_LOGO,
+    DOCUMENT_VERIFICATION,
+    DOCUMENT_APPROVED,
+    DOCUMENT_SCANNING,
+    ID_CARD,
+    NOTE,
+    REJECTED,
+    SELFIE_VERIFICATION,
+    CASH,
   },
   [Theme.LIGHT]: {
     NO_TRANSACTIONS_YET: NO_TRANSACTIONS_YET_LIGHT_THEME,
@@ -1224,6 +1267,7 @@ enum AppImages {
   INSIGHT_BULB = 'INSIGHT_BULB',
   LOADING_SPINNER = 'LOADING_SPINNER',
   BRIDGE_LOADER = 'BRIDGE_LOADER',
+  MONEY_TRANSFER = 'MONEY_TRANSFER',
   COINS = 'COINS',
   NEW = 'NEW',
   GIFT_BOX_PNG = 'GIFT_BOX_PNG',
@@ -1483,6 +1527,14 @@ enum AppImages {
   SAFEPAL_CLAIM_MODAL = 'SAFEPAL_CLAIM_MODAL',
   SAFEPAL_CLAIM_MODAL_NON_PREMIUM = 'SAFEPAL_CLAIM_MODAL_NON_PREMIUM',
   TX_LOGO = 'TX_LOGO',
+  DOCUMENT_VERIFICATION = 'DOCUMENT_VERIFICATION',
+  DOCUMENT_APPROVED = 'DOCUMENT_APPROVED',
+  DOCUMENT_SCANNING = 'DOCUMENT_SCANNING',
+  ID_CARD = 'ID_CARD',
+  NOTE = 'NOTE',
+  REJECTED = 'REJECTED',
+  SELFIE_VERIFICATION = 'SELFIE_VERIFICATION',
+  CASH = 'CASH',
 }
 
 export default AppImages;
