@@ -25,6 +25,10 @@ interface UseCustomerIOReturn {
     traits?: Record<string, unknown>,
   ) => Promise<void>;
   clearCustomerIOUser: () => Promise<void>;
+  trackScreen: (
+    screenName: string,
+    properties?: Record<string, unknown>,
+  ) => Promise<void>;
 }
 
 export default function useCustomerIO(): UseCustomerIOReturn {
@@ -141,9 +145,38 @@ export default function useCustomerIO(): UseCustomerIOReturn {
     }
   }, [waitForInit]);
 
+  /**
+   * Tracks a screen view in Customer.io, enabling page-targeted
+   * in-app messages. Called from navigation state changes.
+   */
+  const trackScreen = useCallback(
+    async (
+      screenName: string,
+      properties?: Record<string, unknown>,
+    ): Promise<void> => {
+      const ready = await waitForInit();
+      if (!ready) {
+        return;
+      }
+
+      const trimmed = screenName?.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      try {
+        await CustomerIO.screen(trimmed, properties ?? {});
+      } catch (error) {
+        Sentry.captureException(error);
+      }
+    },
+    [waitForInit],
+  );
+
   return {
     initializeCustomerIO,
     identifyCustomerIOUser,
     clearCustomerIOUser,
+    trackScreen,
   };
 }

@@ -9,12 +9,14 @@
 const mockInitialize = jest.fn().mockResolvedValue(undefined);
 const mockIdentify = jest.fn().mockResolvedValue(undefined);
 const mockClearIdentify = jest.fn().mockResolvedValue(undefined);
+const mockScreen = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('customerio-reactnative', () => ({
   CustomerIO: {
     initialize: mockInitialize,
     identify: mockIdentify,
     clearIdentify: mockClearIdentify,
+    screen: mockScreen,
   },
   CioLogLevel: { Debug: 'debug', Error: 'error' },
   CioRegion: { US: 'us' },
@@ -314,6 +316,77 @@ describe('useCustomerIO', () => {
       });
 
       expect(mockClearIdentify).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── trackScreen ────────────────────────────────────────────────────
+
+  describe('trackScreen', () => {
+    it('sends screen event with name and properties', async () => {
+      setConfig({ CUSTOMERIO_CDP_API_KEY: 'test-cdp-key' });
+      const { result } = renderHook(() => useCustomerIO());
+
+      await act(async () => {
+        await result.current.trackScreen('HomeScreen', { tab: 'cards' });
+      });
+
+      expect(mockScreen).toHaveBeenCalledWith('HomeScreen', { tab: 'cards' });
+    });
+
+    it('sends empty properties when omitted', async () => {
+      setConfig({ CUSTOMERIO_CDP_API_KEY: 'test-cdp-key' });
+      const { result } = renderHook(() => useCustomerIO());
+
+      await act(async () => {
+        await result.current.trackScreen('CardScreen');
+      });
+
+      expect(mockScreen).toHaveBeenCalledWith('CardScreen', {});
+    });
+
+    it('skips when screen name is empty', async () => {
+      setConfig({ CUSTOMERIO_CDP_API_KEY: 'test-cdp-key' });
+      const { result } = renderHook(() => useCustomerIO());
+
+      await act(async () => {
+        await result.current.trackScreen('');
+      });
+
+      expect(mockScreen).not.toHaveBeenCalled();
+    });
+
+    it('trims whitespace from screen name', async () => {
+      setConfig({ CUSTOMERIO_CDP_API_KEY: 'test-cdp-key' });
+      const { result } = renderHook(() => useCustomerIO());
+
+      await act(async () => {
+        await result.current.trackScreen('  CardScreen  ');
+      });
+
+      expect(mockScreen).toHaveBeenCalledWith('CardScreen', {});
+    });
+
+    it('reports to Sentry when screen call throws', async () => {
+      const screenError = new Error('screen failed');
+      mockScreen.mockRejectedValueOnce(screenError);
+      setConfig({ CUSTOMERIO_CDP_API_KEY: 'test-cdp-key' });
+      const { result } = renderHook(() => useCustomerIO());
+
+      await act(async () => {
+        await result.current.trackScreen('CardScreen');
+      });
+
+      expect(mockCaptureException).toHaveBeenCalledWith(screenError);
+    });
+
+    it('skips when SDK not initialized', async () => {
+      const { result } = renderHook(() => useCustomerIO());
+
+      await act(async () => {
+        await result.current.trackScreen('CardScreen');
+      });
+
+      expect(mockScreen).not.toHaveBeenCalled();
     });
   });
 });
