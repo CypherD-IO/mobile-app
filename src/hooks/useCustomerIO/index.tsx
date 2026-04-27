@@ -13,6 +13,11 @@ const { CioPushBridge } = NativeModules;
 
 let initPromise: Promise<boolean> | null = null;
 
+/** @internal Reset singleton for unit tests only. */
+export function _resetInitPromise(): void {
+  initPromise = null;
+}
+
 interface UseCustomerIOReturn {
   initializeCustomerIO: () => Promise<boolean>;
   identifyCustomerIOUser: (
