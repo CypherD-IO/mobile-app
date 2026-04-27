@@ -142,6 +142,7 @@ export default function ChooseWalletIndexComponent({
           'absolute w-full bottom-[0px] bg-n0 pt-[10px] pb-[32px] px-[16px] shadow-md shadow-n40',
         )}>
         <Button
+          testID='choose-wallet-submit-btn'
           type={ButtonType.PRIMARY}
           title={t('SUBMIT_FIRST_LETTER_CAPS')}
           onPress={() => {

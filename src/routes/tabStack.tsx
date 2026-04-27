@@ -520,6 +520,7 @@ const TabStack = React.memo(
             component={PortfolioStackScreen}
             options={{
               lazy: true,
+              tabBarTestID: 'tab-portfolio',
             }}
           />
           <Tab.Screen
@@ -528,6 +529,7 @@ const TabStack = React.memo(
             options={{
               lazy: true,
               headerShown: false,
+              tabBarTestID: 'tab-card',
             }}
           />
           <Tab.Screen
@@ -536,6 +538,7 @@ const TabStack = React.memo(
             options={{
               lazy: true,
               headerShown: false,
+              tabBarTestID: 'tab-rewards',
             }}
           />
           <Tab.Screen
@@ -544,6 +547,7 @@ const TabStack = React.memo(
             options={{
               lazy: true,
               headerShown: false,
+              tabBarTestID: 'tab-options',
             }}
           />
         </Tab.Navigator>

@@ -23,6 +23,7 @@ interface ActionButton {
   icon: IconNames | 'dots-horizontal';
   isMaterialIcon?: boolean;
   onPress: () => void;
+  testID?: string;
 }
 
 interface BannerProps {
@@ -64,12 +65,14 @@ export const Banner = ({
       label: t('SEND', 'Send'),
       icon: 'arrow-up-right',
       onPress: onSendPress,
+      testID: 'portfolio-send-btn',
     },
     {
       id: 'receive',
       label: t('RECEIVE', 'Receive'),
       icon: 'arrow-down-left',
       onPress: onReceivePress,
+      testID: 'portfolio-receive-btn',
     },
     {
       id: 'swap',
@@ -104,7 +107,7 @@ export const Banner = ({
         {/* Balance Display with Eye Icon */}
         <CyDView className='mb-[24px] flex-row items-center gap-[2px] justify-center'>
           <CyDView className='flex-shrink'>
-            <CyDTokenValue className='text-[32px]'>
+            <CyDTokenValue testID='portfolio-balance' className='text-[32px]'>
               {portfolioBalance}
             </CyDTokenValue>
           </CyDView>
@@ -125,6 +128,7 @@ export const Banner = ({
           {actionButtons.map(button => (
             <CyDTouchView
               key={button.id}
+              testID={button.testID}
               onPress={button.onPress}
               activeOpacity={0.7}
               className='flex-1 bg-p0 rounded-[12px] px-[8px] py-[6px] flex-row items-center justify-center gap-[2px]'>

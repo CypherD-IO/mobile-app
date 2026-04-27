@@ -50,6 +50,12 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   }, [projectId]);
 
   useEffect(() => {
+    // Skip WalletConnect init under E2E tests. createWeb3Wallet opens a
+    // persistent websocket to relay.walletconnect.com that keeps Detox's
+    // sync "busy" indefinitely, stalling any test that waits for idle.
+    if (Config.IS_TESTING === 'true') {
+      return;
+    }
     if (
       !isWeb3WalletInitialized &&
       !isInitializationInProgress.current &&

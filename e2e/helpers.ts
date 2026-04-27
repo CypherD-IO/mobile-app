@@ -1,52 +1,280 @@
-import { device, element, by, waitFor, expect } from 'detox';
+import { device, element, by, waitFor } from 'detox';
+
+// ---------------------------------------------------------------------------
+// Timeouts (ms) — centralised so tests stay consistent
+// ---------------------------------------------------------------------------
+const TIMEOUT_SHORT = 3000;
+const TIMEOUT_MEDIUM = 5000;
+const TIMEOUT_LONG = 10000;
+
+// ---------------------------------------------------------------------------
+// URL blacklist — Detox sync ignores these background network requests
+// Without this, persistent analytics/wallet-image/Firebase calls keep the
+// app "busy" and Detox never considers it idle.
+// ---------------------------------------------------------------------------
+const URL_BLACKLIST = [
+  // Analytics & monitoring
+  '.*app-analytics-services.*',
+  '.*firebaselogging.*',
+  '.*googleapis.com.*',
+  '.*sentry.io.*',
+  '.*intercom.*',
+  // Firebase (persistent connections for messaging, installations, etc.)
+  '.*firebase.google.com.*',
+  '.*firebaseinstallations.*',
+  // Broadened crashlytics pattern. The previous '.*crashlyticsreports.*'
+  // only matched the reports endpoint and MISSED 'firebase-settings.
+  // crashlytics.com', which Crashlytics polls on startup for remote
+  // config. On CI, that request can take 7+ min to settle, keeping
+  // Detox sync busy and hanging tests.
+  '.*crashlytics.*',
+  '.*firebase-settings.*',
+  // WalletConnect & Web3
+  '.*api.web3modal.org.*',
+  '.*relay.walletconnect.com.*',
+  '.*cloud.web3auth.io.*',
+  // Backend API (device registration, config fetches on startup)
+  '.*arch.cypherhq.io.*',
+  '.*arch-dev.cypherd.io.*',
+  '.*cypherd.io.*',
+  '.*cypherhq.io.*',
+  // Bridge / swap
+  '.*api.skip.money.*',
+  // RPC endpoints — wallet startup polls every supported chain. Any slow
+  // RPC response keeps Detox sync busy. Cast a wide net on RPC providers.
+  '.*keplr.app.*',
+  '.*api.solana.com.*',
+  '.*rpc.ankr.com.*',
+  '.*ankr.com.*',
+  '.*publicnode.com.*',
+  '.*polkachu.com.*',
+  '.*alchemy.com.*',
+  '.*arb1.arbitrum.io.*',
+  '.*era.zksync.io.*',
+  '.*1rpc.io.*',
+  '.*ecostake.com.*',
+  '.*quickapi.com.*',
+  '.*solonation.io.*',
+  '.*mainnet-beta.solana.com.*',
+  // Block explorers (tx link lookups, metadata fetches)
+  '.*etherscan.io.*',
+  '.*polygonscan.com.*',
+  '.*bscscan.com.*',
+  '.*snowtrace.io.*',
+  '.*arbiscan.io.*',
+  '.*explorer.solana.com.*',
+  '.*basescan.org.*',
+  // Coingecko icons (portfolio token logos — many parallel requests)
+  '.*coingecko.com.*',
+  // Metro bundler — symbolication and ALL /assets/ URLs (app images like
+  // shortcutsSwap.png, coinRed.png, profileAvatar.png + node_modules assets).
+  // Previously only /assets/node_modules/* was covered, which missed app
+  // images served at /assets/assets/images/*. On CI those fetches happen
+  // in a burst after reOpenApp and kept Detox's sync 'busy' for 3+ min
+  // while the test waited on disableSynchronization().
+  '.*localhost:8081/symbolicate.*',
+  '.*localhost:8081/assets/.*',
+];
+
+// URL blacklist formatted as a regex string for Detox's launchArgs. Detox
+// accepts the regex pre-baked in launchArgs (detoxURLBlacklistRegex) so the
+// blacklist applies from the very first frame, before setURLBlacklist()
+// lands over IPC.
+const URL_BLACKLIST_REGEX = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
+
+// Shared Detox launchArgs used by every app launch (initial + relaunch).
+const DEFAULT_LAUNCH_ARGS = {
+  detoxHandleSystemAlerts: 'YES',
+  detoxVisibilityPercentage: 75,
+  detoxURLBlacklistRegex: URL_BLACKLIST_REGEX,
+} as const;
+
+// ---------------------------------------------------------------------------
+// Small utilities
+// ---------------------------------------------------------------------------
+
+/** `await sleep(500)` — more readable than `new Promise(r => setTimeout(r, 500))`. */
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ---------------------------------------------------------------------------
+// Manual polling helpers
+// ---------------------------------------------------------------------------
 
 /**
- * Check if Metro bundler is accessible and ready
- * @returns Promise<boolean> true if Metro is ready, false otherwise
+ * Wait for an element to exist using manual expect() polling.
+ *
+ * Detox's `waitFor().toExist().withTimeout()` is blocked by internal
+ * sync on RN 0.84+. When the app has persistent work on the main queue
+ * (pending timers, Firebase requests, LogBox errors firing repeatedly),
+ * sync never reports idle and waitFor() hangs until its timeout fires —
+ * even when the element is already on screen.
+ *
+ * Manual `expect()` in a try/catch loop bypasses sync entirely, so we can
+ * detect elements as soon as they render. Use this INSTEAD of waitFor()
+ * whenever you're past the initial navigation and sync is disabled.
  */
-export async function checkMetroConnection(): Promise<boolean> {
+export async function waitForElementById(
+  testId: string,
+  opts: { timeoutMs?: number; intervalMs?: number; label?: string } = {},
+): Promise<void> {
+  const { timeoutMs = 30000, intervalMs = 1000, label = testId } = opts;
+  const attempts = Math.max(1, Math.ceil(timeoutMs / intervalMs));
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await expect(element(by.id(testId))).toExist();
+      return;
+    } catch {
+      if (i === attempts - 1) {
+        throw new Error(`Element "${label}" did not appear within ${timeoutMs}ms`);
+      }
+      await sleep(intervalMs);
+    }
+  }
+}
+
+/** Silent version of waitForElementById — returns bool instead of throwing. */
+export async function waitForElementByIdSilent(
+  testId: string,
+  timeoutMs: number,
+): Promise<boolean> {
   try {
-    const response = await fetch('http://localhost:8081/status');
-    if (!response.ok) {
-      console.log('Metro status check failed:', response.status);
-      return false;
-    }
-
-    // Also check if bundle endpoint is accessible
-    const bundleResponse = await fetch(
-      'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
-      { method: 'HEAD' }, // Use HEAD to avoid downloading the full bundle
-    );
-
-    if (!bundleResponse.ok) {
-      console.log('Metro bundle endpoint check failed:', bundleResponse.status);
-      return false;
-    }
-
+    await waitForElementById(testId, { timeoutMs });
     return true;
-  } catch (error) {
-    console.log('Metro connection failed:', error);
+  } catch {
     return false;
   }
 }
 
 /**
- * Enhanced app reset with Metro connection validation
+ * Same manual-polling pattern as waitForElementById but matches by text.
+ * Use for dynamic content (token lists, modals) that doesn't have testIDs.
+ * Returns true if element was found, false otherwise (does not throw).
  */
-export async function resetAppWithMetroCheck(): Promise<void> {
-  // First verify Metro is ready
-  console.log('Checking Metro bundler connection before app reset...');
-  const isMetroReady = await checkMetroConnection();
-
-  if (!isMetroReady) {
-    console.log('⚠️ Metro bundler not ready, but proceeding with app reset...');
-  } else {
-    console.log('✅ Metro bundler is ready');
+export async function waitForElementByText(
+  text: string,
+  opts: { timeoutMs?: number; intervalMs?: number; atIndex?: number } = {},
+): Promise<boolean> {
+  const { timeoutMs = 10000, intervalMs = 500, atIndex = 0 } = opts;
+  const attempts = Math.max(1, Math.ceil(timeoutMs / intervalMs));
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await expect(element(by.text(text)).atIndex(atIndex)).toExist();
+      return true;
+    } catch {
+      if (i === attempts - 1) return false;
+      await sleep(intervalMs);
+    }
   }
-
-  // Proceed with normal app reset
-  await resetAppCompletely();
+  return false;
 }
+
+/**
+ * Tap an element with automatic retry. The tap can fail during layout
+ * transitions, re-renders, or when a banner is briefly covering the UI;
+ * retrying handles all those cases without caller-side loops.
+ *
+ * Pass `onRetry` to run a side-effect between failed attempts (for
+ * example, dismissing a LogBox banner that may be blocking the tap).
+ */
+export async function tapWithRetry(
+  matcher: () => Detox.NativeElement,
+  opts: {
+    maxAttempts?: number;
+    intervalMs?: number;
+    onRetry?: (attempt: number) => Promise<void> | void;
+    label?: string;
+  } = {},
+): Promise<void> {
+  const { maxAttempts = 10, intervalMs = 1000, onRetry, label = 'element' } = opts;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await matcher().tap();
+      return;
+    } catch (err) {
+      if (attempt === maxAttempts) {
+        throw new Error(
+          `Could not tap "${label}" after ${maxAttempts} attempts: ${String(err)}`,
+        );
+      }
+      if (onRetry) await onRetry(attempt);
+      await sleep(intervalMs);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Debug banner dismissal
+// ---------------------------------------------------------------------------
+
+/**
+ * Dismiss React Native LogBox notification banners that overlay the UI.
+ * On CI, LogBox.uninstall() may not work, so banners cover buttons.
+ *
+ * The dismiss X buttons have no testID or accessibilityLabel — they use
+ * RN's `id` prop which maps to nativeID, not accessibilityIdentifier.
+ * So by.id() can't find them.
+ *
+ * Strategy: tap the banner text to open the full LogBox inspector,
+ * then tap the "Dismiss" text button in the inspector footer.
+ *
+ * Banner texts are matched as PREFIXES because LogBox truncates long
+ * messages (e.g. red banner shows `Cannot update a component (\`Wallet...`).
+ * We enumerate known text elements and tap any whose text starts with
+ * one of our prefixes.
+ */
+async function dismissLogBoxBanners(): Promise<void> {
+  // Known banner text prefixes that appear during E2E runs.
+  // Add new ones here as we observe them in CI logs/screenshots.
+  const bannerPrefixes = [
+    'Open debugger to view warnings.',
+    'Cannot update a component',
+  ];
+
+  for (const prefix of bannerPrefixes) {
+    // Try exact match first (covers full, untruncated banners).
+    let tapped = false;
+    try {
+      await expect(element(by.text(prefix)).atIndex(0)).toExist();
+      await element(by.text(prefix)).atIndex(0).tap();
+      console.log(`Opened LogBox inspector for exact match: "${prefix}"`);
+      tapped = true;
+    } catch {
+      // Fall through to regex match below.
+    }
+
+    // Fallback: Detox supports regex matchers via by.text on iOS when
+    // wrapped in ^...$ via string — but the most portable fallback is
+    // to just skip if exact didn't hit. Red banners that exceed the
+    // banner width (truncated) won't be found — we rely on the boot-time
+    // LogBox.uninstall() to prevent them from rendering.
+    if (!tapped) continue;
+
+    await sleep(500);
+
+    // Tap "Dismiss" in the inspector footer to dismiss this log.
+    try {
+      await expect(element(by.text('Dismiss'))).toExist();
+      await element(by.text('Dismiss')).tap();
+      console.log('Tapped Dismiss in LogBox inspector');
+      await sleep(500);
+    } catch {
+      // Inspector might auto-dismiss, or layout changed. Fall back to
+      // swiping up from the bottom to close the full-screen inspector.
+      try {
+        await element(by.type('RCTView')).atIndex(0).swipe('down', 'fast', 0.5);
+        console.log('Swiped to close LogBox inspector');
+      } catch {
+        console.log('Could not close LogBox inspector');
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Permission dialog handler
+// ---------------------------------------------------------------------------
 
 /**
  * Handle iOS permission dialog by looking for permission text and clicking Allow
@@ -55,172 +283,143 @@ export async function resetAppWithMetroCheck(): Promise<void> {
 export async function handlePermissionDialog(): Promise<boolean> {
   console.log('Checking for permission dialogs...');
 
-  try {
-    // Add multiple ways to identify the notification dialog
-    const notificationTitle = element(
-      by.text('"Cypher Wallet" Would Like to Send You Notifications'),
-    );
-    const allowButton = element(by.text('Allow'));
-
-    // Wait for permission dialog with a timeout
-    await waitFor(notificationTitle).toBeVisible().withTimeout(3000);
-
-    console.log('Permission dialog found! Clicking Allow...');
-    await allowButton.tap();
-    console.log('Clicked Allow button successfully');
-    return true;
-  } catch (e) {
+  const found = await waitForElementByText(
+    '"Cypher Wallet" Would Like to Send You Notifications',
+    { timeoutMs: TIMEOUT_SHORT },
+  );
+  if (!found) {
     console.log('No permission dialog found or unable to handle');
+    return false;
+  }
+
+  try {
+    await element(by.text('Allow')).tap();
+    console.log('Clicked Allow on permission dialog');
+    return true;
+  } catch {
+    console.log('Permission dialog appeared but Allow tap failed');
     return false;
   }
 }
 
+// ---------------------------------------------------------------------------
+// Onboarding navigation
+// ---------------------------------------------------------------------------
+
 /**
- * Navigate through the onboarding screens
- * @returns void
+ * Navigate through the GetStarted carousel (3 "Continue" taps) then wait
+ * for the OnBoardingOptions screen.
+ *
+ * Disables Detox sync while driving the carousel (the main queue has
+ * persistent work — Firebase, WalletConnect, RPC polls — that prevents
+ * Detox from ever considering the app idle). Re-enables sync at the end
+ * so the caller's next Detox action (usually a modal-opening tap) can
+ * wait for the in-flight UI transition to settle before firing.
  */
 export async function navigateThroughOnboarding(): Promise<void> {
-  // Allow app to fully load
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await device.disableSynchronization();
 
-  // ------ Screen 1: "Non Custodial Crypto Wallet" ------
-  // The actual text has a newline: "Non Custodial \nCrypto Wallet"
-  try {
-    // Try the exact text with newline first
-    const screen1TextWithNewline = element(
-      by.text('Non Custodial \nCrypto Wallet'),
-    );
-    await waitFor(screen1TextWithNewline).toExist().withTimeout(3000);
-    console.log('Found first onboarding screen with newline text');
-  } catch (e) {
-    try {
-      // Try just "Non Custodial" as partial match
-      const screen1TextPartial = element(by.text('Non Custodial'));
-      await waitFor(screen1TextPartial).toExist().withTimeout(3000);
-      console.log(
-        'Found first onboarding screen with partial text "Non Custodial"',
-      );
-    } catch (e) {
-      try {
-        // Try "Crypto Wallet" as partial match
-        const screen1TextPartial2 = element(by.text('Crypto Wallet'));
-        await waitFor(screen1TextPartial2).toExist().withTimeout(3000);
-        console.log(
-          'Found first onboarding screen with partial text "Crypto Wallet"',
-        );
-      } catch (e) {
-        console.error(
-          'Could not find any variation of Non Custodial Crypto Wallet text',
-        );
-        throw new Error('Could not find first onboarding screen text');
-      }
-    }
+  // Wait for the GetStarted carousel's "Continue" button to render.
+  const loaded = await waitForElementByText('Continue', {
+    timeoutMs: 90000,
+    intervalMs: 3000,
+  });
+  if (!loaded) throw new Error('Onboarding screen did not load within 90s');
+  console.log('GetStarted carousel is loaded');
+
+  // Dismiss LogBox banners that cover bottom buttons.
+  // On CI, LogBox.uninstall() doesn't work (NativeModules.DetoxHelper
+  // is unavailable in bridgeless mode), so banners overlay the UI.
+  await dismissLogBoxBanners();
+
+  // Tap "Continue" to advance through the 3 carousel sections. Retry
+  // on failure — banners or splash may still be settling. If the tap
+  // keeps failing, dismiss any banner that may have reappeared.
+  for (let section = 1; section <= 3; section++) {
+    await tapWithRetry(() => element(by.text('Continue')), {
+      maxAttempts: 20,
+      intervalMs: 3000,
+      label: `Continue on section ${section}`,
+      onRetry: async attempt => {
+        if (attempt === 5 || attempt === 10) await dismissLogBoxBanners();
+      },
+    });
+    console.log(`Tapped Continue on section ${section}`);
+    await sleep(300);
   }
 
-  console.log(
-    'Found first onboarding screen with "Non Custodial Crypto Wallet"',
-  );
+  // Confirm we arrived at the OnBoardingOptions screen
+  await waitForElementById('options-wallets-btn', {
+    timeoutMs: 20000,
+    label: 'OnBoardingOptions screen',
+  });
+  console.log('Arrived at OnBoardingOptions screen');
 
-  // Look for Continue button on screen 1
-  try {
-    const continueButton = await findButton(
-      'Continue',
-      ['CONTINUE', 'continue'],
-      'continue-button',
-    );
-    await continueButton.tap();
-    console.log('Successfully tapped Continue button on screen 1');
-  } catch (e) {
-    console.error('Could not find Continue button on screen 1');
-    throw new Error('Could not find or tap Continue button on screen 1');
-  }
-
-  // Allow animation to complete
-  await delay(2000);
-
-  // ------ Screen 2: "Zero-Fee Crypto Card" ------
-  const screen2TextContent = 'Zero-Fee Crypto Card';
-  try {
-    const screen2Text = element(by.text(screen2TextContent));
-    await waitFor(screen2Text).toExist().withTimeout(5000);
-    console.log('Found second onboarding screen with "Zero-Fee Crypto Card"');
-  } catch (e) {
-    console.error(
-      'Could not find second screen content, attempting to proceed anyway',
-    );
-  }
-
-  // Look for Continue button on screen 2
-  try {
-    const continueButton = await findButton(
-      'Continue',
-      ['CONTINUE', 'continue'],
-      'continue-button',
-    );
-    await continueButton.tap();
-    console.log('Successfully tapped Continue button on screen 2');
-  } catch (e) {
-    console.error('Could not find Continue button on screen 2');
-    throw new Error('Could not find or tap Continue button on screen 2');
-  }
-
-  // Allow animation to complete
-  await delay(2000);
+  await device.enableSynchronization();
 }
+
+// ---------------------------------------------------------------------------
+// App lifecycle helpers
+// ---------------------------------------------------------------------------
 
 export const reOpenApp = async () => {
   await device.launchApp({
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' },
-    launchArgs: {
-      detoxHandleSystemAlerts: 'YES',
-      // Add any other launch args that help ensure clean state
-    },
+    launchArgs: { ...DEFAULT_LAUNCH_ARGS },
   });
+  // NOTE: intentionally NOT calling setURLBlacklist or disableSynchronization
+  // here. Both commands wait for the app to be "idle" when sync is enabled
+  // (which launchApp always re-enables). On CI the app is busy for 3+
+  // minutes after relaunch fetching Metro assets + Firebase polls — exactly
+  // the URLs we'd filter. That wait pushed test 01 past its 5-min Jest
+  // timeout on CI run 436.
+  //
+  // The URL blacklist is still applied at launch via the detoxURLBlacklistRegex
+  // launchArg, AND setURLBlacklist state from resetAppCompletely persists
+  // across same-session launches. Callers that need sync off should manage
+  // that themselves at their own pace (the hang can't deadlock a caller
+  // with manual polling like ours).
 };
 
 /**
- * Ultra-lightweight reset for CI environments when the main reset fails
- * @returns void
+ * Verify Metro is alive before launching the app. If Metro died (common on
+ * CI due to memory pressure), the app shows "Could not connect to development
+ * server" and no React views render.
  */
-export async function resetAppForCIOnly(): Promise<void> {
-  console.log('🚀 Using ultra-lightweight CI reset...');
-
-  try {
-    // Step 1: Clear keychain for test isolation (important!)
-    console.log('Clearing keychain...');
-    await Promise.race([
-      device.clearKeychain(),
-      new Promise((resolve, reject) =>
-        setTimeout(() => reject(new Error('Keychain clear timeout')), 10000),
-      ),
-    ]);
-    console.log('✅ Keychain cleared successfully');
-  } catch (error) {
-    console.log('⚠️ Keychain clear failed, but continuing:', error);
-    // Don't throw here - continue with app launch even if keychain clear fails
+async function ensureMetroIsAlive(): Promise<void> {
+  const maxAttempts = 15;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const response = await fetch('http://localhost:8081/status');
+      if (response.ok) {
+        console.log('Metro is alive');
+        return;
+      }
+    } catch {
+      // not responding yet
+    }
+    if (i === 0) {
+      console.log('Metro not responding — waiting for it...');
+      // On CI, try to restart Metro if it died
+      if (process.env.CI === 'true') {
+        try {
+          const { exec } = require('child_process');
+          exec('npx react-native start --reset-cache --port 8081 &');
+          // Give Metro time to boot before polling
+          await sleep(10000);
+        } catch {
+          // ignore
+        }
+      }
+    }
+    await sleep(2000);
   }
-
-  try {
-    // Step 2: Launch app fresh
-    console.log('Launching app with minimal configuration...');
-    await device.launchApp({
-      newInstance: true,
-      permissions: { notifications: 'YES', camera: 'YES' },
-      launchArgs: {
-        detoxHandleSystemAlerts: 'YES',
-      },
-    });
-    console.log('✅ Ultra-lightweight CI reset completed');
-  } catch (error) {
-    console.error('❌ Even ultra-lightweight reset failed:', error);
-    throw error;
-  }
+  throw new Error('Metro bundler is not running — cannot launch app');
 }
 
 /**
  * Reset app state completely - optimized for speed and reliability
- * @returns void
  */
 export async function resetAppCompletely(): Promise<void> {
   const isCI = process.env.CI === 'true';
@@ -228,435 +427,196 @@ export async function resetAppCompletely(): Promise<void> {
     `Performing fast app reset for E2E tests... (CI: ${String(isCI)})`,
   );
 
+  // Clear the iOS keychain — wallet keys are stored here via
+  // react-native-keychain and persist across app uninstall/reinstall.
+  // Without this, delete: true reinstalls the app but the wallet
+  // remains in keychain, so the app skips onboarding.
   try {
-    // Step 1: Terminate app if running (fast operation)
-    console.log('Terminating app...');
-    await Promise.race([
-      device.terminateApp(),
-      new Promise((resolve, reject) =>
-        setTimeout(() => reject(new Error('Terminate timeout')), 10000),
-      ),
-    ]);
-  } catch (error) {
-    console.log(
-      'App terminate failed or timed out (app might not be running):',
-      error,
-    );
-  }
-
-  try {
-    // Step 2: Clear keychain (fast operation)
     console.log('Clearing keychain...');
     await Promise.race([
       device.clearKeychain(),
-      new Promise((resolve, reject) =>
-        setTimeout(() => reject(new Error('Keychain timeout')), 15000),
+      // 30s (was 15s). CI 427 saw the keychain call miss the 15s window
+      // on the first test — the simulator hadn't fully booted yet. Still
+      // a hard cap so a wedged call can't eat the whole test budget.
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Keychain timeout')), 30000),
       ),
     ]);
+    console.log('Keychain cleared');
   } catch (error) {
     console.log('Keychain clear failed or timed out:', error);
   }
 
-  // Step 3: Launch app with clean state - with CI-specific timeout
-  console.log('Launching app with clean state...');
-  try {
-    const launchTimeout = isCI ? 120000 : 60000; // 2 minutes in CI, 1 minute locally
-    console.log(`Using launch timeout: ${launchTimeout / 1000}s`);
+  // Verify Metro is alive BEFORE launching.
+  // Without Metro, the app shows "Could not connect to development
+  // server" and no React views render (just a native spinner).
+  await ensureMetroIsAlive();
 
-    await Promise.race([
-      device.launchApp({
-        newInstance: true,
-        permissions: { notifications: 'YES', camera: 'YES' },
-        launchArgs: {
-          detoxHandleSystemAlerts: 'YES',
-          // Ensure Metro bundler connection for E2E tests
-          RCTDevLoadingViewGetLogLevel: '0', // Reduce loading view logs
-          'RCTBundleURLProvider.jsBundleURLForBundleRoot':
-            'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
-          // Add CI-specific launch args to speed up startup
-          ...(isCI && {
-            detoxDisableHierarchyDump: 'YES',
-            detoxDisableScreenshotOnFailure: 'YES',
-          }),
-        },
-        // Ensure the app connects to Metro bundler
-        url: isCI
-          ? 'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false'
-          : undefined,
-      }),
-      new Promise((resolve, reject) =>
-        setTimeout(
-          () =>
-            reject(
-              new Error(`App launch timeout after ${launchTimeout / 1000}s`),
-            ),
-          launchTimeout,
-        ),
-      ),
-    ]);
+  // delete: true uninstalls + reinstalls the app, clearing AsyncStorage
+  // and all app data. Combined with clearKeychain() above, this gives
+  // us a fully clean state. No separate terminateApp() needed — delete
+  // handles termination internally, avoiding the hang that occurs when
+  // terminateApp() blocks the Node event loop via Detox IPC on CI.
+  //
+  // Wrap in a per-attempt timeout + single retry. On slow CI runners the
+  // first launchApp sometimes hangs at the iOS simctl level (stuck on
+  // native black-screen spinner — see CI run 438 beforeAllFailure.png
+  // for test 01). A fresh attempt usually succeeds because the first
+  // attempt eventually finishes its install work in the background.
+  const launchOpts = {
+    delete: true,
+    newInstance: true,
+    permissions: { notifications: 'YES', camera: 'YES' },
+    launchArgs: {
+      ...DEFAULT_LAUNCH_ARGS,
+      RCTDevLoadingViewGetLogLevel: '0',
+      ...(isCI && { detoxDisableHierarchyDump: 'YES' }),
+    },
+  } as const;
+  const LAUNCH_TIMEOUT_MS = 240000; // 4 min per attempt
+  const MAX_LAUNCH_ATTEMPTS = 2;
 
-    console.log('✅ Fast app reset completed successfully');
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('App launch failed:', error);
-
-    // In CI, try a fallback approach if launch fails
-    if (isCI) {
-      console.log('🔄 Attempting CI fallback: simpler launch...');
-      try {
-        await Promise.race([
-          device.launchApp({
-            newInstance: true,
-            permissions: { notifications: 'YES', camera: 'YES' },
-            // Use minimal launch args similar to successful local runs but ensure Metro connection
-            launchArgs: {
-              detoxHandleSystemAlerts: 'YES',
-              'RCTBundleURLProvider.jsBundleURLForBundleRoot':
-                'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
-            },
-          }),
-          new Promise((resolve, reject) =>
-            setTimeout(
-              () => reject(new Error('Fallback launch timeout after 60s')),
-              60000,
-            ),
-          ),
-        ]);
-        console.log('✅ CI fallback launch successful');
-      } catch (fallbackError) {
-        console.error('❌ CI fallback also failed:', fallbackError);
-        throw new Error(
-          `App reset failed: ${errorMessage}. Fallback also failed: ${String(fallbackError)}`,
-        );
-      }
-    } else {
-      throw new Error(`App reset failed: ${errorMessage}`);
-    }
-  }
-}
-
-/**
- * Try different selectors for a button to handle different localization or labeling scenarios
- * @param primaryText Primary text to look for
- * @param alternativeTexts Alternative texts to try if primary isn't found
- * @param buttonId Optional ID to try if text-based selectors fail
- * @returns The found element
- * @throws Error if no elements can be found
- */
-export async function findButton(
-  primaryText: string,
-  alternativeTexts: string[] = [],
-  buttonId?: string,
-): Promise<Detox.NativeElement> {
-  try {
-    const primaryButton = element(by.text(primaryText));
-    await waitFor(primaryButton).toBeVisible().withTimeout(3000);
-    return primaryButton;
-  } catch (e) {
+  for (let attempt = 1; attempt <= MAX_LAUNCH_ATTEMPTS; attempt++) {
     console.log(
-      `Primary button text "${primaryText}" not found, trying alternatives...`,
+      `Launching app with clean state (delete: true, attempt ${attempt}/${MAX_LAUNCH_ATTEMPTS})...`,
     );
-
-    // Try alternative text options
-    for (const altText of alternativeTexts) {
-      try {
-        const altButton = element(by.text(altText));
-        await waitFor(altButton).toBeVisible().withTimeout(2000);
-        return altButton;
-      } catch (altError) {
-        console.log(`Alternative button text "${altText}" not found`);
-      }
+    try {
+      await Promise.race([
+        device.launchApp(launchOpts),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`launchApp timeout after ${LAUNCH_TIMEOUT_MS}ms`)),
+            LAUNCH_TIMEOUT_MS,
+          ),
+        ),
+      ]);
+      break;
+    } catch (err) {
+      console.log(`launchApp attempt ${attempt} failed: ${String(err)}`);
+      if (attempt === MAX_LAUNCH_ATTEMPTS) throw err;
+      // Best-effort cleanup before retry. terminateApp is known to hang
+      // on wedged sessions, so we cap it too and ignore failures.
+      await Promise.race([
+        device.terminateApp().catch(() => undefined),
+        new Promise(resolve => setTimeout(resolve, 10000)),
+      ]);
     }
-
-    // Try by ID if provided
-    if (buttonId) {
-      try {
-        const idButton = element(by.id(buttonId));
-        await waitFor(idButton).toBeVisible().withTimeout(2000);
-        return idButton;
-      } catch (idError) {
-        console.log(`Button with ID "${buttonId}" not found`);
-      }
-    }
-
-    throw new Error(
-      `Could not find button with primary text "${primaryText}" or any alternatives`,
-    );
   }
+
+  // CRITICAL ordering: disable sync BEFORE setURLBlacklist — otherwise
+  // setURLBlacklist waits for the app to go idle first, but the app is
+  // busy fetching the very URLs we're trying to blacklist (Firebase,
+  // Crashlytics, Metro assets). On CI that wait can exceed 3 minutes.
+  // With sync disabled, the command sends to the app immediately.
+  await device.disableSynchronization();
+  await device.setURLBlacklist(URL_BLACKLIST);
+  await dismissLogBoxBanners();
+  await device.enableSynchronization();
+
+  console.log('App launched and ready');
 }
 
-/**
- * Wait for a set time (in milliseconds) to allow UI transitions and animations
- * @param ms Time to wait in milliseconds
- * @returns Promise that resolves after the specified time
- */
-export async function delay(ms: number): Promise<void> {
-  return await new Promise(resolve => setTimeout(resolve, ms));
-}
+// ---------------------------------------------------------------------------
+// Promotional modal guard
+// ---------------------------------------------------------------------------
 
 /**
- * Debug helper to log visible elements when tests fail
- * @param description Description of when this debug is being called
+ * Dismiss any known promotional modals/bottom sheets that may overlay the UI.
+ *
+ * Uses try/catch for each modal so the test passes whether the promo exists
+ * or not. When a promo is removed from the app, no test changes are needed —
+ * the try/catch silently skips it.
+ *
+ * Call this after navigating to screens that may show promos (Card tab, etc).
+ * Must be called with sync disabled.
  */
-export async function debugVisibleElements(description: string): Promise<void> {
-  console.log(`🔍 DEBUG: ${description}`);
-  console.log('Looking for common button patterns...');
-
-  // Try to find various button patterns
-  const buttonTexts = [
-    'CONFIRM',
-    'Confirm',
-    'CONTINUE',
-    'Continue',
-    'NEXT',
-    'Next',
-    'DONE',
-    'Done',
+export async function dismissPromotionalModals(): Promise<void> {
+  // Known promotional modals — add new ones here as they appear.
+  // Uses manual polling; each promo is optional, so missing modals
+  // don't throw — we just skip.
+  const promos: Array<{ name: string; testId: string }> = [
+    { name: 'Exclusive offer', testId: 'exclusive-offer-got-it-btn' },
   ];
 
-  for (const text of buttonTexts) {
-    try {
-      const buttonElement = element(by.text(text));
-      await waitFor(buttonElement).toBeVisible().withTimeout(1000);
-      console.log(`✅ Found button with text: "${text}"`);
-    } catch (e) {
-      console.log(`❌ No button found with text: "${text}"`);
+  for (const promo of promos) {
+    if (await waitForElementByIdSilent(promo.testId, 3000)) {
+      await element(by.id(promo.testId)).tap();
+      console.log(`Dismissed promo: ${promo.name}`);
     }
-  }
-
-  // Try to find buttons by auto-generated testIDs
-  const buttonTestIds = [
-    'button-CONFIRM',
-    'button-Confirm',
-    'button-CONTINUE',
-    'button-Continue',
-    'confirm-button',
-    'continue-button',
-  ];
-
-  for (const testId of buttonTestIds) {
-    try {
-      const buttonElement = element(by.id(testId));
-      await waitFor(buttonElement).toExist().withTimeout(1000);
-      console.log(`✅ Found button with testID: "${testId}"`);
-    } catch (e) {
-      console.log(`❌ No button found with testID: "${testId}"`);
-    }
-  }
-
-  // Try to find buttons by type
-  try {
-    const buttons = element(by.type('RCTButton'));
-    await waitFor(buttons).toExist().withTimeout(1000);
-    console.log('✅ Found RCTButton elements');
-  } catch (e) {
-    console.log('❌ No RCTButton elements found');
-  }
-
-  // Try to find touchable elements (which the button actually uses)
-  try {
-    const touchables = element(by.type('RCTTouchableOpacity'));
-    await waitFor(touchables).toExist().withTimeout(1000);
-    console.log('✅ Found RCTTouchableOpacity elements');
-  } catch (e) {
-    console.log('❌ No RCTTouchableOpacity elements found');
   }
 }
 
+// ---------------------------------------------------------------------------
+// Portfolio screen check
+// ---------------------------------------------------------------------------
+
 /**
- * Check if we've reached the portfolio/main wallet screen
- * @returns true if portfolio screen is detected, false otherwise
+ * Check if we've reached the portfolio/main wallet screen.
+ * Primary check uses the `portfolio-screen` testID, with text-based
+ * fallbacks for resilience.
  */
 export async function checkForPortfolioScreen(): Promise<boolean> {
-  console.log('Checking for portfolio screen indicators...');
+  console.log('Checking for portfolio screen...');
+
+  // Sync must be disabled — the portfolio screen has persistent network
+  // activity (token price polls, RPC reads) that prevents Detox from
+  // ever considering the app idle. Uses manual polling to bypass sync.
+  await device.disableSynchronization();
 
   try {
-    // Primary indicator: Total Balance text
-    const totalBalanceText = element(by.text('Total Balance'));
-    await waitFor(totalBalanceText).toBeVisible().withTimeout(8000);
-    console.log('✅ Found "Total Balance" text');
-
-    // Secondary indicator: Portfolio tab in bottom navigation
-    try {
-      const portfolioTab = element(by.text('Portfolio'));
-      await waitFor(portfolioTab).toBeVisible().withTimeout(3000);
-      console.log('✅ Found "Portfolio" tab in bottom navigation');
-    } catch (e) {
-      console.log('⚠️ Portfolio tab not found, but continuing...');
-    }
-
-    // Tertiary indicator: "Only verified coins" toggle (unique to this screen)
-    try {
-      const verifiedCoinsText = element(by.text('Only verified coins'));
-      await waitFor(verifiedCoinsText).toBeVisible().withTimeout(3000);
-      console.log('✅ Found "Only verified coins" text');
-    } catch (e) {
-      console.log('⚠️ Verified coins text not found, but continuing...');
-    }
-
-    // Quaternary indicator: Tokens tab (part of the main portfolio view)
-    try {
-      const tokensTab = element(by.text('Tokens'));
-      await waitFor(tokensTab).toBeVisible().withTimeout(3000);
-      console.log('✅ Found "Tokens" tab');
-    } catch (e) {
-      console.log('⚠️ Tokens tab not found, but continuing...');
-    }
-
-    console.log(
-      '🎉 Successfully detected portfolio screen - all primary indicators found',
-    );
-    return true;
-  } catch (e) {
-    console.log(
-      '❌ Primary indicator "Total Balance" not found, trying alternative approaches...',
-    );
-
-    try {
-      // Alternative 1: Look for the Hide button (next to balance)
-      const hideButton = element(by.text('Hide'));
-      await waitFor(hideButton).toBeVisible().withTimeout(5000);
-      console.log('✅ Found "Hide" button (alternative indicator)');
+    // Primary: testID on the screen container
+    if (await waitForElementByIdSilent('portfolio-screen', 15000)) {
+      console.log('Found portfolio-screen via testID');
       return true;
-    } catch (e) {
-      console.log('❌ Hide button not found either');
     }
+    console.log('portfolio-screen not found, trying fallbacks...');
 
-    try {
-      // Alternative 2: Look for bottom navigation structure
-      const portfolioNav = element(by.text('Portfolio'));
-      const swapNav = element(by.text('Swap'));
-      await waitFor(portfolioNav).toBeVisible().withTimeout(3000);
-      await waitFor(swapNav).toBeVisible().withTimeout(3000);
-      console.log(
-        '✅ Found bottom navigation structure (alternative indicator)',
-      );
+    // Fallback: balance display testID
+    if (await waitForElementByIdSilent('portfolio-balance', TIMEOUT_MEDIUM)) {
+      console.log('Found portfolio-balance via testID');
       return true;
-    } catch (e) {
-      console.log('❌ Bottom navigation structure not found');
     }
+    console.log('portfolio-balance not found');
 
-    console.log('❌ Could not confirm portfolio screen with any indicators');
+    // Fallback: bottom nav tab text
+    if (await waitForElementByText('Portfolio', { timeoutMs: TIMEOUT_SHORT })) {
+      console.log('Found Portfolio tab text');
+      return true;
+    }
+    console.log('Portfolio tab text not found');
+
+    console.log('Could not confirm portfolio screen with any indicator');
     return false;
+  } finally {
+    await device.enableSynchronization();
   }
 }
 
-export async function debugAllElementsByType(types: string[]): Promise<void> {
-  console.log('=== DEBUGGING ELEMENTS BY TYPE ===');
-  for (const type of types) {
-    try {
-      const elements = element(by.type(type));
-      const attributes = await elements.getAttributes();
-      console.log(`${type}:`, JSON.stringify(attributes, null, 2));
-    } catch (error) {
-      console.log(
-        `${type}: No elements found or error:`,
-        (error as Error).message,
-      );
-    }
-  }
-  console.log('=== END DEBUG ===');
-}
-
-export async function setTestEnvironment(): Promise<void> {
-  // We'll inject the test flag through launch arguments instead
-  console.log('✅ Test environment will be set via launch args');
-}
+// ---------------------------------------------------------------------------
+// Security helpers
+// ---------------------------------------------------------------------------
 
 /**
- * Debug function to log all visible elements on screen
- * @param context Context message for debugging
- */
-export async function debugAllVisibleElements(context: string): Promise<void> {
-  console.log(`🔍 DEBUG ALL ELEMENTS: ${context}`);
-
-  try {
-    // Try to get a screenshot or element dump
-    await device.takeScreenshot(`debug-${Date.now()}`);
-    console.log('📸 Screenshot taken');
-  } catch (e) {
-    console.log('❌ Could not take screenshot');
-  }
-
-  // Try to find different types of input elements
-  const inputTypes = [
-    'RCTTextField',
-    'RCTTextView',
-    'RCTTextInput',
-    'RCTMultilineTextInputView',
-    'RCTSinglelineTextInputView',
-    'UITextField',
-    'UITextView',
-  ];
-
-  for (const inputType of inputTypes) {
-    try {
-      const elements = element(by.type(inputType));
-      await waitFor(elements).toExist().withTimeout(1000);
-      console.log(`✅ Found ${inputType} element(s)`);
-
-      // Try to get element count
-      try {
-        for (let i = 0; i < 5; i++) {
-          const specificElement = element(by.type(inputType)).atIndex(i);
-          await waitFor(specificElement).toExist().withTimeout(500);
-          console.log(`  - ${inputType} at index ${i} exists`);
-        }
-      } catch (e) {
-        // Expected when we run out of elements
-      }
-    } catch (e) {
-      console.log(`❌ No ${inputType} elements found`);
-    }
-  }
-
-  // Try to find elements with common input-related text
-  const inputTexts = [
-    'Enter your key',
-    'seed phrase',
-    'recovery phrase',
-    'Enter recovery phrase',
-    'ENTER_KEY_PLACEHOLDER',
-  ];
-
-  for (const text of inputTexts) {
-    try {
-      const textElement = element(by.text(text));
-      await waitFor(textElement).toExist().withTimeout(1000);
-      console.log(`✅ Found element with text: "${text}"`);
-    } catch (e) {
-      console.log(`❌ No element found with text: "${text}"`);
-    }
-  }
-}
-
-/**
- * Securely get the test seed phrase from environment variables
- * Falls back to a standard test mnemonic if not provided
- * @returns The seed phrase to use for testing
+ * Securely get the test seed phrase from environment variables.
+ * Falls back to a standard test mnemonic if not provided.
  */
 export function getSecureTestSeedPhrase(): string {
-  // Try to get from environment variable (GitHub Actions secrets or local .env)
   const envSeedPhrase = process.env.TEST_SEED_PHRASE;
 
   if (envSeedPhrase && envSeedPhrase.trim().length > 0) {
-    console.log('🔐 Using secure seed phrase from environment variable');
+    console.log('Using secure seed phrase from environment variable');
     return envSeedPhrase.trim();
   }
 
-  // Fallback to standard test mnemonic (safe for public repos)
-  console.log('⚠️ Using fallback test mnemonic (not for production)');
+  console.log('Using fallback test mnemonic (not for production)');
   return 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
 }
 
 /**
  * Sanitize logs to prevent seed phrase exposure
- * @param message Log message
- * @param seedPhrase The seed phrase to redact
  */
 export function secureLog(message: string, seedPhrase?: string): void {
   if (seedPhrase) {
-    // Replace the seed phrase with asterisks in any log message
     const sanitizedMessage = message.replace(
       new RegExp(seedPhrase.replace(/\s+/g, '\\s+'), 'gi'),
       '***REDACTED_SEED_PHRASE***',
@@ -669,126 +629,133 @@ export function secureLog(message: string, seedPhrase?: string): void {
 
 /**
  * Prevent screenshots during sensitive operations
- * @param operation The sensitive operation to perform
- * @param operationName Name of the operation for logging
  */
 export async function performSecureOperation<T>(
   operation: () => Promise<T>,
   operationName: string,
 ): Promise<T> {
-  console.log(`🔒 Starting secure operation: ${operationName}`);
+  console.log(`Starting secure operation: ${operationName}`);
 
   try {
-    // Disable screenshots during this operation
-    // Note: This is a precautionary measure
     const result = await operation();
-    console.log(`✅ Completed secure operation: ${operationName}`);
+    console.log(`Completed secure operation: ${operationName}`);
     return result;
   } catch (error) {
-    console.log(`❌ Failed secure operation: ${operationName}`);
+    console.log(`Failed secure operation: ${operationName}`);
     throw error;
   }
 }
 
+// ---------------------------------------------------------------------------
+// Wallet import flow
+// ---------------------------------------------------------------------------
+
 /**
- * Complete wallet import flow - reusable for tests that need a wallet
- * This function handles the entire import process and can be used by any test
+ * Complete wallet import flow using the new onboarding screens.
+ *
+ * Flow:
+ *   GetStarted carousel (3 taps) -> OnBoardingOptions -> "Continue with
+ *   Wallets" -> "Import Existing Wallet" -> modal "Import Seed Phrase"
+ *   -> EnterKey screen (type seed + Continue) -> Portfolio
  */
 export async function completeWalletImport(): Promise<void> {
-  secureLog('🔄 Starting complete wallet import flow...');
+  secureLog('Starting complete wallet import flow...');
 
-  // Navigate through onboarding
+  // 1. Navigate through the 3-section carousel
+  // navigateThroughOnboarding() manages its own sync: disables at start,
+  // re-enables at end. We immediately disable again for the import flow.
   await navigateThroughOnboarding();
+  await device.disableSynchronization();
 
-  // Handle "Let's get started" screen
-  try {
-    const getStartedTextWithNewline = element(by.text("LET'S \nGET STARTED"));
-    await waitFor(getStartedTextWithNewline).toBeVisible().withTimeout(5000);
-    secureLog("Successfully found 'LET'S GET STARTED' text");
-  } catch (e) {
-    try {
-      const getStartedText = element(by.text("LET'S GET STARTED"));
-      await waitFor(getStartedText).toBeVisible().withTimeout(3000);
-      secureLog('Found "LET\'S GET STARTED" text without newline');
-    } catch (e) {
-      secureLog('Could not find "LET\'S GET STARTED" text, proceeding anyway');
-    }
-  }
+  // 2. Tap "Continue with Wallets" on OnBoardingOptions
+  // Use manual polling (waitForElementById) — Detox sync is busy with
+  // Firebase/Crashlytics settling and waitFor() hangs on CI.
+  await waitForElementById('options-wallets-btn', { timeoutMs: TIMEOUT_LONG });
+  await element(by.id('options-wallets-btn')).tap();
+  secureLog('Tapped "Continue with Wallets"');
 
-  // Click Import Wallet
-  const importWalletButton = await findButton(
-    'Import Wallet',
-    ['IMPORT WALLET', 'Import wallet'],
-    'import-wallet-button',
-  );
-  await importWalletButton.tap();
-  secureLog('Tapped Import Wallet button');
-  await delay(1000);
+  // 3. Tap "Import Existing Wallet"
+  await waitForElementById('options-import-wallet-btn', { timeoutMs: TIMEOUT_LONG });
+  await element(by.id('options-import-wallet-btn')).tap();
+  secureLog('Tapped "Import Existing Wallet"');
 
-  // Select Import Seed Phrase
-  const importSeedPhraseButton = await findButton(
-    'Import Seed Phrase',
-    ['Import seed phrase', 'IMPORT SEED PHRASE'],
-    'import-seed-phrase-button',
-  );
-  await importSeedPhraseButton.tap();
-  secureLog('Selected Import Seed Phrase');
-  await delay(2000);
+  // Wait for modal animation
+  await sleep(1000);
 
-  // Enter recovery phrase
+  // 4. Select "Import Seed Phrase" from the modal
+  await waitForElementById('options-import-seed-option', { timeoutMs: TIMEOUT_LONG });
+  await element(by.id('options-import-seed-option')).tap();
+  secureLog('Selected "Import Seed Phrase"');
+
+  // 5. Enter the seed phrase on the EnterKey screen.
+  // Use by.type() for TextInput — testID doesn't propagate in Fabric.
+  // Keep waitFor() here only because by.type('UITextView') has no
+  // testID to poll on; the try/catch loop pattern doesn't apply cleanly.
+  await sleep(3000);
   const TEST_RECOVERY_PHRASE = getSecureTestSeedPhrase();
+
   await performSecureOperation(async () => {
-    try {
-      const multilineInput = element(
-        by.type('RCTMultilineTextInputView'),
-      ).atIndex(0);
-      await waitFor(multilineInput).toBeVisible().withTimeout(5000);
-      await multilineInput.tap();
-      await delay(500);
-      await multilineInput.replaceText(TEST_RECOVERY_PHRASE);
-      secureLog('Successfully entered recovery phrase', TEST_RECOVERY_PHRASE);
-    } catch (e) {
-      const uiTextView = element(by.type('UITextView')).atIndex(0);
-      await waitFor(uiTextView).toBeVisible().withTimeout(3000);
-      await uiTextView.tap();
-      await delay(500);
-      await uiTextView.replaceText(TEST_RECOVERY_PHRASE);
-      secureLog(
-        'Successfully entered recovery phrase using UITextView fallback',
-        TEST_RECOVERY_PHRASE,
-      );
-    }
+    const seedInput = element(by.type('UITextView')).atIndex(0);
+    await waitFor(seedInput).toExist().withTimeout(TIMEOUT_LONG);
+    // replaceText + backspace to ensure onChangeText fires
+    await seedInput.replaceText(TEST_RECOVERY_PHRASE + 'x');
+    await seedInput.tapBackspaceKey();
+    secureLog(
+      'Entered recovery phrase via by.type',
+      TEST_RECOVERY_PHRASE,
+    );
   }, 'Seed Phrase Entry');
 
-  await delay(1000);
+  // 6. Tap Return key to dismiss keyboard, then tap Continue
+  await element(by.type('UITextView')).atIndex(0).tapReturnKey();
+  await sleep(1000);
 
-  // Submit recovery phrase
-  const submitButton = await findButton(
-    'Submit',
-    ['SUBMIT', 'submit'],
-    'submit-button',
-  );
-  await submitButton.tap();
-  secureLog('Tapped Submit button for recovery phrase');
-  await delay(3000);
+  await waitForElementById('enterkey-continue-btn', { timeoutMs: TIMEOUT_LONG });
+  await element(by.id('enterkey-continue-btn')).tap();
+  secureLog('Tapped Continue on EnterKey screen');
 
-  // Submit on wallets screen
-  const finalSubmitButton = await findButton(
-    'Submit',
-    ['SUBMIT', 'submit'],
-    'final-submit-button',
-  );
-  await finalSubmitButton.tap();
-  secureLog('Tapped final Submit button on wallets screen');
-  await delay(5000);
+  // 7. Handle ChooseWalletIndex screen — tap "Submit" (optional screen)
+  await sleep(3000);
+  if (await waitForElementByIdSilent('choose-wallet-submit-btn', 10000)) {
+    await element(by.id('choose-wallet-submit-btn')).tap();
+    secureLog('Tapped Submit on wallet index screen');
+  } else {
+    secureLog('No wallet index screen, continuing');
+  }
 
-  // Verify we reached portfolio
+  // Wait for wallet setup to complete
+  await sleep(5000);
+
+  // 8. Ensure sync is disabled for interstitial checks
+  await device.disableSynchronization();
+
+  // Dismiss post-creation interstitials (promo + card application welcome)
+  // Both are optional — use Silent variant so missing screens don't throw.
+  if (await waitForElementByIdSilent('exclusive-offer-got-it-btn', 10000)) {
+    await element(by.id('exclusive-offer-got-it-btn')).tap();
+    secureLog('Dismissed promo interstitial');
+  }
+
+  if (await waitForElementByIdSilent('card-welcome-skip-btn', 10000)) {
+    await element(by.id('card-welcome-skip-btn')).tap();
+    secureLog('Skipped card application screen');
+  }
+
+  // 9. Relaunch app to land on Portfolio tab reliably.
+  // Tab taps fail on some devices due to Detox window-bounds hit-test.
+  // Relaunching preserves the wallet (keychain) and defaults to Portfolio.
+  // Must use the same sync/blacklist args as initial launch.
+  await reOpenApp();
+  await device.disableSynchronization();
+  await sleep(8000);
+
+  // 10. Verify portfolio screen (manages its own sync)
   const portfolioDetected = await checkForPortfolioScreen();
   if (!portfolioDetected) {
     throw new Error('Wallet import failed - could not reach portfolio screen');
   }
 
-  secureLog('✅ Complete wallet import flow finished successfully');
+  secureLog('Complete wallet import flow finished successfully');
 }
 
 /**

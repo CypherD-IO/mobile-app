@@ -114,7 +114,6 @@ export const screenTitle = {
   CARD_QUOTE_SCREEN: 'cardQuoteScreen',
   AUTO_LOAD_SCREEN: 'autoLoadScreen',
   PREVIEW_AUTO_LOAD_SCREEN: 'previewAutoLoadScreen',
-  SWAP_SCREEN: 'swapScreen',
   THREE_D_SECURE: '3D Secure',
   LOCKDOWN_MODE: 'LockdownMode',
   LOCKDOWN_MODE_AUTH: 'LockdownModeAuth',

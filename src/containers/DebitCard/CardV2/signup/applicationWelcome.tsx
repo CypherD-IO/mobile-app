@@ -318,7 +318,7 @@ const ApplicationWelcome = (): JSX.Element => {
           <CyDText className='text-[26px] font-medium'>
             {t('CYPHER_CARD')}
           </CyDText>
-          <CyDTouchView onPress={handleBack}>
+          <CyDTouchView testID='card-welcome-skip-btn' onPress={handleBack}>
             <CyDView className='flex-row items-center gap-1 bg-base40 px-6 py-2 rounded-full'>
               <CyDText className='font-medium'>{t('CARD_SKIP')}</CyDText>
             </CyDView>

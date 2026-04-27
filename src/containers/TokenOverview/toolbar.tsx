@@ -18,6 +18,7 @@ import useBridgeV2Sheet from '../../features/bridgeV2/hooks/useBridgeV2Sheet';
 interface TokenOverviewToolBarProps {
   tokenData: Holding;
   navigation: NavigationProp<ParamListBase>;
+  portfolioHoldings?: Holding[];
   onBridgeSuccess?: () => void | Promise<void>;
 }
 
@@ -27,6 +28,7 @@ interface TokenOverviewToolBarProps {
 export default function TokenOverviewToolBar({
   tokenData,
   navigation,
+  portfolioHoldings,
   onBridgeSuccess,
 }: TokenOverviewToolBarProps) {
   const { isBridgeable, isSwapable, isFundable } = tokenData;
@@ -76,6 +78,7 @@ export default function TokenOverviewToolBar({
   const handleSwapPress = (): void => {
     openBridgeV2({
       initialFromHolding: tokenData,
+      ...(portfolioHoldings ? { portfolioHoldings } : {}),
       ...(onBridgeSuccess ? { onBridgeSuccess } : {}),
     });
   };

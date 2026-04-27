@@ -796,12 +796,20 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
   const { type } = params;
   switch (type) {
     case AnalyticsType.SUCCESS: {
-      const { chain, txnHash, contractData, address, quoteId, connectionType } =
-        params as SuccessAnalytics;
+      const {
+        chain,
+        txnHash,
+        contractData,
+        address,
+        quoteId,
+        connectionType,
+        other,
+      } = params as SuccessAnalytics;
       const data = {
         chain,
         txnHash,
         other: {
+          ...(other ?? {}),
           ...(contractData ? { contractData } : {}),
           ...(address ? { address } : {}),
           ...(quoteId ? { quoteId } : {}),

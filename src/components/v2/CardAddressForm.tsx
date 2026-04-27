@@ -91,6 +91,9 @@ interface CardAddressFormPropsInterface {
   onValidationStateChange?: (validating: boolean) => void;
 }
 
+const removeDiacritics = (value: string) =>
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
 const buildInitialValues = (
   initialValues: Partial<CardAddressFormValuesInterface>,
 ): CardAddressFormValuesInterface => ({
@@ -319,25 +322,14 @@ const CardAddressForm = forwardRef<
       initialValues: buildInitialValues(initialValues),
       validationSchema,
       validateOnMount: true,
-      onSubmit: async (
-        values,
-        { setFieldError, setFieldTouched: setTouched },
-      ) => {
+      onSubmit: async values => {
         setValidatingState(true);
-        const isStateValid = await validateStateWithGoogle(
-          buildAddressInput(values),
-        );
-        setValidatingState(false);
-
-        if (!isStateValid) {
-          void setTouched('state', true, false);
-          setFieldError('state', t('VALID_STATE_REQUIRED'));
-          stateRef.current?.focus();
-          return;
-        }
-
-        if (onSubmit) {
-          await onSubmit(buildOutputValues(values));
+        try {
+          if (onSubmit) {
+            await onSubmit(buildOutputValues(values));
+          }
+        } finally {
+          setValidatingState(false);
         }
       },
     });
@@ -349,7 +341,6 @@ const CardAddressForm = forwardRef<
       loadFailed,
       isAvailable: autocompleteAvailable,
       selectSuggestion,
-      validateStateWithGoogle,
       openSuggestions,
       closeSuggestions,
       setShowSuggestions,
@@ -395,14 +386,32 @@ const CardAddressForm = forwardRef<
           return;
         }
 
-        void formik.setValues(
+        const sanitizedAddress = {
+          ...address,
+          line1: removeDiacritics(address.line1),
+          line2: removeDiacritics(address.line2),
+          city: removeDiacritics(address.city),
+          state: removeDiacritics(address.state),
+        };
+
+        const nextValues = {
+          ...formik.values,
+          addressLine1: sanitizedAddress.line1,
+          addressLine2: sanitizedAddress.line2,
+          city: sanitizedAddress.city,
+          state: sanitizedAddress.state,
+          postalCode: sanitizedAddress.postalCode,
+        };
+
+        await formik.setValues(nextValues, false);
+        await formik.setTouched(
           {
-            ...formik.values,
-            addressLine1: address.line1,
-            addressLine2: address.line2,
-            city: address.city,
-            state: address.state,
-            postalCode: address.postalCode,
+            ...formik.touched,
+            addressLine1: true,
+            addressLine2: true,
+            city: true,
+            state: true,
+            postalCode: true,
           },
           true,
         );
@@ -421,24 +430,8 @@ const CardAddressForm = forwardRef<
       setHasSubmitAttempt(true);
       const errors = await formik.validateForm();
 
-      if (Object.keys(errors).length > 0) {
-        return false;
-      }
-
-      setValidatingState(true);
-      const isStateValid = await validateStateWithGoogle(
-        buildAddressInput(formik.values),
-      );
-      setValidatingState(false);
-
-      if (!isStateValid) {
-        void formik.setFieldTouched('state', true, false);
-        formik.setFieldError('state', t('VALID_STATE_REQUIRED'));
-        stateRef.current?.focus();
-      }
-
-      return isStateValid;
-    }, [buildAddressInput, formik, t, validateStateWithGoogle]);
+      return Object.keys(errors).length === 0;
+    }, [formik]);
 
     useImperativeHandle(
       ref,
@@ -558,24 +551,6 @@ const CardAddressForm = forwardRef<
       );
     };
 
-    const renderAutocompleteHint = (
-      className = 'text-[11px] text-n200 mt-[4px] ml-[2px]',
-    ) => {
-      if (
-        !autocompleteAvailable ||
-        showSuggestions ||
-        getFieldError('addressLine1')
-      ) {
-        return null;
-      }
-
-      return (
-        <CyDText className={className}>
-          Start typing for address suggestions
-        </CyDText>
-      );
-    };
-
     const resolvedAddressSectionLabel =
       addressSectionLabel ??
       (variant === 'delivery'
@@ -605,7 +580,6 @@ const CardAddressForm = forwardRef<
           <CyDText className='text-[14px] text-n200 mb-1'>
             {resolvedAddressSectionLabel}
           </CyDText>
-          {renderAutocompleteHint('text-[11px] text-n200 mb-[6px] ml-[2px]')}
           <CyDView>
             <CyDView className='z-10'>
               <CyDTextInput
@@ -632,7 +606,9 @@ const CardAddressForm = forwardRef<
             <CyDTextInput
               ref={addressLine2Ref}
               value={formik.values.addressLine2}
-              onChangeText={formik.handleChange('addressLine2')}
+              onChangeText={(text: string) => {
+                formik.handleChange('addressLine2')(text);
+              }}
               onBlur={() => {
                 void formik.setFieldTouched('addressLine2', true);
               }}
@@ -646,7 +622,9 @@ const CardAddressForm = forwardRef<
             <CyDTextInput
               ref={cityRef}
               value={formik.values.city}
-              onChangeText={formik.handleChange('city')}
+              onChangeText={(text: string) => {
+                formik.handleChange('city')(text);
+              }}
               onBlur={() => {
                 void formik.setFieldTouched('city', true);
               }}
@@ -660,7 +638,9 @@ const CardAddressForm = forwardRef<
             <CyDTextInput
               ref={stateRef}
               value={formik.values.state}
-              onChangeText={formik.handleChange('state')}
+              onChangeText={(text: string) => {
+                formik.handleChange('state')(text);
+              }}
               onBlur={() => {
                 void formik.setFieldTouched('state', true);
               }}
@@ -854,7 +834,6 @@ const CardAddressForm = forwardRef<
             </CyDView>
           </CyDView>
           {renderAddressSuggestions()}
-          {renderAutocompleteHint()}
         </CyDView>
 
         {renderDeliveryLabel(t('ADDRESS_LINE_2_INIT_CAPS'), 'addressLine2')}
@@ -866,7 +845,9 @@ const CardAddressForm = forwardRef<
               inputMode='text'
               placeholder='Line #2'
               placeholderTextColor={'#ccc'}
-              onChangeText={formik.handleChange('addressLine2')}
+              onChangeText={(text: string) => {
+                formik.handleChange('addressLine2')(text);
+              }}
               onBlur={() => {
                 void formik.setFieldTouched('addressLine2', true);
               }}
@@ -885,7 +866,9 @@ const CardAddressForm = forwardRef<
               inputMode='text'
               placeholder='City'
               placeholderTextColor={'#ccc'}
-              onChangeText={formik.handleChange('city')}
+              onChangeText={(text: string) => {
+                formik.handleChange('city')(text);
+              }}
               onBlur={() => {
                 void formik.setFieldTouched('city', true);
               }}
@@ -904,7 +887,9 @@ const CardAddressForm = forwardRef<
               inputMode='text'
               placeholder='state'
               placeholderTextColor={'#ccc'}
-              onChangeText={formik.handleChange('state')}
+              onChangeText={(text: string) => {
+                formik.handleChange('state')(text);
+              }}
               onBlur={() => {
                 void formik.setFieldTouched('state', true);
               }}

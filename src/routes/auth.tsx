@@ -26,7 +26,6 @@ import { AddressBook } from '../containers/AddressBook/myAddress';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import EnterKeyScreen from '../containers/Auth/EnterKey';
 import TransDetail from '../containers/Auth/TransDetail';
-import Bridge from '../containers/Bridge';
 import BrowserScreen from '../containers/Browser/Browser';
 import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
 import CypherCardScreen from '../containers/DebitCard/CardV2';
@@ -457,13 +456,6 @@ export function PortfolioStackScreen() {
         name={screenTitle.AIRDROP_CLAIM_SUCCESS}
         component={AirdropClaimSuccess}
         options={({ navigation }) => ({
-          headerShown: false,
-        })}
-      />
-      <PortfolioStack.Screen
-        name={screenTitle.SWAP_SCREEN}
-        component={Bridge}
-        options={() => ({
           headerShown: false,
         })}
       />

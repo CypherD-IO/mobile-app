@@ -54,12 +54,16 @@ function TokenOverviewV2() {
   const [tokenHoldingsByCoinGeckoId, setTokenHoldingsByCoinGeckoId] = useState<
     Record<string, Holding[]>
   >({});
+  const [allHoldings, setAllHoldings] = useState<Holding[] | undefined>(
+    undefined,
+  );
 
   const getTokenHoldingsByCoinGeckoId = useCallback(async () => {
     const localPortfolio = await getLocalPortfolio();
     if (localPortfolio) {
       const holdings = groupBy(localPortfolio.totalHoldings, 'coinGeckoId');
       setTokenHoldingsByCoinGeckoId(holdings);
+      setAllHoldings(localPortfolio.totalHoldings);
     }
   }, [getLocalPortfolio]);
 
@@ -156,6 +160,7 @@ function TokenOverviewV2() {
           <TokenOverviewToolBar
             tokenData={tokenData}
             navigation={navigation}
+            portfolioHoldings={allHoldings}
             onBridgeSuccess={handleBridgeSuccess}
           />
         </CyDAnimatedView>

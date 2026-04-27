@@ -17,6 +17,7 @@ import { screenTitle } from '../../constants';
 import { State } from '../../models/globalModal.interface';
 import Button from './button';
 import { ButtonType } from '../../constants/enum';
+import useBridgeV2Sheet from '../../features/bridgeV2/hooks/useBridgeV2Sheet';
 
 const StateModal: React.FC<State> = (store: State) => {
   const { t } = useTranslation();
@@ -253,6 +254,7 @@ export const BuyOrBridge = ({
   hideModal: () => void;
 }) => {
   const { t } = useTranslation();
+  const { openBridgeV2 } = useBridgeV2Sheet();
   return (
     <CyDView className='px-[12px]'>
       <CyDView className='flex flex-column items-center justify-between'>
@@ -284,7 +286,7 @@ export const BuyOrBridge = ({
             onPress={() => {
               hideModal();
               setTimeout(() => {
-                navigation.navigate(screenTitle.SWAP_SCREEN);
+                openBridgeV2();
               }, MODAL_HIDE_TIMEOUT);
             }}>
             <CyDView
