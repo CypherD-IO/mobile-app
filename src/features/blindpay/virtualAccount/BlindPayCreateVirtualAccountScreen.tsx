@@ -273,24 +273,29 @@ export default function BlindPayCreateVirtualAccountScreen() {
       setUploading(true);
       setUploadErrors(prev => ({ ...prev, [target]: '' }));
       const filePart: BlindPayUploadFilePart = { uri: file.uri, name: file.name, type: file.type };
-      const res = await uploadDocument(filePart, BlindpayUploadBucket.ONBOARDING);
-      setUploading(false);
-
-      if (res.isError || !res.data?.fileUrl) {
-        const msg = res.errorMessage ?? 'Upload failed';
+      try {
+        const res = await uploadDocument(filePart, BlindpayUploadBucket.ONBOARDING);
+        if (res.isError || !res.data?.fileUrl) {
+          const msg = res.errorMessage ?? 'Upload failed';
+          setUploadErrors(prev => ({ ...prev, [target]: msg }));
+          showToast(msg, 'error');
+          return;
+        }
+        if (target === 'soleProp') {
+          setSolePropDocUrl(res.data.fileUrl);
+          clearError('solePropDoc');
+        } else {
+          setSourceOfFundsDocUrl(res.data.fileUrl);
+          clearError('sourceFundsDoc');
+        }
+        setUploadErrors(prev => ({ ...prev, [target]: '' }));
+      } catch (e: any) {
+        const msg = String(e?.message ?? 'Upload failed');
         setUploadErrors(prev => ({ ...prev, [target]: msg }));
         showToast(msg, 'error');
-        return;
+      } finally {
+        setUploading(false);
       }
-
-      if (target === 'soleProp') {
-        setSolePropDocUrl(res.data.fileUrl);
-        clearError('solePropDoc');
-      } else {
-        setSourceOfFundsDocUrl(res.data.fileUrl);
-        clearError('sourceFundsDoc');
-      }
-      setUploadErrors(prev => ({ ...prev, [target]: '' }));
     },
     [captureTarget, uploadDocument, clearError],
   );
@@ -734,24 +739,35 @@ export default function BlindPayCreateVirtualAccountScreen() {
             style={{ width: `${(((step + 1) / totalSteps) * 100).toFixed(1)}%` as any }}
           />
         </CyDView>
-        <CyDTouchView
-          onPress={() => { void handleNext(); }}
-          disabled={submitting || uploading}
-          className='rounded-full min-h-[48px] min-w-[120px] bg-[#FBC02D] px-[24px] flex-row items-center justify-center'>
-          <CyDView className='relative items-center justify-center'>
-            <CyDText
-              className={`text-[16px] font-semibold text-black tracking-[-0.8px] ${
-                submitting ? 'opacity-0' : ''
+        {(() => {
+          const docsIncomplete =
+            step === 3 &&
+            (!solePropDocType || !solePropDocUrl || !sourceOfFundsDocUrl);
+          const busy = submitting || uploading;
+          const disabled = busy || docsIncomplete;
+          return (
+            <CyDTouchView
+              onPress={() => { void handleNext(); }}
+              disabled={disabled}
+              className={`rounded-full min-h-[48px] min-w-[120px] bg-[#FBC02D] px-[24px] flex-row items-center justify-center ${
+                disabled ? 'opacity-50' : ''
               }`}>
-              {isLastStep ? 'Submit' : 'Next'}
-            </CyDText>
-            {submitting ? (
-              <CyDView className='absolute inset-0 items-center justify-center'>
-                <ActivityIndicator color='#0D0D0D' />
+              <CyDView className='relative items-center justify-center'>
+                <CyDText
+                  className={`text-[16px] font-semibold text-black tracking-[-0.8px] ${
+                    busy ? 'opacity-0' : ''
+                  }`}>
+                  {isLastStep ? 'Submit' : 'Next'}
+                </CyDText>
+                {busy ? (
+                  <CyDView className='absolute inset-0 items-center justify-center'>
+                    <ActivityIndicator color='#0D0D0D' />
+                  </CyDView>
+                ) : null}
               </CyDView>
-            ) : null}
-          </CyDView>
-        </CyDTouchView>
+            </CyDTouchView>
+          );
+        })()}
       </CyDView>
 
       {/* Pickers */}

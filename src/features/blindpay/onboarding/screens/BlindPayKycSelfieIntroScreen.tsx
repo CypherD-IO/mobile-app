@@ -6,7 +6,7 @@ import {
   CyDView,
 } from '../../../../styles/tailwindComponents';
 import type { BlindPayKycStepProps } from '../blindpayKycWizardTypes';
-import { BLINDPAY_FIGMA_ASSETS } from '../../figmaAssets';
+import AppImages from '../../../../../assets/images/appImages';
 
 export function BlindPayKycSelfieIntroStep({
   advance,
@@ -20,7 +20,7 @@ export function BlindPayKycSelfieIntroStep({
     <CyDView className='gap-[16px]'>
       <CyDView className='items-center py-[24px]'>
         <CyDImage
-          source={{ uri: BLINDPAY_FIGMA_ASSETS.selfieVerification }}
+          source={AppImages.SELFIE_VERIFICATION}
           className='h-[170px] w-[146px]'
           resizeMode='contain'
         />

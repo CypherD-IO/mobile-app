@@ -808,6 +808,39 @@ const SAFEPAL_CLAIM_MODAL_NON_PREMIUM = {
   uri: `${S3_BUCKET_URL_ICONS}/safepalClaimModalNonPremium.png`,
 };
 
+const DOCUMENT_VERIFICATION = {
+  uri: `${S3_BUCKET_URL_ICONS}/docVerification.png`,
+};
+
+const DOCUMENT_APPROVED = {
+  uri: `${S3_BUCKET_URL_ICONS}/docsApproved.png`,
+};
+
+const DOCUMENT_SCANNING = {
+  uri: `${S3_BUCKET_URL_ICONS}/docScanning.png`,
+};
+
+const ID_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/idCard.png`,
+}
+
+const NOTE = {
+  uri: `${S3_BUCKET_URL_ICONS}/note.png`,
+};
+
+const REJECTED = {
+  uri: `${S3_BUCKET_URL_ICONS}/rejected.png`,
+};
+
+const CASH = {
+  uri: `${S3_BUCKET_URL_ICONS}/cash.png`,
+};
+
+const SELFIE_VERIFICATION = {
+  uri: `${S3_BUCKET_URL_ICONS}/selfieVerification.png`,
+};
+
+
 export const AppImagesMap = {
   common: {
     EMPTY_PERSON,
@@ -1142,6 +1175,14 @@ export const AppImagesMap = {
     SAFEPAL_CLAIM_MODAL,
     SAFEPAL_CLAIM_MODAL_NON_PREMIUM,
     TX_LOGO,
+    DOCUMENT_VERIFICATION,
+    DOCUMENT_APPROVED,
+    DOCUMENT_SCANNING,
+    ID_CARD,
+    NOTE,
+    REJECTED,
+    SELFIE_VERIFICATION,
+    CASH,
   },
   [Theme.LIGHT]: {
     NO_TRANSACTIONS_YET: NO_TRANSACTIONS_YET_LIGHT_THEME,
@@ -1486,6 +1527,14 @@ enum AppImages {
   SAFEPAL_CLAIM_MODAL = 'SAFEPAL_CLAIM_MODAL',
   SAFEPAL_CLAIM_MODAL_NON_PREMIUM = 'SAFEPAL_CLAIM_MODAL_NON_PREMIUM',
   TX_LOGO = 'TX_LOGO',
+  DOCUMENT_VERIFICATION = 'DOCUMENT_VERIFICATION',
+  DOCUMENT_APPROVED = 'DOCUMENT_APPROVED',
+  DOCUMENT_SCANNING = 'DOCUMENT_SCANNING',
+  ID_CARD = 'ID_CARD',
+  NOTE = 'NOTE',
+  REJECTED = 'REJECTED',
+  SELFIE_VERIFICATION = 'SELFIE_VERIFICATION',
+  CASH = 'CASH',
 }
 
 export default AppImages;
