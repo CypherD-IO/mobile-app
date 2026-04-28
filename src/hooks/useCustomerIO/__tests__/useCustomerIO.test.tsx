@@ -146,6 +146,27 @@ describe('useCustomerIO', () => {
 
       expect(mockInitialize).toHaveBeenCalledTimes(1);
     });
+
+    it('allows re-initialization after a previous failure', async () => {
+      mockInitialize.mockRejectedValueOnce(new Error('transient'));
+      setConfig({ CUSTOMERIO_CDP_API_KEY: 'test-cdp-key' });
+      const { result } = renderHook(() => useCustomerIO());
+
+      let first = true;
+      await act(async () => {
+        first = await result.current.initializeCustomerIO();
+      });
+      expect(first).toBe(false);
+
+      mockInitialize.mockResolvedValueOnce(undefined);
+      let second = false;
+      await act(async () => {
+        second = await result.current.initializeCustomerIO();
+      });
+      expect(second).toBe(true);
+      expect(mockInitialize).toHaveBeenCalledTimes(2);
+    });
+
   });
 
   // ── identifyCustomerIOUser ───────────────────────────────────────────
