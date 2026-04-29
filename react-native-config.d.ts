@@ -15,6 +15,8 @@ declare module 'react-native-config' {
     WEB3_AUTH_CLIENT_ID: string;
     HELIUS_API_KEY: string;
     IS_TESTING: string;
+    CUSTOMERIO_CDP_API_KEY: string;
+    CUSTOMERIO_SITE_ID: string;
   }
 
   export const Config: NativeConfig;

@@ -1,5 +1,4 @@
 // ── Mocks ──────────────────────────────────────────────────────────────
-jest.mock('../../containers/Bridge', () => ({}));
 jest.mock('../../core/asyncStorage', () => ({ setActivities: jest.fn() }));
 
 // ── Imports ────────────────────────────────────────────────────────────
@@ -36,26 +35,35 @@ describe('bridgeReducer', () => {
   const chainData = [{ chainId: 1, name: 'Ethereum' }];
 
   it('SUCCESS sets status to SUCCESS', () => {
-    const next = bridgeReducer(bridgeContextInitialState as any, {
-      type: BridgeReducerAction.SUCCESS,
-      payload: { tokenData, chainData },
-    } as any);
+    const next = bridgeReducer(
+      bridgeContextInitialState as any,
+      {
+        type: BridgeReducerAction.SUCCESS,
+        payload: { tokenData, chainData },
+      } as any,
+    );
     expect(next.status).toBe(BridgeStatus.SUCCESS);
   });
 
   it('SUCCESS sets tokenData from payload', () => {
-    const next = bridgeReducer(bridgeContextInitialState as any, {
-      type: BridgeReducerAction.SUCCESS,
-      payload: { tokenData, chainData },
-    } as any);
+    const next = bridgeReducer(
+      bridgeContextInitialState as any,
+      {
+        type: BridgeReducerAction.SUCCESS,
+        payload: { tokenData, chainData },
+      } as any,
+    );
     expect(next.tokenData).toBe(tokenData);
   });
 
   it('SUCCESS sets chainData from payload', () => {
-    const next = bridgeReducer(bridgeContextInitialState as any, {
-      type: BridgeReducerAction.SUCCESS,
-      payload: { tokenData, chainData },
-    } as any);
+    const next = bridgeReducer(
+      bridgeContextInitialState as any,
+      {
+        type: BridgeReducerAction.SUCCESS,
+        payload: { tokenData, chainData },
+      } as any,
+    );
     expect(next.chainData).toBe(chainData);
   });
 
@@ -159,7 +167,10 @@ describe('ActivityStateReducer', () => {
   });
 
   it('PATCH updates matching activity by id (status field)', () => {
-    const state = { activityObjects: [{ ...sampleActivity }], lastVisited: new Date() };
+    const state = {
+      activityObjects: [{ ...sampleActivity }],
+      lastVisited: new Date(),
+    };
     const next = ActivityStateReducer(state, {
       type: ActivityReducerAction.PATCH,
       value: { id: 'act-1', status: 1 },
@@ -168,7 +179,10 @@ describe('ActivityStateReducer', () => {
   });
 
   it('PATCH updates transactionHash on matching activity', () => {
-    const state = { activityObjects: [{ ...sampleActivity }], lastVisited: new Date() };
+    const state = {
+      activityObjects: [{ ...sampleActivity }],
+      lastVisited: new Date(),
+    };
     const next = ActivityStateReducer(state, {
       type: ActivityReducerAction.PATCH,
       value: { id: 'act-1', transactionHash: '0xnew' },
@@ -177,7 +191,10 @@ describe('ActivityStateReducer', () => {
   });
 
   it('PATCH updates reason on matching activity', () => {
-    const state = { activityObjects: [{ ...sampleActivity }], lastVisited: new Date() };
+    const state = {
+      activityObjects: [{ ...sampleActivity }],
+      lastVisited: new Date(),
+    };
     const next = ActivityStateReducer(state, {
       type: ActivityReducerAction.PATCH,
       value: { id: 'act-1', reason: 'gas too low' },
@@ -186,8 +203,17 @@ describe('ActivityStateReducer', () => {
   });
 
   it('PATCH leaves non-matching activities unchanged', () => {
-    const other = { id: 'act-2', status: 0, type: 'swap', transactionHash: '0xdef', amount: '2.0' };
-    const state = { activityObjects: [{ ...sampleActivity }, { ...other }], lastVisited: new Date() };
+    const other = {
+      id: 'act-2',
+      status: 0,
+      type: 'swap',
+      transactionHash: '0xdef',
+      amount: '2.0',
+    };
+    const state = {
+      activityObjects: [{ ...sampleActivity }, { ...other }],
+      lastVisited: new Date(),
+    };
     const next = ActivityStateReducer(state, {
       type: ActivityReducerAction.PATCH,
       value: { id: 'act-1', status: 1 },
@@ -196,7 +222,10 @@ describe('ActivityStateReducer', () => {
   });
 
   it('DELETE removes activity by id', () => {
-    const state = { activityObjects: [{ ...sampleActivity }], lastVisited: new Date() };
+    const state = {
+      activityObjects: [{ ...sampleActivity }],
+      lastVisited: new Date(),
+    };
     const next = ActivityStateReducer(state, {
       type: ActivityReducerAction.DELETE,
       value: { id: 'act-1' },
@@ -214,7 +243,10 @@ describe('ActivityStateReducer', () => {
   });
 
   it('RESET returns a copy of initialActivityState', () => {
-    const state = { activityObjects: [sampleActivity], lastVisited: new Date() };
+    const state = {
+      activityObjects: [sampleActivity],
+      lastVisited: new Date(),
+    };
     const next = ActivityStateReducer(state, {
       type: ActivityReducerAction.RESET,
     });

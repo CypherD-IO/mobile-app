@@ -33,6 +33,7 @@ import { useColorScheme } from 'nativewind';
 import { handleDeepLink } from '../../App';
 import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import { useInstallReferrer } from '../hooks';
+import useCustomerIO from '../hooks/useCustomerIO';
 import {
   getProcessedReferrerCode,
   setProcessedReferrerCode,
@@ -85,6 +86,7 @@ const TabStack = React.memo(
     const navigationReadyRef = useRef<boolean>(false);
     const pendingDeepLinkRef = useRef<typeof deepLinkData>(null);
     const { referrerData } = useInstallReferrer();
+    const { trackScreen } = useCustomerIO();
     const insets = useSafeAreaInsets();
 
     let backPressCount = 0;
@@ -466,6 +468,7 @@ const TabStack = React.memo(
               screen_name: currentRouteName,
               screen_class: currentRouteName,
             });
+            void trackScreen(currentRouteName);
             routeNameRef.current = currentRouteName;
           }
 
