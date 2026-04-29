@@ -26,6 +26,8 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
       HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
       WEB3_AUTH_CLIENT_ID: ${{ secrets.WEB3_AUTH_CLIENT_ID }}
+      CUSTOMERIO_CDP_API_KEY: ${{ secrets.CUSTOMERIO_CDP_API_KEY }}
+      CUSTOMERIO_SITE_ID: ${{ secrets.CUSTOMERIO_SITE_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
