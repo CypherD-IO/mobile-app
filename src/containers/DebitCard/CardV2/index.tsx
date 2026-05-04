@@ -1406,7 +1406,7 @@ export default function CypherCardScreen() {
       });
     }
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
-      onSuccess: (data: any, _provider: CardProviders) => {
+      onSuccess: (data: any, providerArg: CardProviders) => {
         setIsFetchingCardDetails(true);
         setCardDetailsModal({
           showCardDetailsModal: true,
@@ -1415,12 +1415,32 @@ export default function CypherCardScreen() {
           webviewUrl: '',
           userName: '',
         });
-        if (resolvedProvider === CardProviders.REAP_CARD) {
+        // Prefer the provider arg passed by the OTP screen (truth at OTP-screen
+        // time), fall back to the captured `resolvedProvider`. Without an
+        // explicit else, an unknown provider would silently leave the spinner
+        // running on the Reveal Card button forever.
+        const dispatchProvider = providerArg ?? resolvedProvider;
+        if (dispatchProvider === CardProviders.REAP_CARD) {
           void decryptMessage(data, card);
-        } else if (resolvedProvider === CardProviders.RAIN_CARD) {
+        } else if (dispatchProvider === CardProviders.RAIN_CARD) {
           void decryptSecretKeyData(data, card);
-        } else if (resolvedProvider === CardProviders.PAYCADDY) {
+        } else if (dispatchProvider === CardProviders.PAYCADDY) {
           void sendCardDetailsForPaycaddy(data, card);
+        } else {
+          setIsFetchingCardDetails(false);
+          setCardDetailsModal(prev => ({ ...prev, showCardDetailsModal: false }));
+          Sentry.captureException(
+            new Error(
+              `Reveal onSuccess: unhandled cardProvider "${String(dispatchProvider)}" for cardId ${String(card?.cardId)}`,
+            ),
+          );
+          showModal('state', {
+            type: 'error',
+            title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+            description: t('CONTACT_CYPHERD_SUPPORT'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
         }
       },
       currentCardProvider: cardProvider,
