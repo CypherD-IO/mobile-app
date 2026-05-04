@@ -410,9 +410,15 @@ export default function CardControls(): React.JSX.Element {
           verifyWithOTP();
         }
       } catch (e: any) {
+        // Reset the button spinner before handing off to the OTP screen — the
+        // OTP screen owns its own loading state from this point on.
+        setIsFetchingCardDetails(false);
         verifyWithOTP();
       }
     } else {
+      // Same as above: the spinner was set true at the top of this function;
+      // reset it before the OTP nav so the Reveal button does not appear stuck.
+      setIsFetchingCardDetails(false);
       verifyWithOTP();
     }
   };
@@ -420,13 +426,31 @@ export default function CardControls(): React.JSX.Element {
   const verifyWithOTP = (): void => {
     if (!selectedCard) return;
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
-      onSuccess: (data: any, _cardProvider: CardProviders) => {
-        if (currentCardProvider === CardProviders.REAP_CARD) {
+      onSuccess: (data: any, providerArg: CardProviders) => {
+        // Prefer the explicit provider arg from the OTP screen, fall back to
+        // the screen-level provider. The empty-else case used to silently
+        // leave the spinner spinning on the Reveal Card button forever.
+        const dispatchProvider = providerArg ?? currentCardProvider;
+        if (dispatchProvider === CardProviders.REAP_CARD) {
           void decryptMessage(data);
-        } else if (currentCardProvider === CardProviders.RAIN_CARD) {
+        } else if (dispatchProvider === CardProviders.RAIN_CARD) {
           void decryptSecretKey(data);
-        } else if (currentCardProvider === CardProviders.PAYCADDY) {
+        } else if (dispatchProvider === CardProviders.PAYCADDY) {
           void sendCardDetails(data);
+        } else {
+          setIsFetchingCardDetails(false);
+          Sentry.captureException(
+            new Error(
+              `Reveal onSuccess: unhandled cardProvider "${String(dispatchProvider)}" for cardId ${String(selectedCard?.cardId)}`,
+            ),
+          );
+          showModal('state', {
+            type: 'error',
+            title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+            description: t('CONTACT_CYPHERD_SUPPORT'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
         }
       },
       currentCardProvider,
@@ -467,9 +491,19 @@ export default function CardControls(): React.JSX.Element {
         webviewUrl: trim(decryptedBuffer, '"'),
         userName: userNameValue ?? '',
       });
-      setIsFetchingCardDetails(false);
     } catch (error) {
+      // Catch used to swallow errors silently and leave the Reveal Card
+      // spinner running forever. Surface the failure to the user.
       Sentry.captureException(error);
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+        description: t('CONTACT_CYPHERD_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } finally {
+      setIsFetchingCardDetails(false);
     }
   };
 
