@@ -76,6 +76,8 @@ import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionMo
 import { screenTitle } from '../../../constants';
 import Loading from '../../../components/v2/loading';
 import SaveChangesModal from '../../../components/v2/saveChangesModal';
+import DeleteCardModal from '../../../components/v2/deleteCardModal';
+import DeleteCardSuccessModal from '../../../components/v2/deleteCardSuccessModal';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import { countryMaster } from '../../../../assets/datasets/countryMaster';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
@@ -169,7 +171,8 @@ export default function CardControls(): React.JSX.Element {
     GlobalContext,
   ) as GlobalContextDef;
   const { getWalletProfile } = useCardUtilities();
-  const { getWithAuth, patchWithAuth, postWithAuth } = useAxios();
+  const { getWithAuth, patchWithAuth, postWithAuth, deleteWithAuth } =
+    useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
@@ -335,6 +338,12 @@ export default function CardControls(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [cardLimits, setCardLimits] = useState<CardLimitsV2Response>();
   const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
+  const [showDeleteCardModal, setShowDeleteCardModal] = useState(false);
+  const [showDeleteCardSuccess, setShowDeleteCardSuccess] = useState(false);
+  const [deletedCardInfo, setDeletedCardInfo] = useState<{
+    cardType: string;
+    last4: string;
+  }>({ cardType: '', last4: '' });
 
   // Add a ref to store the exit action
   const exitActionRef = useRef<any>(null);
@@ -1180,6 +1189,74 @@ export default function CardControls(): React.JSX.Element {
       onFailure: hideModal,
     });
   };
+
+  const handleDeleteCard = async (): Promise<void> => {
+    if (!selectedCard || !selectedCardId) return;
+    setShowDeleteCardModal(false);
+    setLoading(true);
+    try {
+      const response = await deleteWithAuth(
+        '/v1/cards/active-card',
+        undefined,
+        undefined,
+        {
+          cardId: selectedCardId,
+          reason: 'User requested cancellation',
+        },
+      );
+
+      if (!response.isError) {
+        void logAnalyticsToFirebase(AnalyticEvent.CARD_SETTINGS_RESET, {
+          cardId: selectedCardId,
+          cardProvider: currentCardProvider,
+          action: 'delete_card',
+        });
+
+        setDeletedCardInfo({
+          cardType: getDisplayCardType(selectedCard),
+          last4: selectedCard.last4 ?? '',
+        });
+        setShowDeleteCardSuccess(true);
+      } else {
+        const errorMessage =
+          response.data?.errors?.[0]?.message ??
+          response.data?.message ??
+          t('DELETE_CARD_SOMETHING_WENT_WRONG');
+
+        const isServerError =
+          response.status === 500 ||
+          response.data?.code?.includes('500');
+        const description = isServerError
+          ? `${errorMessage}. ${t('PLEASE_CONTACT_SUPPORT')}`
+          : errorMessage;
+
+        showModal('state', {
+          type: 'error',
+          title: t('DELETE_CARD_FAILED'),
+          description,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+      showModal('state', {
+        type: 'error',
+        title: t('DELETE_CARD_FAILED'),
+        description: t('DELETE_CARD_SOMETHING_WENT_WRONG'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCardSuccessDismiss = (): void => {
+    setShowDeleteCardSuccess(false);
+    navigation.goBack();
+  };
+
   useEffect(() => {
     // Handle back navigation for iOS and Android
     const unsubscribe = navigation.addListener('beforeRemove', e => {
@@ -1758,13 +1835,20 @@ export default function CardControls(): React.JSX.Element {
         }}
       />
 
-      {/* Reset Card Settings */}
+      {/* Reset Card Settings & Delete Card */}
       <CyDView className='mt-[16px] bg-n0 rounded-[10px] px-[16px]'>
         <CyDTouchView
-          className='flex flex-row items-center py-[16px]'
+          className='flex flex-row items-center py-[16px] border-b border-n40'
           onPress={handleResetCardSettings}>
-          <CyDText className='text-[16px] text-red400'>
+          <CyDText className='text-[16px] text-base400'>
             Reset Card Settings
+          </CyDText>
+        </CyDTouchView>
+        <CyDTouchView
+          className='flex flex-row items-center py-[16px]'
+          onPress={() => setShowDeleteCardModal(true)}>
+          <CyDText className='text-[16px] text-red400'>
+            {t('DELETE_CARD')}
           </CyDText>
         </CyDTouchView>
       </CyDView>
@@ -2078,6 +2162,17 @@ export default function CardControls(): React.JSX.Element {
           cardProvider={currentCardProvider as CardProviders}
           cardId={selectedCardId}
         />
+        <DeleteCardModal
+          isModalVisible={showDeleteCardModal}
+          setIsModalVisible={setShowDeleteCardModal}
+          onDeleteCard={handleDeleteCard}
+        />
+        <DeleteCardSuccessModal
+          isModalVisible={showDeleteCardSuccess}
+          cardType={deletedCardInfo.cardType}
+          last4={deletedCardInfo.last4}
+          onOkay={handleDeleteCardSuccessDismiss}
+        />
       </>
     );
   }
@@ -2260,6 +2355,18 @@ export default function CardControls(): React.JSX.Element {
         setIsModalVisible={setPlanChangeModalVisible}
         cardProvider={currentCardProvider as CardProviders}
         cardId={selectedCardId}
+      />
+
+      <DeleteCardModal
+        isModalVisible={showDeleteCardModal}
+        setIsModalVisible={setShowDeleteCardModal}
+        onDeleteCard={handleDeleteCard}
+      />
+      <DeleteCardSuccessModal
+        isModalVisible={showDeleteCardSuccess}
+        cardType={deletedCardInfo.cardType}
+        last4={deletedCardInfo.last4}
+        onOkay={handleDeleteCardSuccessDismiss}
       />
     </>
   );

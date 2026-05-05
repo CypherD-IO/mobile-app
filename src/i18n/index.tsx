@@ -1787,6 +1787,16 @@ const resources = {
         'Are you sure you want to reset all card settings to default?',
       CARD_SETTINGS_RESET_SUCCESSFULLY: 'Card settings reset successfully.',
       UNABLE_TO_RESET_CARD_SETTINGS: 'Unable to reset card settings.',
+      DELETE_CARD: 'Delete Card',
+      DELETE_CARD_TITLE: 'Are you sure?',
+      DELETE_CARD_WARNING:
+        'Warning: Deleting this cypher card is final and can\'t be reversed! Just type "delete" below to confirm you really want to delete this card.',
+      DELETE_CARD_PLACEHOLDER: 'Type "delete" to confirm',
+      DELETE_CARD_SUCCESS_TITLE: 'Your card has been deleted',
+      DELETE_CARD_SUCCESS_DESC:
+        'Your {{cardType}} card ending ** {{last4}} has been permanently removed from your account.',
+      DELETE_CARD_CANCEL: 'Cancel',
+      DELETE_CARD_FAILED: 'Card Deletion Failed',
       APPLY_CHANGES_TO_ALL_CARDS: 'Apply Changes to All Cards',
       APPLY_CHANGES_TO_ALL_CARDS_DESCRIPTION:
         'Do you want to apply these changes to all your cards?',
