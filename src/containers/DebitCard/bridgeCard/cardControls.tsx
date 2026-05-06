@@ -1219,7 +1219,9 @@ export default function CardControls(): React.JSX.Element {
         setShowDeleteCardSuccess(true);
       } else {
         const errorMessage =
-          response.data?.message ?? t('DELETE_CARD_SOMETHING_WENT_WRONG');
+          response.data?.errors?.[0]?.message ??
+          response.data?.message ??
+          t('DELETE_CARD_SOMETHING_WENT_WRONG');
 
         showModal('state', {
           type: 'error',

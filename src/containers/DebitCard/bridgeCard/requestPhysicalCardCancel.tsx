@@ -121,7 +121,9 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
         setShowSuccessModal(true);
       } else {
         const errorMessage =
-          response.data?.message ?? t('CANCEL_ORDER_SOMETHING_WENT_WRONG');
+          response.data?.errors?.[0]?.message ??
+          response.data?.message ??
+          t('CANCEL_ORDER_SOMETHING_WENT_WRONG');
         showModal('state', {
           type: 'error',
           title: t('CANCEL_ORDER_FAILED'),
