@@ -13,25 +13,38 @@ interface DeleteCardModalProps {
   isModalVisible: boolean;
   setIsModalVisible: (visible: boolean) => void;
   onDeleteCard: () => void;
+  confirmWord?: string;
+  title?: string;
+  warning?: string;
+  placeholder?: string;
+  actionLabel?: string;
+  cancelLabel?: string;
 }
 
 export default function DeleteCardModal({
   isModalVisible,
   setIsModalVisible,
   onDeleteCard,
+  confirmWord,
+  title,
+  warning,
+  placeholder,
+  actionLabel,
+  cancelLabel,
 }: DeleteCardModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const [confirmText, setConfirmText] = useState('');
 
-  const isDeleteEnabled = confirmText === 'delete';
+  const requiredWord = confirmWord ?? 'delete';
+  const isActionEnabled = confirmText === requiredWord;
 
   const handleClose = (): void => {
     setConfirmText('');
     setIsModalVisible(false);
   };
 
-  const handleDelete = (): void => {
-    if (!isDeleteEnabled) return;
+  const handleAction = (): void => {
+    if (!isActionEnabled) return;
     setConfirmText('');
     onDeleteCard();
   };
@@ -49,17 +62,17 @@ export default function DeleteCardModal({
       <CyDView className='bg-n0 rounded-[16px] mx-[16px] px-[24px] py-[28px] items-center'>
         
         <CyDText className='font-manrope font-medium text-[20px] leading-[130%] tracking-[-1px] text-center text-base400'>
-          {t('DELETE_CARD_TITLE')}
+          {title ?? t('DELETE_CARD_TITLE')}
         </CyDText>
 
         <CyDText className='font-manrope font-normal text-[16px] leading-[140%] tracking-[-0.4px] text-center text-base200 mt-[16px]'>
-          {t('DELETE_CARD_WARNING')}
+          {warning ?? t('DELETE_CARD_WARNING')}
         </CyDText>
 
         <CyDView className='w-full mt-[20px]'>
           <CyDTextInput
             className='w-full h-[54px] border border-n40 rounded-[12px] px-[16px] font-manrope font-medium text-[14px] leading-[145%] tracking-[-0.6px] bg-n10'
-            placeholder={t('DELETE_CARD_PLACEHOLDER')}
+            placeholder={placeholder ?? t('DELETE_CARD_PLACEHOLDER')}
             placeholderTextColor='#999999'
             value={confirmText}
             onChangeText={setConfirmText}
@@ -72,17 +85,17 @@ export default function DeleteCardModal({
           className='w-full h-[52px] rounded-[62px] bg-n30 items-center justify-center mt-[16px]'
           onPress={handleClose}>
           <CyDText className='font-manrope font-medium text-[18px] leading-[145%] tracking-[-0.4px] text-center text-base400'>
-            {t('DELETE_CARD_CANCEL')}
+            {cancelLabel ?? t('DELETE_CARD_CANCEL')}
           </CyDText>
         </CyDTouchView>
 
         <CyDTouchView
           className='w-full h-[52px] rounded-[62px] bg-red200 items-center justify-center mt-[12px]'
-          style={!isDeleteEnabled ? styles.disabledButton : undefined}
-          onPress={handleDelete}
-          disabled={!isDeleteEnabled}>
+          style={!isActionEnabled ? styles.disabledButton : undefined}
+          onPress={handleAction}
+          disabled={!isActionEnabled}>
           <CyDText className='font-manrope font-medium text-[18px] leading-[145%] tracking-[-0.4px] text-center text-n0'>
-            {t('DELETE_CARD')}
+            {actionLabel ?? t('DELETE_CARD')}
           </CyDText>
         </CyDTouchView>
       </CyDView>

@@ -153,6 +153,7 @@ export const screenTitle = {
   SELECT_ADDITIONAL_CARD: 'selectAdditionalCard',
   ADDITIONAL_CARD_DESCRIPTION: 'additionalCardDescription',
   CARD_CONTROLS: 'CardControls',
+  REQUEST_PHYSICAL_CARD_CANCEL: 'RequestPhysicalCardCancel',
   AIRDROP_ELIGIBILITY: 'AirdropEligibility',
   AIRDROP_CLAIM: 'AirdropClaim',
   AIRDROP_CLAIM_SUCCESS: 'AirdropClaimSuccess',

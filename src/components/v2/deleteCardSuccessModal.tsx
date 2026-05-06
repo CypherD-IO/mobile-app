@@ -15,6 +15,8 @@ interface DeleteCardSuccessModalProps {
   cardType: string;
   last4: string;
   onOkay: () => void;
+  title?: string;
+  description?: string;
 }
 
 export default function DeleteCardSuccessModal({
@@ -22,6 +24,8 @@ export default function DeleteCardSuccessModal({
   cardType,
   last4,
   onOkay,
+  title,
+  description,
 }: DeleteCardSuccessModalProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -43,11 +47,11 @@ export default function DeleteCardSuccessModal({
         />
 
         <CyDText className='font-manrope font-medium text-[20px] leading-[130%] tracking-[-1px] text-base400 mt-[16px]'>
-          {t('DELETE_CARD_SUCCESS_TITLE')}
+          {title ?? t('DELETE_CARD_SUCCESS_TITLE')}
         </CyDText>
 
         <CyDText className='font-manrope font-medium text-[14px] leading-[145%] tracking-[-0.6px] text-n200 mt-[8px]'>
-          {t('DELETE_CARD_SUCCESS_DESC', { cardType, last4 })}
+          {description ?? t('DELETE_CARD_SUCCESS_DESC', { cardType, last4 })}
         </CyDText>
 
         <CyDTouchView

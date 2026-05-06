@@ -1219,21 +1219,12 @@ export default function CardControls(): React.JSX.Element {
         setShowDeleteCardSuccess(true);
       } else {
         const errorMessage =
-          response.data?.errors?.[0]?.message ??
-          response.data?.message ??
-          t('DELETE_CARD_SOMETHING_WENT_WRONG');
-
-        const isServerError =
-          response.status === 500 ||
-          response.data?.code?.includes('500');
-        const description = isServerError
-          ? `${errorMessage}. ${t('PLEASE_CONTACT_SUPPORT')}`
-          : errorMessage;
+          response.data?.message ?? t('DELETE_CARD_SOMETHING_WENT_WRONG');
 
         showModal('state', {
           type: 'error',
           title: t('DELETE_CARD_FAILED'),
-          description,
+          description: errorMessage,
           onSuccess: hideModal,
           onFailure: hideModal,
         });

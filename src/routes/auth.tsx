@@ -105,6 +105,7 @@ import {
 import SelectAdditionalCardType from '../containers/DebitCard/CardV2/additionalCard/selectAdditionalCardType';
 import CardDescription from '../containers/DebitCard/CardV2/additionalCard/cardDescription';
 import CardControls from '../containers/DebitCard/bridgeCard/cardControls';
+import RequestPhysicalCardCancel from '../containers/DebitCard/bridgeCard/requestPhysicalCardCancel';
 import ApplicationWelcome from '../containers/DebitCard/CardV2/signup/applicationWelcome';
 import EnterReferralCode from '../containers/DebitCard/CardV2/signup/enterReferralCode';
 import OffersAndPromotion from '../containers/DebitCard/CardV2/signup/offersAndPromotion';
@@ -523,6 +524,13 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
               />
             ),
           };
+        }}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.REQUEST_PHYSICAL_CARD_CANCEL}
+        component={RequestPhysicalCardCancel}
+        options={{
+          headerShown: false,
         }}
       />
       <FundCardStack.Screen
