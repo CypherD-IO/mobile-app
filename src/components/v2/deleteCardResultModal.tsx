@@ -10,24 +10,37 @@ import {
 } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 
-interface DeleteCardSuccessModalProps {
+interface DeleteCardResultModalProps {
   isModalVisible: boolean;
   cardType: string;
   last4: string;
   onOkay: () => void;
   title?: string;
   description?: string;
+  type?: 'success' | 'error';
 }
 
-export default function DeleteCardSuccessModal({
+export default function DeleteCardResultModal({
   isModalVisible,
   cardType,
   last4,
   onOkay,
   title,
   description,
-}: DeleteCardSuccessModalProps): React.JSX.Element {
+  type = 'success',
+}: DeleteCardResultModalProps): React.JSX.Element {
   const { t } = useTranslation();
+
+  const isError = type === 'error';
+  const icon = isError
+    ? AppImages.ERROR_EXCLAMATION_RED_BG_ROUNDED
+    : AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED;
+  const defaultTitle = isError
+    ? t('DELETE_CARD_FAILED')
+    : t('DELETE_CARD_SUCCESS_TITLE');
+  const defaultDescription = isError
+    ? t('DELETE_CARD_SOMETHING_WENT_WRONG')
+    : t('DELETE_CARD_SUCCESS_DESC', { cardType, last4 });
 
   return (
     <CyDModalLayout
@@ -41,17 +54,17 @@ export default function DeleteCardSuccessModal({
       style={styles.modalLayout}>
       <CyDView className='bg-n0 rounded-t-[20px] px-[24px] pt-[28px] pb-[32px]'>
         <CyDImage
-          source={AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED}
+          source={icon}
           className='w-[54px] h-[54px]'
           resizeMode='contain'
         />
 
         <CyDText className='font-manrope font-medium text-[20px] leading-[130%] tracking-[-1px] text-base400 mt-[16px]'>
-          {title ?? t('DELETE_CARD_SUCCESS_TITLE')}
+          {title ?? defaultTitle}
         </CyDText>
 
         <CyDText className='font-manrope font-medium text-[14px] leading-[145%] tracking-[-0.6px] text-n200 mt-[8px]'>
-          {description ?? t('DELETE_CARD_SUCCESS_DESC', { cardType, last4 })}
+          {description ?? defaultDescription}
         </CyDText>
 
         <CyDTouchView

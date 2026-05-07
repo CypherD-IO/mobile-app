@@ -26,8 +26,7 @@ import { Card, ITrackingDetailsResponse } from '../../../models/card.model';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import useAxios from '../../../core/HttpRequest';
 import DeleteCardModal from '../../../components/v2/deleteCardModal';
-import DeleteCardSuccessModal from '../../../components/v2/deleteCardSuccessModal';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import DeleteCardResultModal from '../../../components/v2/deleteCardResultModal';
 
 export interface PhysicalCardOrderStatus {
   requestId?: string;
@@ -72,14 +71,19 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
   const { deleteWithAuth } = useAxios();
-  const { showModal, hideModal } = useGlobalModalContext();
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
   const insets = useSafeAreaInsets();
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [resultModal, setResultModal] = useState<{
+    visible: boolean;
+    type: 'success' | 'error';
+    title: string;
+    description: string;
+  }>({ visible: false, type: 'success', title: '', description: '' });
+  const pendingCancelRef = React.useRef(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -102,8 +106,15 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
     setShowConfirmModal(true);
   };
 
-  const handleCancelOrder = async (): Promise<void> => {
+  const handleCancelOrder = (): void => {
+    pendingCancelRef.current = true;
     setShowConfirmModal(false);
+  };
+
+  const onConfirmModalHide = async (): Promise<void> => {
+    if (!pendingCancelRef.current) return;
+    pendingCancelRef.current = false;
+
     setIsCancelling(true);
 
     try {
@@ -118,50 +129,38 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
         },
       );
 
+      setIsCancelling(false);
+
       if (!response.isError && response.data?.success) {
-        setShowSuccessModal(true);
+        setResultModal({
+          visible: true,
+          type: 'success',
+          title: t('CANCEL_ORDER_SUCCESS_TITLE'),
+          description: t('CANCEL_ORDER_SUCCESS_DESC', {
+            cardType: cardTypeLabel,
+            last4: card.last4 ?? '',
+          }),
+        });
       } else {
         const errorMessage =
-          response.data?.errors?.[0]?.message ??
-          response.data?.message ??
-          t('CANCEL_ORDER_SOMETHING_WENT_WRONG');
-        showModal('state', {
+          response.error?.message ?? t('CANCEL_ORDER_SOMETHING_WENT_WRONG');
+        setResultModal({
+          visible: true,
           type: 'error',
           title: t('CANCEL_ORDER_FAILED'),
           description: errorMessage,
-          onSuccess: () => {
-            hideModal();
-            navigation.goBack();
-          },
-          onFailure: () => {
-            hideModal();
-            navigation.goBack();
-          },
         });
       }
     } catch (error) {
+      setIsCancelling(false);
       Sentry.captureException(error);
-      showModal('state', {
+      setResultModal({
+        visible: true,
         type: 'error',
         title: t('CANCEL_ORDER_FAILED'),
         description: t('CANCEL_ORDER_SOMETHING_WENT_WRONG'),
-        onSuccess: () => {
-          hideModal();
-          navigation.goBack();
-        },
-        onFailure: () => {
-          hideModal();
-          navigation.goBack();
-        },
       });
-    } finally {
-      setIsCancelling(false);
     }
-  };
-
-  const handleSuccessDismiss = (): void => {
-    setShowSuccessModal(false);
-    navigation.goBack();
   };
 
   return (
@@ -282,27 +281,31 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
       <DeleteCardModal
         isModalVisible={showConfirmModal}
         setIsModalVisible={setShowConfirmModal}
-        onDeleteCard={() => {
-          void handleCancelOrder();
+        onDeleteCard={handleCancelOrder}
+        onModalHide={() => {
+          onConfirmModalHide().catch(Sentry.captureException);
         }}
         confirmWord='confirm'
         title={t('CANCEL_ORDER_TITLE')}
-        warning={t('CANCEL_ORDER_WARNING', { cardType: cardTypeLabel.toLowerCase() })}
+        warning={t('CANCEL_ORDER_WARNING', {
+          cardType: cardTypeLabel.toLowerCase(),
+        })}
         placeholder={t('CANCEL_ORDER_PLACEHOLDER')}
         actionLabel={t('CANCEL_ORDER_ACTION')}
         cancelLabel={t('DELETE_CARD_CANCEL')}
       />
 
-      <DeleteCardSuccessModal
-        isModalVisible={showSuccessModal}
+      <DeleteCardResultModal
+        isModalVisible={resultModal.visible}
+        type={resultModal.type}
         cardType={cardTypeLabel}
         last4={card.last4 ?? ''}
-        onOkay={handleSuccessDismiss}
-        title={t('CANCEL_ORDER_SUCCESS_TITLE')}
-        description={t('CANCEL_ORDER_SUCCESS_DESC', {
-          cardType: cardTypeLabel,
-          last4: card.last4 ?? '',
-        })}
+        title={resultModal.title}
+        description={resultModal.description}
+        onOkay={() => {
+          setResultModal(prev => ({ ...prev, visible: false }));
+          navigation.goBack();
+        }}
       />
     </CyDView>
   );

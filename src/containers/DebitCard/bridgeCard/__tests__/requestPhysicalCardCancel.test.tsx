@@ -5,8 +5,6 @@
 
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
-const mockShowModal = jest.fn();
-const mockHideModal = jest.fn();
 const mockDeleteWithAuth = jest.fn();
 
 jest.mock('../../../../styles/tailwindComponents', () => {
@@ -84,8 +82,8 @@ jest.mock('../../../../core/HttpRequest', () => ({
 
 jest.mock('../../../../components/v2/GlobalModal', () => ({
   useGlobalModalContext: () => ({
-    showModal: mockShowModal,
-    hideModal: mockHideModal,
+    showModal: jest.fn(),
+    hideModal: jest.fn(),
   }),
 }));
 
@@ -100,10 +98,12 @@ jest.mock('../../../../components/v2/deleteCardModal', () => {
     default: ({
       isModalVisible,
       onDeleteCard,
+      onModalHide,
       confirmWord,
     }: {
       isModalVisible: boolean;
       onDeleteCard: () => void;
+      onModalHide?: () => void;
       confirmWord?: string;
     }) =>
       isModalVisible ? (
@@ -113,7 +113,12 @@ jest.mock('../../../../components/v2/deleteCardModal', () => {
             testID='confirm-input'
             placeholder={`Type "${confirmWord ?? 'delete'}"`}
           />
-          <TouchableOpacity testID='modal-action-btn' onPress={onDeleteCard}>
+          <TouchableOpacity
+            testID='modal-action-btn'
+            onPress={() => {
+              onDeleteCard();
+              onModalHide?.();
+            }}>
             <Text>ModalAction</Text>
           </TouchableOpacity>
         </View>
@@ -121,7 +126,7 @@ jest.mock('../../../../components/v2/deleteCardModal', () => {
   };
 });
 
-jest.mock('../../../../components/v2/deleteCardSuccessModal', () => {
+jest.mock('../../../../components/v2/deleteCardResultModal', () => {
   const { View, Text, TouchableOpacity } = require('react-native');
   return {
     __esModule: true,
@@ -129,15 +134,20 @@ jest.mock('../../../../components/v2/deleteCardSuccessModal', () => {
       isModalVisible,
       onOkay,
       title,
+      description,
+      type,
     }: {
       isModalVisible: boolean;
       onOkay: () => void;
       title?: string;
+      description?: string;
+      type?: 'success' | 'error';
     }) =>
       isModalVisible ? (
-        <View>
-          <Text>{title ?? 'MockSuccessTitle'}</Text>
-          <TouchableOpacity testID='success-okay-btn' onPress={onOkay}>
+        <View testID={type === 'error' ? 'result-error-modal' : 'result-success-modal'}>
+          <Text>{title ?? 'MockResultTitle'}</Text>
+          {description ? <Text>{description}</Text> : null}
+          <TouchableOpacity testID='result-okay-btn' onPress={onOkay}>
             <Text>Okay</Text>
           </TouchableOpacity>
         </View>
@@ -454,25 +464,21 @@ describe('RequestPhysicalCardCancel', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId('success-okay-btn')).toBeTruthy();
+        expect(screen.getByTestId('result-okay-btn')).toBeTruthy();
       });
 
-      fireEvent.press(screen.getByTestId('success-okay-btn'));
+      fireEvent.press(screen.getByTestId('result-okay-btn'));
       expect(mockGoBack).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('DELETE API — error responses', () => {
-    it('shows error modal with specific message from errors array (400 bulk shipment)', async () => {
+    it('shows error modal with specific message from error.message (400 bulk shipment)', async () => {
       mockDeleteWithAuth.mockResolvedValueOnce({
         isError: true,
-        data: {
-          errors: [
-            {
-              message:
-                'Card order cannot be cancelled - card has already been added to bulk shipment',
-            },
-          ],
+        error: {
+          message:
+            'Card order cannot be cancelled - card has already been added to bulk shipment',
         },
       });
 
@@ -484,26 +490,21 @@ describe('RequestPhysicalCardCancel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShowModal).toHaveBeenCalledWith('state', {
-          type: 'error',
-          title: 'Cancellation Failed',
-          description:
+        expect(screen.getByTestId('result-error-modal')).toBeTruthy();
+        expect(screen.getByText('Cancellation Failed')).toBeTruthy();
+        expect(
+          screen.getByText(
             'Card order cannot be cancelled - card has already been added to bulk shipment',
-          onSuccess: expect.any(Function),
-          onFailure: expect.any(Function),
-        });
+          ),
+        ).toBeTruthy();
       });
     });
 
     it('shows error modal for 401 Unauthorized', async () => {
       mockDeleteWithAuth.mockResolvedValueOnce({
         isError: true,
-        data: {
-          errors: [
-            {
-              message: 'You are not authorized to cancel this card order',
-            },
-          ],
+        error: {
+          message: 'You are not authorized to cancel this card order',
         },
       });
 
@@ -515,26 +516,19 @@ describe('RequestPhysicalCardCancel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShowModal).toHaveBeenCalledWith('state', {
-          type: 'error',
-          title: 'Cancellation Failed',
-          description: 'You are not authorized to cancel this card order',
-          onSuccess: expect.any(Function),
-          onFailure: expect.any(Function),
-        });
+        expect(screen.getByTestId('result-error-modal')).toBeTruthy();
+        expect(screen.getByText('Cancellation Failed')).toBeTruthy();
+        expect(
+          screen.getByText('You are not authorized to cancel this card order'),
+        ).toBeTruthy();
       });
     });
 
     it('shows error modal for 404 Not Found', async () => {
       mockDeleteWithAuth.mockResolvedValueOnce({
         isError: true,
-        data: {
-          errors: [
-            {
-              message:
-                'Card order not found in the order management system',
-            },
-          ],
+        error: {
+          message: 'Card order not found in the order management system',
         },
       });
 
@@ -546,26 +540,21 @@ describe('RequestPhysicalCardCancel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShowModal).toHaveBeenCalledWith('state', {
-          type: 'error',
-          title: 'Cancellation Failed',
-          description:
+        expect(screen.getByTestId('result-error-modal')).toBeTruthy();
+        expect(screen.getByText('Cancellation Failed')).toBeTruthy();
+        expect(
+          screen.getByText(
             'Card order not found in the order management system',
-          onSuccess: expect.any(Function),
-          onFailure: expect.any(Function),
-        });
+          ),
+        ).toBeTruthy();
       });
     });
 
     it('shows error modal for 404 card not found', async () => {
       mockDeleteWithAuth.mockResolvedValueOnce({
         isError: true,
-        data: {
-          errors: [
-            {
-              message: 'Card order not found',
-            },
-          ],
+        error: {
+          message: 'Card order not found',
         },
       });
 
@@ -577,21 +566,18 @@ describe('RequestPhysicalCardCancel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShowModal).toHaveBeenCalledWith('state', {
-          type: 'error',
-          title: 'Cancellation Failed',
-          description: 'Card order not found',
-          onSuccess: expect.any(Function),
-          onFailure: expect.any(Function),
-        });
+        expect(screen.getByTestId('result-error-modal')).toBeTruthy();
+        expect(screen.getByText('Cancellation Failed')).toBeTruthy();
+        expect(screen.getByText('Card order not found')).toBeTruthy();
       });
     });
 
     it('shows error modal for 500 Internal Server Error', async () => {
       mockDeleteWithAuth.mockResolvedValueOnce({
         isError: true,
-        data: {
-          message: 'Failed to retrieve card order information for cancellation',
+        error: {
+          message:
+            'Failed to retrieve card order information for cancellation',
         },
       });
 
@@ -603,20 +589,19 @@ describe('RequestPhysicalCardCancel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShowModal).toHaveBeenCalledWith('state', {
-          type: 'error',
-          title: 'Cancellation Failed',
-          description: 'Failed to retrieve card order information for cancellation',
-          onSuccess: expect.any(Function),
-          onFailure: expect.any(Function),
-        });
+        expect(screen.getByTestId('result-error-modal')).toBeTruthy();
+        expect(screen.getByText('Cancellation Failed')).toBeTruthy();
+        expect(
+          screen.getByText(
+            'Failed to retrieve card order information for cancellation',
+          ),
+        ).toBeTruthy();
       });
     });
 
     it('falls back to generic message when no specific error info', async () => {
       mockDeleteWithAuth.mockResolvedValueOnce({
         isError: true,
-        data: {},
       });
 
       render(<RequestPhysicalCardCancel />);
@@ -627,22 +612,20 @@ describe('RequestPhysicalCardCancel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShowModal).toHaveBeenCalledWith('state', {
-          type: 'error',
-          title: 'Cancellation Failed',
-          description: 'Something went wrong while cancelling. Please contact support.',
-          onSuccess: expect.any(Function),
-          onFailure: expect.any(Function),
-        });
+        expect(screen.getByTestId('result-error-modal')).toBeTruthy();
+        expect(screen.getByText('Cancellation Failed')).toBeTruthy();
+        expect(
+          screen.getByText(
+            'Something went wrong while cancelling. Please contact support.',
+          ),
+        ).toBeTruthy();
       });
     });
 
-    it('navigates back when error modal onSuccess is triggered', async () => {
+    it('navigates back when error modal Okay is pressed', async () => {
       mockDeleteWithAuth.mockResolvedValueOnce({
         isError: true,
-        data: {
-          errors: [{ message: 'Some error' }],
-        },
+        error: { message: 'Some error' },
       });
 
       render(<RequestPhysicalCardCancel />);
@@ -653,15 +636,10 @@ describe('RequestPhysicalCardCancel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShowModal).toHaveBeenCalled();
+        expect(screen.getByTestId('result-okay-btn')).toBeTruthy();
       });
 
-      // Invoke the onSuccess callback the component passed to showModal
-      const showModalCall = mockShowModal.mock.calls[0];
-      const modalParams = showModalCall[1];
-      modalParams.onSuccess();
-
-      expect(mockHideModal).toHaveBeenCalled();
+      fireEvent.press(screen.getByTestId('result-okay-btn'));
       expect(mockGoBack).toHaveBeenCalled();
     });
   });
@@ -681,17 +659,17 @@ describe('RequestPhysicalCardCancel', () => {
         expect(Sentry.captureException).toHaveBeenCalledWith(
           expect.any(Error),
         );
-        expect(mockShowModal).toHaveBeenCalledWith('state', {
-          type: 'error',
-          title: 'Cancellation Failed',
-          description: 'Something went wrong while cancelling. Please contact support.',
-          onSuccess: expect.any(Function),
-          onFailure: expect.any(Function),
-        });
+        expect(screen.getByTestId('result-error-modal')).toBeTruthy();
+        expect(screen.getByText('Cancellation Failed')).toBeTruthy();
+        expect(
+          screen.getByText(
+            'Something went wrong while cancelling. Please contact support.',
+          ),
+        ).toBeTruthy();
       });
     });
 
-    it('navigates back when error modal onFailure is triggered (catch branch)', async () => {
+    it('navigates back when error modal Okay is pressed (catch branch)', async () => {
       mockDeleteWithAuth.mockRejectedValueOnce(new Error('Timeout'));
 
       render(<RequestPhysicalCardCancel />);
@@ -702,13 +680,10 @@ describe('RequestPhysicalCardCancel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShowModal).toHaveBeenCalled();
+        expect(screen.getByTestId('result-okay-btn')).toBeTruthy();
       });
 
-      const modalParams = mockShowModal.mock.calls[0][1];
-      modalParams.onFailure();
-
-      expect(mockHideModal).toHaveBeenCalled();
+      fireEvent.press(screen.getByTestId('result-okay-btn'));
       expect(mockGoBack).toHaveBeenCalled();
     });
   });

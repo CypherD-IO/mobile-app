@@ -42,6 +42,7 @@ import AppImages from '../../../../assets/images/appImages';
 import { getCardColorByHex } from '../../../constants/cardColours';
 import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
 import CyDModalLayout from '../../../components/v2/modal';
+import DeleteCardResultModal from '../../../components/v2/deleteCardResultModal';
 import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import GradientText from '../../../components/gradientText';
@@ -447,9 +448,14 @@ function PhysicalCardShipmentSection({
 }): React.ReactElement {
   const { t } = useTranslation();
   const { getWithAuth } = useAxios();
-  const { showModal, hideModal } = useGlobalModalContext();
   const [isOptionsModalVisible, setIsOptionsModalVisible] = useState(false);
   const [isFetchingOrderStatus, setIsFetchingOrderStatus] = useState(false);
+  const [orderStatusError, setOrderStatusError] = useState<{
+    visible: boolean;
+    title: string;
+    description: string;
+  }>({ visible: false, title: '', description: '' });
+  const pendingCancelRef = React.useRef(false);
 
   const isShipped =
     trackingDetail?.trackingStatus ===
@@ -469,14 +475,23 @@ function PhysicalCardShipmentSection({
     void Intercom.present();
   };
 
-  const handleRequestCardCancel = async (): Promise<void> => {
+  const handleRequestCardCancel = (): void => {
+    pendingCancelRef.current = true;
     setIsOptionsModalVisible(false);
+  };
+
+  const onOptionsModalHide = async (): Promise<void> => {
+    if (!pendingCancelRef.current) return;
+    pendingCancelRef.current = false;
+
     setIsFetchingOrderStatus(true);
 
     try {
       const response = await getWithAuth(
         `/v1/cards/physical-card-order/status/${card.cardId}`,
       );
+
+      setIsFetchingOrderStatus(false);
 
       if (!response.isError && response.data) {
         const displayCardType =
@@ -495,28 +510,21 @@ function PhysicalCardShipmentSection({
         });
       } else {
         const errorMessage =
-          response.data?.errors?.[0]?.message ??
-          response.data?.message ??
-          t('CANCEL_ORDER_SOMETHING_WENT_WRONG');
-        showModal('state', {
-          type: 'error',
+          response.error?.message ?? t('CANCEL_ORDER_SOMETHING_WENT_WRONG');
+        setOrderStatusError({
+          visible: true,
           title: t('CANCEL_ORDER_FAILED'),
           description: errorMessage,
-          onSuccess: hideModal,
-          onFailure: hideModal,
         });
       }
     } catch (error) {
+      setIsFetchingOrderStatus(false);
       Sentry.captureException(error);
-      showModal('state', {
-        type: 'error',
+      setOrderStatusError({
+        visible: true,
         title: t('CANCEL_ORDER_FAILED'),
         description: t('CANCEL_ORDER_SOMETHING_WENT_WRONG'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
       });
-    } finally {
-      setIsFetchingOrderStatus(false);
     }
   };
 
@@ -561,6 +569,9 @@ function PhysicalCardShipmentSection({
         animationOut='slideOutDown'
         swipeDirection={['down']}
         onSwipeComplete={() => setIsOptionsModalVisible(false)}
+        onModalHide={() => {
+          onOptionsModalHide().catch(Sentry.captureException);
+        }}
         backdropTransitionOutTiming={0}
         hideModalContentWhileAnimating={false}
         style={physicalCardShipmentStyles.modalLayout}>
@@ -597,9 +608,7 @@ function PhysicalCardShipmentSection({
             <CyDTouchView
               className='py-[16px] flex-row items-center'
               disabled={isFetchingOrderStatus}
-              onPress={() => {
-                void handleRequestCardCancel();
-              }}>
+              onPress={handleRequestCardCancel}>
               <CyDText className='font-manrope font-medium text-[16px] leading-[140%] tracking-[-0.4px] text-red400'>
                 {isFetchingOrderStatus
                   ? t('LOADING_DATA')
@@ -609,6 +618,18 @@ function PhysicalCardShipmentSection({
           </CyDView>
         </CyDView>
       </CyDModalLayout>
+
+      <DeleteCardResultModal
+        isModalVisible={orderStatusError.visible}
+        type='error'
+        cardType={capitalize(card?.type) ?? ''}
+        last4={card?.last4 ?? ''}
+        title={orderStatusError.title}
+        description={orderStatusError.description}
+        onOkay={() =>
+          setOrderStatusError(prev => ({ ...prev, visible: false }))
+        }
+      />
     </CyDView>
   );
 }

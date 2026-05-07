@@ -19,6 +19,7 @@ interface DeleteCardModalProps {
   placeholder?: string;
   actionLabel?: string;
   cancelLabel?: string;
+  onModalHide?: () => void;
 }
 
 export default function DeleteCardModal({
@@ -31,6 +32,7 @@ export default function DeleteCardModal({
   placeholder,
   actionLabel,
   cancelLabel,
+  onModalHide,
 }: DeleteCardModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const [confirmText, setConfirmText] = useState('');
@@ -58,6 +60,7 @@ export default function DeleteCardModal({
       animationIn={'fadeIn'}
       animationOut={'fadeOut'}
       avoidKeyboard={true}
+      onModalHide={onModalHide}
       style={styles.modalLayout}>
       <CyDView className='bg-n0 rounded-[16px] mx-[16px] px-[24px] py-[28px] items-center'>
         
