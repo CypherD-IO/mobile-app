@@ -17,7 +17,7 @@ jest.mock('react-i18next', () => ({
     t: (key: string, params?: Record<string, string>) => {
       const map: Record<string, string> = {
         DELETE_CARD_SUCCESS_TITLE: 'Your card has been deleted',
-        DELETE_CARD_SUCCESS_DESC: `Your ${params?.cardType ?? ''} card ending in ${params?.last4 ?? ''} has been deleted.`,
+        DELETE_CARD_SUCCESS_DESC: `Your ${params?.cardType ?? ''} card ending ** ${params?.last4 ?? ''} has been permanently removed from your account.`,
       };
       return map[key] ?? key;
     },
@@ -68,7 +68,7 @@ describe('DeleteCardSuccessModal', () => {
       render(<DeleteCardSuccessModal {...defaultProps} />);
       expect(
         screen.getByText(
-          'Your Virtual card ending in 1234 has been deleted.',
+          'Your Virtual card ending ** 1234 has been permanently removed from your account.',
         ),
       ).toBeTruthy();
     });

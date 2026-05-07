@@ -10,7 +10,7 @@ import {
 } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { get, isEmpty, trim } from 'lodash';
+import { capitalize, get, isEmpty, trim } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -479,12 +479,19 @@ function PhysicalCardShipmentSection({
       );
 
       if (!response.isError && response.data) {
+        const displayCardType =
+          card?.type === CardType.PHYSICAL &&
+          card?.physicalCardType === PhysicalCardType.METAL
+            ? 'Metal'
+            : capitalize(card?.type);
+
         navigation.navigate(screenTitle.REQUEST_PHYSICAL_CARD_CANCEL, {
           card,
           cardProvider,
           trackingDetail,
           cardBalance,
           orderStatus: response.data,
+          cardType: displayCardType,
         });
       } else {
         const errorMessage =
@@ -517,8 +524,7 @@ function PhysicalCardShipmentSection({
     <CyDView className='mt-[12px]'>
       {!trackingDetail ? (
         <CyDText className='text-[14px] font-semibold text-center mt-[6px]'>
-          Activate Physical card and enjoy the convenience of making purchases
-          worldwide
+          {t('ACTIVATE_PHYSICAL_CARD_DESC')}
         </CyDText>
       ) : (
         <ShipmentInfoContent
@@ -543,7 +549,7 @@ function PhysicalCardShipmentSection({
           className='flex-1 h-[52px] rounded-full bg-buttonColor items-center justify-center'
           onPress={() => onActivate()}>
           <CyDText className='font-extrabold text-[16px] text-black text-center'>
-            {'Activate Card'}
+            {t('ACTIVATE_CARD')}
           </CyDText>
         </CyDTouchView>
       </CyDView>
@@ -573,8 +579,7 @@ function PhysicalCardShipmentSection({
                 />
               ) : (
                 <CyDText className='text-[14px] font-semibold py-[4px]'>
-                  Activate Physical card and enjoy the convenience of making
-                  purchases worldwide
+                  {t('ACTIVATE_PHYSICAL_CARD_DESC')}
                 </CyDText>
               )}
             </CyDView>
@@ -597,7 +602,7 @@ function PhysicalCardShipmentSection({
               }}>
               <CyDText className='font-manrope font-medium text-[16px] leading-[140%] tracking-[-0.4px] text-red400'>
                 {isFetchingOrderStatus
-                  ? 'Loading...'
+                  ? t('LOADING_DATA')
                   : t('REQUEST_CARD_CANCEL')}
               </CyDText>
             </CyDTouchView>

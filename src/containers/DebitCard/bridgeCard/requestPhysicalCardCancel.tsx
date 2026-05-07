@@ -60,13 +60,14 @@ interface RouteParams {
   trackingDetail: ITrackingDetailsResponse[string];
   cardBalance: string;
   orderStatus: PhysicalCardOrderStatus;
+  cardType: string;
 }
 
 export default function RequestPhysicalCardCancel(): React.ReactElement {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route =
     useRoute<RouteProp<Record<string, RouteParams>, string>>();
-  const { card, cardBalance, orderStatus } = route.params;
+  const { card, cardBalance, orderStatus, cardType: cardTypeLabel } = route.params;
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
@@ -164,9 +165,7 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
   };
 
   return (
-    <CyDView
-      className='flex-1 bg-n20'
-      style={{ paddingTop: insets.top }}>
+    <CyDView className='flex-1 bg-n20' style={{ paddingTop: insets.top }}>
       <CyDView className='flex-1 justify-between'>
         <CyDScrollView
           className='flex-1 px-[16px]'
@@ -174,17 +173,15 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
           <CyDTouchView
             onPress={() => navigation.goBack()}
             className='w-[36px] h-[36px] mt-[8px] rounded-full bg-n30 items-center justify-center'>
-            <CyDIcons
-              name='arrow-left'
-              size={20}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={20} className='text-base400' />
           </CyDTouchView>
 
           <CyDText className='font-manrope font-bold text-[28px] leading-[135%] tracking-[-1px] text-base400 mt-[16px]'>
             {cancellationEligible
-              ? t('PHYSICAL_CARD_CANCELLATION')
-              : t('PHYSICAL_CARD_CANCEL_CONFIRMATION')}
+              ? t('PHYSICAL_CARD_CANCELLATION', { cardType: cardTypeLabel })
+              : t('PHYSICAL_CARD_CANCEL_CONFIRMATION', {
+                  cardType: cardTypeLabel,
+                })}
           </CyDText>
 
           <CyDText className='font-manrope font-semibold text-[14px] leading-[145%] tracking-[-0.6px] text-n400 mt-[8px]'>
@@ -194,7 +191,9 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
           <CyDView className='bg-n0 rounded-[12px] mt-[24px] px-[16px]'>
             <CyDView className='flex-row justify-between items-center py-[16px]'>
               <CyDText className='font-manrope font-medium text-[14px] leading-[145%] tracking-[-0.6px] text-base400 flex-1'>
-                {t('PHYSICAL_CARD_CANCELLATION_CHARGES')}
+                {t('PHYSICAL_CARD_CANCELLATION_CHARGES', {
+                  cardType: cardTypeLabel,
+                })}
               </CyDText>
               {cancellationEligible ? (
                 <CyDText className='font-manrope font-bold text-[14px] leading-[145%] tracking-[-0.6px] text-green400 text-right'>
@@ -225,7 +224,7 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
 
           <CyDView className='bg-n0 rounded-[12px] mt-[8px] px-[16px] py-[16px] flex-row justify-between items-center'>
             <CyDText className='font-manrope font-semibold text-[14px] leading-[145%] tracking-[-0.6px] text-base400'>
-              {'Physical Card'}
+              {`${cardTypeLabel} Card`}
             </CyDText>
             <CyDText className='font-manrope font-semibold text-[14px] leading-[145%] tracking-[-0.6px] text-base400'>
               {maskedLast4}
@@ -264,8 +263,7 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
           )}
         </CyDScrollView>
 
-        <CyDView
-          className='px-[16px] pt-[24px] pb-[12px] bg-n0 justify-center'>
+        <CyDView className='px-[16px] pt-[24px] pb-[12px] bg-n0 justify-center'>
           <CyDTouchView
             className='h-[52px] rounded-[12px] bg-[#FFDE59] items-center justify-center mb-[13px]'
             disabled={isCancelling}
@@ -274,7 +272,7 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
               <ActivityIndicator size='small' color='#000' />
             ) : (
               <CyDText className='font-manrope font-bold text-[18px] leading-[145%] tracking-[-1px] text-center text-black'>
-                {'Confirm'}
+                {t('CONFIRM_ACTION')}
               </CyDText>
             )}
           </CyDTouchView>
@@ -289,7 +287,7 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
         }}
         confirmWord='confirm'
         title={t('CANCEL_ORDER_TITLE')}
-        warning={t('CANCEL_ORDER_WARNING')}
+        warning={t('CANCEL_ORDER_WARNING', { cardType: cardTypeLabel.toLowerCase() })}
         placeholder={t('CANCEL_ORDER_PLACEHOLDER')}
         actionLabel={t('CANCEL_ORDER_ACTION')}
         cancelLabel={t('DELETE_CARD_CANCEL')}
@@ -297,12 +295,12 @@ export default function RequestPhysicalCardCancel(): React.ReactElement {
 
       <DeleteCardSuccessModal
         isModalVisible={showSuccessModal}
-        cardType='Physical'
+        cardType={cardTypeLabel}
         last4={card.last4 ?? ''}
         onOkay={handleSuccessDismiss}
         title={t('CANCEL_ORDER_SUCCESS_TITLE')}
         description={t('CANCEL_ORDER_SUCCESS_DESC', {
-          cardType: 'Physical',
+          cardType: cardTypeLabel,
           last4: card.last4 ?? '',
         })}
       />

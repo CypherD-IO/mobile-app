@@ -18,7 +18,7 @@ jest.mock('react-i18next', () => ({
       const map: Record<string, string> = {
         DELETE_CARD_TITLE: 'Are you sure?',
         DELETE_CARD_WARNING:
-          'This action is permanent. Type "delete" to confirm.',
+          'Warning: Deleting this cypher card is final and can\'t be reversed! Just type "delete" below to confirm you really want to delete this card.',
         DELETE_CARD_PLACEHOLDER: 'Type "delete" to confirm',
         DELETE_CARD_CANCEL: 'Cancel',
         DELETE_CARD: 'Delete Card',
@@ -66,7 +66,7 @@ describe('DeleteCardModal', () => {
 
       expect(screen.getByText('Are you sure?')).toBeTruthy();
       expect(
-        screen.getByText('This action is permanent. Type "delete" to confirm.'),
+        screen.getByText('Warning: Deleting this cypher card is final and can\'t be reversed! Just type "delete" below to confirm you really want to delete this card.'),
       ).toBeTruthy();
       expect(
         screen.getByPlaceholderText('Type "delete" to confirm'),

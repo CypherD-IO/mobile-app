@@ -1797,11 +1797,11 @@ const resources = {
         'Your {{cardType}} card ending ** {{last4}} has been permanently removed from your account.',
       DELETE_CARD_CANCEL: 'Cancel',
       REQUEST_CARD_CANCEL: 'Request Card Cancel',
-      PHYSICAL_CARD_CANCELLATION: 'Physical card\nCancellation',
-      PHYSICAL_CARD_CANCEL_CONFIRMATION: 'Physical card\nConfirmation',
+      PHYSICAL_CARD_CANCELLATION: '{{cardType}} card\nCancellation',
+      PHYSICAL_CARD_CANCEL_CONFIRMATION: '{{cardType}} card\nConfirmation',
       PHYSICAL_CARD_CANCEL_SUBTITLE:
         'Please review your details. Once cancelled, the action cannot be reversed.',
-      PHYSICAL_CARD_CANCELLATION_CHARGES: 'Physical card\ncancellation charges',
+      PHYSICAL_CARD_CANCELLATION_CHARGES: '{{cardType}} card\ncancellation charges',
       TOTAL_REFUND_AMOUNT: 'Total Refund amount',
       CANCELLING_CARD: 'Cancelling card',
       REFUNDING_TO: 'Refunding to',
@@ -1809,7 +1809,7 @@ const resources = {
       FREE_LABEL: '🎉Free',
       CANCEL_ORDER_TITLE: 'Are you sure?',
       CANCEL_ORDER_WARNING:
-        'Warning: Cancelling this physical card order is final and can\'t be reversed! Just type "confirm" below to proceed.',
+        'Warning: Cancelling this {{cardType}} card order is final and can\'t be reversed! Just type "confirm" below to proceed.',
       CANCEL_ORDER_PLACEHOLDER: 'Type "confirm" to proceed',
       CANCEL_ORDER_ACTION: 'Confirm',
       CANCEL_ORDER_FAILED: 'Cancellation Failed',
@@ -2466,6 +2466,9 @@ const resources = {
       NO_TRANSACTION_FOUND: 'No Transaction Found',
       NO_TRANSACTION_SUBTITLE:
         'Use your cypher card and keep an eye on your transactions right here!',
+      CONFIRM_ACTION: 'Confirm',
+      ACTIVATE_PHYSICAL_CARD_DESC:
+        'Activate Physical card and enjoy the convenience of making purchases worldwide',
     },
   },
 };
