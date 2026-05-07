@@ -29,6 +29,10 @@ const URL_BLACKLIST = [
   // Detox sync busy and hanging tests.
   '.*crashlytics.*',
   '.*firebase-settings.*',
+  // Customer.io CDP (tracking/batch requests keep Detox sync busy after
+  // relaunch — cdp.customer.io/v1/b was the sole blocker for 90+ seconds
+  // on CI, preventing disableSynchronization() from completing).
+  '.*customer.io.*',
   // WalletConnect & Web3
   '.*api.web3modal.org.*',
   '.*relay.walletconnect.com.*',
