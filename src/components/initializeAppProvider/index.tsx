@@ -181,7 +181,9 @@ export const InitializeAppProvider = ({
           // impact is bounded to app boot.
           void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
           void loadActivitiesFromAsyncStorage();
-          await initializeCustomerIO();
+          if (!isE2ETesting) {
+            await initializeCustomerIO();
+          }
           await requestUserPermission();
         }
       } catch (e) {

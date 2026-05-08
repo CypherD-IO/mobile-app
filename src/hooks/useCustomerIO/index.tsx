@@ -11,7 +11,8 @@ import * as Sentry from '@sentry/react-native';
 
 const { CioPushBridge } = NativeModules;
 
-let initPromise: Promise<boolean> | null = null;
+let initPromise: Promise<boolean> | null =
+  Config.IS_TESTING === 'true' ? Promise.resolve(false) : null;
 
 /** @internal Reset singleton for unit tests only. */
 export function _resetInitPromise(): void {
