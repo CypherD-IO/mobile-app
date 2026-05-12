@@ -177,7 +177,7 @@ interface RewardCycle {
 
 const MerchantRewardDetailContent: React.FC<
   MerchantRewardDetailContentProps
-> = ({ merchantData, navigation: navigationProp }) => {
+> = ({ merchantData, navigation: navigationProp, onClose }) => {
   const { t } = useTranslation();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { theme } = useTheme();
@@ -496,6 +496,7 @@ const MerchantRewardDetailContent: React.FC<
       // are scheduled before attempting to dismiss the sheet.
       void InteractionManager.runAfterInteractions(() => {
         try {
+          onClose?.();
           hideAllBottomSheets();
         } catch (err) {
           console.warn('Failed to close bottom sheet after navigation', err);

@@ -222,26 +222,38 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
 
   const [selectedCardIds, setSelectedCardIds] = useState<string[] | null>(null);
 
-  const toggleCard = useCallback((cardId: string): void => {
-    setSelectedCardIds(prev => {
-      if (prev === null) {
-        return [cardId];
-      }
-      if (prev.includes(cardId)) {
-        const next = prev.filter(id => id !== cardId);
-        return next.length === 0 ? null : next;
-      }
-      return [...prev, cardId];
-    });
-  }, []);
+  const toggleCard = useCallback(
+    (cardId: string): void => {
+      setSelectedCardIds(prev => {
+        if (prev === null) {
+          return [cardId];
+        }
+        if (prev.includes(cardId)) {
+          const next = prev.filter(id => id !== cardId);
+          if (next.length === 0) {
+            const firstCard = availableCards[0];
+            return firstCard ? [firstCard.cardId] : null;
+          }
+          return next;
+        }
+        return [...prev, cardId];
+      });
+    },
+    [availableCards],
+  );
 
   const toggleAllCards = useCallback((): void => {
-    setSelectedCardIds(prev => (prev === null ? [] : null));
-  }, []);
+    setSelectedCardIds(prev => {
+      if (prev === null) {
+        const firstCard = availableCards[0];
+        return firstCard ? [firstCard.cardId] : null;
+      }
+      return null;
+    });
+  }, [availableCards]);
 
   const cardFilterLabel = useMemo((): string => {
     if (selectedCardIds === null) return 'All cards';
-    if (selectedCardIds.length === 0) return 'No cards';
     if (selectedCardIds.length === 1) {
       const card = availableCards.find(c => c.cardId === selectedCardIds[0]);
       return card ? `•••• ${card.last4}` : 'All cards';
@@ -253,7 +265,9 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
     setIsLoading(true);
     try {
       const cardIdsParam =
-        selectedCardIds !== null ? `&cardIds=${selectedCardIds.join(',')}` : '';
+        selectedCardIds !== null && selectedCardIds.length > 0
+          ? `&cardIds=${selectedCardIds.join(',')}`
+          : '';
       const { data, isError } = await getWithAuth(
         `/v1/cards/spend-analytics?period=${PERIOD_API_MAP[selectedPeriod]}${cardIdsParam}`,
       );
