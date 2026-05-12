@@ -38,6 +38,7 @@ import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import * as Sentry from '@sentry/react-native';
+import DeleteCardResultModal from '../../../components/v2/deleteCardResultModal';
 import { CardProviders, CardStatus, CardType } from '../../../constants/enum';
 import { Card } from '../../../models/card.model';
 import { CardProfile } from '../../../models/cardProfile.model';
@@ -216,6 +217,8 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
     null,
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchError, setIsFetchError] = useState(false);
+  const [fetchErrorMessage, setFetchErrorMessage] = useState('');
 
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
   const [showCardDropdown, setShowCardDropdown] = useState(false);
@@ -263,19 +266,32 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
 
   const fetchAnalytics = useCallback(async (): Promise<void> => {
     setIsLoading(true);
+    setIsFetchError(false);
+    setFetchErrorMessage('');
     try {
       const cardIdsParam =
         selectedCardIds !== null && selectedCardIds.length > 0
           ? `&cardIds=${selectedCardIds.join(',')}`
           : '';
-      const { data, isError } = await getWithAuth(
+      const { data, isError, error } = await getWithAuth(
         `/v1/cards/spend-analytics?period=${PERIOD_API_MAP[selectedPeriod]}${cardIdsParam}`,
       );
       if (!isError && data) {
         setAnalyticsData(data as SpendAnalyticsData);
+      } else if (isError) {
+        setIsFetchError(true);
+        setFetchErrorMessage(
+          typeof error === 'string' ? error : 'Failed to load spend analytics.',
+        );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       Sentry.captureException(error);
+      setIsFetchError(true);
+      setFetchErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Failed to load spend analytics.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -860,6 +876,19 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
           </CyDTouchView>
         </CyDView>
       </CyDView>
+
+      <DeleteCardResultModal
+        isModalVisible={isFetchError}
+        type='error'
+        cardType=''
+        last4=''
+        title='Something went wrong'
+        description={fetchErrorMessage || 'Failed to load spend analytics.'}
+        onOkay={() => {
+          setIsFetchError(false);
+          navigation.goBack();
+        }}
+      />
     </CyDSafeAreaView>
   );
 }
