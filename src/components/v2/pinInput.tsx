@@ -1,9 +1,10 @@
 import clsx from 'clsx';
-import React, { useRef } from 'react';
-import { TextInput } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, TextInput } from 'react-native';
 import {
   CyDText,
   CyDTextInput,
+  CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
 
@@ -29,14 +30,36 @@ export const PinInput = ({
   const inputRef = useRef<TextInput>(null);
   const joined = value.join('');
 
+  useEffect(() => {
+    if (!isOtp) return;
+    const t = setTimeout(() => inputRef.current?.focus(), 300);
+    return () => clearTimeout(t);
+  }, [isOtp]);
+
   const handleChangeText = (text: string) => {
     const digits = text.replace(/\D/g, '').slice(0, length);
     const next = Array.from({ length }, (_, i) => digits[i] ?? '');
     onChange(next);
   };
 
+  const focusInput = () => inputRef.current?.focus();
+
   return (
     <CyDView className={className}>
+      <CyDTextInput
+        ref={inputRef as React.Ref<TextInput>}
+        style={styles.hiddenInput}
+        keyboardType='numeric'
+        maxLength={length}
+        value={joined}
+        onChangeText={handleChangeText}
+        onBlur={onBlur}
+        autoFocus={isOtp}
+        autoComplete={isOtp ? 'sms-otp' : 'off'}
+        textContentType={isOtp ? 'oneTimeCode' : 'none'}
+        importantForAutofill={isOtp ? 'yes' : 'no'}
+        caretHidden
+      />
       {Array.from({ length }, (_, index) => {
         const filled = !!value[index];
         const display = filled
@@ -44,35 +67,37 @@ export const PinInput = ({
             ? '•'
             : value[index]
           : '';
+        const isActive = joined.length === index;
         return (
-          <CyDView
+          <CyDTouchView
             key={index}
+            activeOpacity={0.8}
+            onPress={focusInput}
             className={clsx(
               'h-[64px] w-[50px] mx-[4px] rounded-[8px] border-[1px] bg-n0 items-center justify-center',
               {
                 'border-redCyD': error,
-                'border-base200': !error,
+                'border-base400': !error && isActive,
+                'border-base200': !error && !isActive,
               },
             )}>
             <CyDText className='text-[22px] font-bold font-manrope text-base400'>
               {display}
             </CyDText>
-          </CyDView>
+          </CyDTouchView>
         );
       })}
-      <CyDTextInput
-        ref={inputRef as React.Ref<TextInput>}
-        className='absolute top-0 left-0 right-0 bottom-0 opacity-0'
-        keyboardType='numeric'
-        maxLength={length}
-        value={joined}
-        onChangeText={handleChangeText}
-        onBlur={onBlur}
-        autoComplete={isOtp ? 'sms-otp' : 'off'}
-        textContentType={isOtp ? 'oneTimeCode' : 'none'}
-        importantForAutofill={isOtp ? 'yes' : 'no'}
-        caretHidden
-      />
     </CyDView>
   );
 };
+
+const styles = StyleSheet.create({
+  hiddenInput: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0,
+  },
+});
