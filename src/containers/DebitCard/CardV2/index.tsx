@@ -141,12 +141,6 @@ import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import useConnectionManager from '../../../hooks/useConnectionManager';
 import CyDTokenValue from '../../../components/v2/tokenValue';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import FreeSafepalClaimContent, {
-  STORAGE_KEY_DISMISSED_PREMIUM,
-  STORAGE_KEY_DISMISSED_NON_PREMIUM,
-  SAFEPAL_BOTTOM_SHEET_ID,
-} from '../../../components/v2/freeSafepalClaimModal';
 import ArrangeCardsBottomSheet from './ArrangeCardsBottomSheet';
 import CustomizeContainersBottomSheet, {
   CardContainer,
@@ -1104,97 +1098,143 @@ export default function CypherCardScreen() {
     void fetchSpendAnalyticsSummary(period);
   }, []);
 
+  const reorderCardsOnServer = async (cardIds: string[]): Promise<void> => {
+    try {
+      const response = await patchWithAuth('/v1/cards/reorder', { cardIds });
+      if (response.isError) {
+        const errorMessage =
+          typeof response.error === 'string'
+            ? response.error
+            : t('UNABLE_TO_REORDER_CARDS');
+        Sentry.captureException(
+          new Error(`Card reorder failed: ${errorMessage}`),
+        );
+        showModal('state', {
+          type: 'error',
+          title: t('UNABLE_TO_REORDER_CARDS'),
+          description: errorMessage,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+      await refreshProfile();
+    } catch (error) {
+      Sentry.captureException(error);
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_REORDER_CARDS'),
+        description: t('CONTACT_CYPHERD_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
+
   const handleOpenArrangeCards = (): void => {
     reorderedCardsRef.current = null;
-    showBottomSheet({
-      id: ARRANGE_CARDS_SHEET_ID,
-      snapPoints: ['50%', '85%'],
-      defaultPresentIndex: 0,
-      showCloseButton: false,
-      showHandle: true,
-      scrollable: true,
-      backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
-      borderRadius: 24,
-      enablePanDownToClose: true,
-      fixedHeaderContent: (
-        <CyDView className='bg-n0'>
-          <CyDView className='px-[16px] pb-[16px] pt-[8px]'>
-            <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
-              {t('ARRANGE_CARDS')}
-            </CyDText>
+
+    const openSheet = (): void => {
+      showBottomSheet({
+        id: ARRANGE_CARDS_SHEET_ID,
+        snapPoints: ['50%', '85%'],
+        defaultPresentIndex: 0,
+        showCloseButton: false,
+        showHandle: true,
+        scrollable: true,
+        backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+        borderRadius: 24,
+        enablePanDownToClose: true,
+        fixedHeaderContent: (
+          <CyDView className='bg-n0'>
+            <CyDView className='px-[16px] pb-[16px] pt-[8px]'>
+              <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
+                {t('ARRANGE_CARDS')}
+              </CyDText>
+            </CyDView>
+            <CyDView className='h-[1px] bg-n30' />
           </CyDView>
-          <CyDView className='h-[1px] bg-n30' />
-        </CyDView>
-      ),
-      onClose: () => {
-        if (reorderedCardsRef.current) {
-          const updatedProfile = {
-            ...cardProfile,
-            [cardProvider]: {
-              ...get(cardProfile, cardProvider, {}),
-              cards: reorderedCardsRef.current,
-            },
-          };
-          globalContext.globalDispatch({
-            type: GlobalContextType.CARD_PROFILE,
-            cardProfile: updatedProfile,
-          });
-          reorderedCardsRef.current = null;
-        }
-      },
-      content: (
-        <ArrangeCardsBottomSheet
-          cards={allDisplayableCards}
-          onOrderChanged={(reorderedCards: Card[]) => {
-            reorderedCardsRef.current = reorderedCards;
-          }}
-          onClose={() => {
-            hideBottomSheet(ARRANGE_CARDS_SHEET_ID);
-          }}
-        />
-      ),
-    });
-    setTimeout(() => {
-      snapBottomSheetToIndex(ARRANGE_CARDS_SHEET_ID, 0);
-    }, 350);
+        ),
+        onClose: () => {
+          if (reorderedCardsRef.current) {
+            const reorderedCardIds = reorderedCardsRef.current.map(
+              c => c.cardId,
+            );
+            reorderedCardsRef.current = null;
+            void reorderCardsOnServer(reorderedCardIds);
+          }
+        },
+        content: (
+          <ArrangeCardsBottomSheet
+            cards={allDisplayableCards}
+            onOrderChanged={(reorderedCards: Card[]) => {
+              reorderedCardsRef.current = reorderedCards;
+            }}
+            onClose={() => {
+              hideBottomSheet(ARRANGE_CARDS_SHEET_ID);
+            }}
+          />
+        ),
+      });
+      if (Platform.OS === 'android') {
+        setTimeout(() => {
+          snapBottomSheetToIndex(ARRANGE_CARDS_SHEET_ID, 0);
+        }, 350);
+      }
+    };
+    if (Platform.OS === 'ios') {
+      setTimeout(openSheet, 300);
+    } else {
+      openSheet();
+    }
   };
 
   const handleOpenCustomizeContainers = (): void => {
-    showBottomSheet({
-      id: CUSTOMIZE_CONTAINERS_SHEET_ID,
-      snapPoints: ['30%'],
-      defaultPresentIndex: 0,
-      showCloseButton: false,
-      showHandle: true,
-      scrollable: false,
-      backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
-      borderRadius: 24,
-      enablePanDownToClose: true,
-      fixedHeaderContent: (
-        <CyDView className='bg-n0'>
-          <CyDView className='px-[16px] pb-[16px] pt-[8px]'>
-            <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
-              {t('CUSTOMIZE_CARD_CONTAINERS')}
-            </CyDText>
+    const openSheet = (): void => {
+      showBottomSheet({
+        id: CUSTOMIZE_CONTAINERS_SHEET_ID,
+        snapPoints: ['30%'],
+        defaultPresentIndex: 0,
+        showCloseButton: false,
+        showHandle: true,
+        scrollable: false,
+        backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+        borderRadius: 24,
+        enablePanDownToClose: true,
+        fixedHeaderContent: (
+          <CyDView className='bg-n0'>
+            <CyDView className='px-[16px] pb-[16px] pt-[8px]'>
+              <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
+                {t('CUSTOMIZE_CARD_CONTAINERS')}
+              </CyDText>
+            </CyDView>
+            <CyDView className='h-[1px] bg-n30' />
           </CyDView>
-          <CyDView className='h-[1px] bg-n30' />
-        </CyDView>
-      ),
-      content: (
-        <CustomizeContainersBottomSheet
-          containers={containerOrder}
-          onOrderChanged={(reordered: CardContainer[]) => {
-            setContainerOrder(reordered);
-          }}
-          onClose={() => {
-            hideBottomSheet(CUSTOMIZE_CONTAINERS_SHEET_ID);
-          }}
-        />
-      ),
-    });
-    setTimeout(() => {
-      snapBottomSheetToIndex(CUSTOMIZE_CONTAINERS_SHEET_ID, 0);
-    }, 350);
+        ),
+        content: (
+          <CustomizeContainersBottomSheet
+            containers={containerOrder}
+            onOrderChanged={(reordered: CardContainer[]) => {
+              setContainerOrder(reordered);
+            }}
+            onClose={() => {
+              hideBottomSheet(CUSTOMIZE_CONTAINERS_SHEET_ID);
+            }}
+          />
+        ),
+      });
+      if (Platform.OS === 'android') {
+        setTimeout(() => {
+          snapBottomSheetToIndex(CUSTOMIZE_CONTAINERS_SHEET_ID, 0);
+        }, 350);
+      }
+    };
+
+    if (Platform.OS === 'ios') {
+      setTimeout(openSheet, 300);
+    } else {
+      openSheet();
+    }
   };
 
   useEffect(() => {
@@ -1764,7 +1804,6 @@ export default function CypherCardScreen() {
     }
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
       onSuccess: (data: any, providerArg: CardProviders) => {
-        setIsFetchingCardDetails(true);
         setCardDetailsModal({
           showCardDetailsModal: true,
           card,
@@ -1785,11 +1824,16 @@ export default function CypherCardScreen() {
         } else if (dispatchProvider === CardProviders.PAYCADDY) {
           void sendCardDetailsForPaycaddy(data, card);
         } else {
-          setIsFetchingCardDetails(false);
-          setCardDetailsModal(prev => ({ ...prev, showCardDetailsModal: false }));
+          setCardDetailsModal(prev => ({
+            ...prev,
+            showCardDetailsModal: false,
+            loading: false,
+          }));
           Sentry.captureException(
             new Error(
-              `Reveal onSuccess: unhandled cardProvider "${String(dispatchProvider)}" for cardId ${String(card?.cardId)}`,
+              `Reveal onSuccess: unhandled cardProvider "${String(
+                dispatchProvider,
+              )}" for cardId ${String(card?.cardId)}`,
             ),
           );
           showModal('state', {
@@ -2294,10 +2338,15 @@ export default function CypherCardScreen() {
             </CyDText>
           </CyDTouchView>
         )}
-
       </CyDView>
     ),
-    [cardProfile, cardProvider, cardDesignData, cardBalance, allDisplayableCards],
+    [
+      cardProfile,
+      cardProvider,
+      cardDesignData,
+      cardBalance,
+      allDisplayableCards,
+    ],
   );
 
   const cardListItemSeparator = React.useCallback(
