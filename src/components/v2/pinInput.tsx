@@ -1,7 +1,11 @@
 import clsx from 'clsx';
-import React, { useRef, useEffect } from 'react';
-import Clipboard from '@react-native-clipboard/clipboard';
-import { CyDView, CyDTextInput } from '../../styles/tailwindComponents';
+import React, { useRef } from 'react';
+import { TextInput } from 'react-native';
+import {
+  CyDText,
+  CyDTextInput,
+  CyDView,
+} from '../../styles/tailwindComponents';
 
 export const PinInput = ({
   value,
@@ -10,6 +14,7 @@ export const PinInput = ({
   onBlur,
   length,
   isSecureTextEntry = false,
+  isOtp = false,
   className = 'flex-row justify-center',
 }: {
   value: string[];
@@ -18,101 +23,56 @@ export const PinInput = ({
   onBlur: () => void;
   length: number;
   isSecureTextEntry?: boolean;
+  isOtp?: boolean;
   className?: string;
 }) => {
-  const inputRefs = useRef([]);
-  const keyPressedRef = useRef(false);
+  const inputRef = useRef<TextInput>(null);
+  const joined = value.join('');
 
-  useEffect(() => {
-    inputRefs.current = inputRefs.current.slice(0, length);
-  }, [length]);
-
-  const handleChangeText = async (
-    text: string,
-    index: number,
-  ): Promise<void> => {
-    if (keyPressedRef.current) {
-      keyPressedRef.current = false;
-      return;
-    }
-    keyPressedRef.current = false;
-
-    try {
-      const clipboardContent = await Clipboard.getString();
-      const digits = clipboardContent.trim().replace(/\D/g, '');
-      if (digits.length >= length) {
-        onChange(digits.slice(0, length).split(''));
-        inputRefs?.current[length - 1]?.focus();
-        return;
-      }
-    } catch {}
-    if (text.length === 1 && /^\d$/.test(text)) {
-      const newValue = [...value];
-      newValue[index] = text;
-      onChange(newValue);
-      if (index < length - 1) {
-        inputRefs?.current[index + 1]?.focus();
-      }
-    }
-  };
-
-  const handleKeyPress = (index: number, e: any): void => {
-    keyPressedRef.current = true;
-    const key = e.nativeEvent.key;
-
-    if (/^\d$/.test(key)) {
-      const newValue = [...value];
-
-      // If current box is not empty and not the last box, move to next box
-      if (newValue[index] !== '' && index < length - 1) {
-        newValue[index + 1] = key;
-        onChange(newValue);
-        inputRefs?.current[index + 1]?.focus();
-      } else {
-        newValue[index] = key;
-        onChange(newValue);
-        // Move to the next box if not the last one
-        if (index < length - 1) {
-          inputRefs?.current[index + 1]?.focus();
-        }
-      }
-    } else if (key === 'Backspace') {
-      const newValue = [...value];
-      newValue[index] = '';
-      onChange(newValue);
-
-      // Move to the previous box if not the first one
-      if (index > 0) {
-        inputRefs?.current[index - 1]?.focus();
-      }
-    }
+  const handleChangeText = (text: string) => {
+    const digits = text.replace(/\D/g, '').slice(0, length);
+    const next = Array.from({ length }, (_, i) => digits[i] ?? '');
+    onChange(next);
   };
 
   return (
     <CyDView className={className}>
-      {Array.from({ length }, (_, index) => (
-        <CyDTextInput
-          key={index}
-          ref={el => (inputRefs.current[index] = el)}
-          className={clsx(
-            'h-[64px] w-[50px] text-[22px] font-bold text-center rounded-[8px] border-[1px] border-base200 bg-n0 font-manrope text-base400',
-            'mx-[4px]',
-            {
-              'border-redCyD': error,
-            },
-          )}
-          keyboardType='numeric'
-          maxLength={1}
-          value={value[index] || ''}
-          onChangeText={text => {
-            void handleChangeText(text, index);
-          }}
-          onKeyPress={e => handleKeyPress(index, e)}
-          secureTextEntry={isSecureTextEntry}
-          onBlur={onBlur}
-          selectTextOnFocus
-        />
-      ))}
+      {Array.from({ length }, (_, index) => {
+        const filled = !!value[index];
+        const display = filled
+          ? isSecureTextEntry
+            ? '•'
+            : value[index]
+          : '';
+        return (
+          <CyDView
+            key={index}
+            className={clsx(
+              'h-[64px] w-[50px] mx-[4px] rounded-[8px] border-[1px] bg-n0 items-center justify-center',
+              {
+                'border-redCyD': error,
+                'border-base200': !error,
+              },
+            )}>
+            <CyDText className='text-[22px] font-bold font-manrope text-base400'>
+              {display}
+            </CyDText>
+          </CyDView>
+        );
+      })}
+      <CyDTextInput
+        ref={inputRef as React.Ref<TextInput>}
+        className='absolute top-0 left-0 right-0 bottom-0 opacity-0'
+        keyboardType='numeric'
+        maxLength={length}
+        value={joined}
+        onChangeText={handleChangeText}
+        onBlur={onBlur}
+        autoComplete={isOtp ? 'sms-otp' : 'off'}
+        textContentType={isOtp ? 'oneTimeCode' : 'none'}
+        importantForAutofill={isOtp ? 'yes' : 'no'}
+        caretHidden
+      />
     </CyDView>
   );
 };
