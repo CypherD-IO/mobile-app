@@ -37,7 +37,7 @@ const formatUsd = (
   return `~$${formatAmount(usd, 2)}`;
 };
 
-const InsufficientGasFeeDescription: React.FC<
+export const InsufficientGasFeeDescription: React.FC<
   InsufficientGasFeeDescriptionProps
 > = ({
   gasFeeInCrypto,
@@ -47,8 +47,12 @@ const InsufficientGasFeeDescription: React.FC<
 }) => {
   const { t } = useTranslation();
 
-  const requiredCrypto = `~${formatCryptoAmount(gasFeeInCrypto)} ${nativeTokenSymbol}`;
-  const availableCrypto = `${formatCryptoAmount(balanceInCrypto)} ${nativeTokenSymbol}`;
+  const requiredCrypto = `~${formatCryptoAmount(
+    gasFeeInCrypto,
+  )} ${nativeTokenSymbol}`;
+  const availableCrypto = `${formatCryptoAmount(
+    balanceInCrypto,
+  )} ${nativeTokenSymbol}`;
   const requiredUsd = formatUsd(gasFeeInCrypto, nativeTokenPrice);
   const availableUsd = formatUsd(balanceInCrypto, nativeTokenPrice);
 
@@ -107,5 +111,3 @@ const InsufficientGasFeeDescription: React.FC<
     </CyDView>
   );
 };
-
-export default InsufficientGasFeeDescription;

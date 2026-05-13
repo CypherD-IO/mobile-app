@@ -1456,7 +1456,11 @@ export const getMinimumCardLoadAmount = (
   if (tokenData?.accountType === 'spot') return MINIMUM_TRANSFER_AMOUNT_HL_SPOT;
   if (tokenData?.chainDetails?.backendName === CHAIN_ETH.backendName) {
     const coinGeckoId =
-      tokenData && 'coinGeckoId' in tokenData ? tokenData.coinGeckoId : '';
+      tokenData && 'coinGeckoId' in tokenData
+        ? tokenData.coinGeckoId
+        : tokenData && 'coingeckoId' in tokenData
+        ? tokenData.coingeckoId.toLowerCase()
+        : '';
     if (!['usd-coin', 'tether'].includes(coinGeckoId)) {
       return MINIMUM_TRANSFER_AMOUNT_ETH;
     }
