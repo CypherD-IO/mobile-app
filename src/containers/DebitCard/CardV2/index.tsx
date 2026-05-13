@@ -1090,13 +1090,9 @@ export default function CypherCardScreen() {
     }
   };
 
-  /**
-   * Handles spend period dropdown change — updates state and re-fetches chart data.
-   */
-  const handleSpendPeriodChange = useCallback((period: SpendPeriod): void => {
-    setSelectedSpendPeriod(period);
+  const handleSpendPeriodChange = (period: SpendPeriod): void => {
     void fetchSpendAnalyticsSummary(period);
-  }, []);
+  };
 
   const reorderCardsOnServer = async (cardIds: string[]): Promise<void> => {
     try {
@@ -1314,25 +1310,60 @@ export default function CypherCardScreen() {
   /**
    * Fetches the spend analytics summary for the widget chart.
    * Retrieves chart data points and total spend for the given period.
+   *
+   * Auto-fallback: when called with 'this_month' and the total spend is 0,
+   * automatically retries with 'last_90_days'. If that is also 0, retries
+   * with 'all_time'. The selected period in the dropdown is updated to
+   * reflect whichever period actually returned data.
    */
   const fetchSpendAnalyticsSummary = async (
     period: SpendPeriod,
   ): Promise<void> => {
-    try {
-      const response = await getWithAuth(
-        `/v1/cards/spend-analytics/summary?period=${period}`,
-      );
-      if (!response.isError && response.data) {
-        const { chartData, totalSpend } = response.data as {
-          chartData: number[];
-          totalSpend: number;
-        };
-        setSpendChartData(chartData ?? []);
-        setTotalMonthlySpend(totalSpend ?? 0);
+    const FALLBACK_CHAIN: SpendPeriod[] = [
+      'this_month',
+      'last_90_days',
+      'all_time',
+    ];
+
+    const fetchForPeriod = async (
+      p: SpendPeriod,
+    ): Promise<{ chartData: number[]; totalSpend: number } | null> => {
+      try {
+        const response = await getWithAuth(
+          `/v1/cards/spend-analytics/summary?period=${p}`,
+        );
+        if (!response.isError && response.data) {
+          return response.data as { chartData: number[]; totalSpend: number };
+        }
+      } catch (error) {
+        Sentry.captureException(error);
       }
-    } catch (error) {
-      Sentry.captureException(error);
+      return null;
+    };
+
+    const startIndex = FALLBACK_CHAIN.indexOf(period);
+    const periodsToTry =
+      startIndex >= 0 ? FALLBACK_CHAIN.slice(startIndex) : [period];
+
+    for (const candidate of periodsToTry) {
+      const data = await fetchForPeriod(candidate);
+      if (data) {
+        const { chartData, totalSpend } = data;
+        if (
+          totalSpend > 0 ||
+          candidate === periodsToTry[periodsToTry.length - 1]
+        ) {
+          setSpendChartData(chartData ?? []);
+          setTotalMonthlySpend(totalSpend ?? 0);
+          setSelectedSpendPeriod(candidate);
+          return;
+        }
+      }
     }
+
+    setSpendChartData([]);
+    setTotalMonthlySpend(0);
+    setSelectedSpendPeriod(periodsToTry[periodsToTry.length - 1]);
   };
 
   const fetchRecentTransactions = async () => {
@@ -2315,7 +2346,7 @@ export default function CypherCardScreen() {
 
   const renderCardListFooter = React.useCallback(
     (): React.ReactElement => (
-      <CyDView>
+      <CyDView className='mt-[16px]'>
         {/* Free Metal Card promotion */}
         <GetPhysicalCardComponent
           cardProfile={cardProfile}

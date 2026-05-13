@@ -27,13 +27,15 @@ export type SpendPeriod =
   | 'this_month'
   | 'last_month'
   | 'last_30_days'
-  | 'last_90_days';
+  | 'last_90_days'
+  | 'all_time';
 
 const PERIOD_LABELS: Record<SpendPeriod, string> = {
   this_month: 'This Month',
   last_month: 'Last Month',
   last_30_days: 'Last 30 days',
   last_90_days: 'Last 90 days',
+  all_time: 'All Time',
 };
 
 interface SpendAnalyticsWidgetProps {
@@ -125,68 +127,80 @@ export default function SpendAnalyticsWidget({
           />
         </CyDTouchView>
 
-        <CyDTouchView
-          className='flex-row items-center'
-          onPress={handleViewMore}>
-          <CyDText className='font-manrope font-bold text-[12px] leading-[150%] text-base400'>
-            {'View More'}
-          </CyDText>
-          <CyDMaterialDesignIcons
-            name='chevron-right'
-            size={16}
-            className='text-base400'
-          />
-        </CyDTouchView>
+        {totalSpend > 0 && (
+          <CyDTouchView
+            className='flex-row items-center'
+            onPress={handleViewMore}>
+            <CyDText className='font-manrope font-bold text-[12px] leading-[150%] text-base400'>
+              {'View More'}
+            </CyDText>
+            <CyDMaterialDesignIcons
+              name='chevron-right'
+              size={16}
+              className='text-base400'
+            />
+          </CyDTouchView>
+        )}
       </CyDView>
 
       <CyDView className='flex-1 relative overflow-hidden rounded-b-[12px]'>
-        <CyDView className='absolute top-0 left-0 right-0 bottom-0'>
-          <AreaChart
-            style={styles.chart}
-            data={smoothedData}
-            contentInset={{ top: 20, bottom: 0, left: -1, right: -1 }}
-            curve={shape.curveNatural}
-            svg={{ fill: 'url(#areaGradient)' }}>
-            <ChartGradient />
-            <ChartLine />
-          </AreaChart>
-        </CyDView>
+        {totalSpend > 0 ? (
+          <>
+            <CyDView className='absolute top-0 left-0 right-0 bottom-0'>
+              <AreaChart
+                style={styles.chart}
+                data={smoothedData}
+                contentInset={{ top: 20, bottom: 0, left: -1, right: -1 }}
+                curve={shape.curveNatural}
+                svg={{ fill: 'url(#areaGradient)' }}>
+                <ChartGradient />
+                <ChartLine />
+              </AreaChart>
+            </CyDView>
 
-        <CyDView className='absolute left-[-10px] bottom-[-5px] z-[10]'>
-          <Svg width={140} height={60}>
-            <Defs>
-              <RadialGradient
-                id='textGlow'
-                cx='50%'
-                cy='50%'
-                rx='50%'
-                ry='50%'>
-                <Stop
-                  offset='0'
-                  stopColor={isDarkMode ? '#000000' : '#FFFFFF'}
-                  stopOpacity={0.85}
+            <CyDView className='absolute left-[-10px] bottom-[-5px] z-[10]'>
+              <Svg width={140} height={60}>
+                <Defs>
+                  <RadialGradient
+                    id='textGlow'
+                    cx='50%'
+                    cy='50%'
+                    rx='50%'
+                    ry='50%'>
+                    <Stop
+                      offset='0'
+                      stopColor={isDarkMode ? '#000000' : '#FFFFFF'}
+                      stopOpacity={0.85}
+                    />
+                    <Stop
+                      offset='1'
+                      stopColor={isDarkMode ? '#000000' : '#FFFFFF'}
+                      stopOpacity={0}
+                    />
+                  </RadialGradient>
+                </Defs>
+                <Ellipse
+                  cx={70}
+                  cy={30}
+                  rx={70}
+                  ry={30}
+                  fill='url(#textGlow)'
                 />
-                <Stop
-                  offset='1'
-                  stopColor={isDarkMode ? '#000000' : '#FFFFFF'}
-                  stopOpacity={0}
-                />
-              </RadialGradient>
-            </Defs>
-            <Ellipse
-              cx={70}
-              cy={30}
-              rx={70}
-              ry={30}
-              fill='url(#textGlow)'
-            />
-          </Svg>
-        </CyDView>
-        <CyDView className='absolute left-[9px] bottom-[15px] z-[11]'>
-          <CyDTokenValue className='text-[22px] leading-[145%]'>
-            {totalSpend}
-          </CyDTokenValue>
-        </CyDView>
+              </Svg>
+            </CyDView>
+            <CyDView className='absolute left-[9px] bottom-[15px] z-[11]'>
+              <CyDTokenValue className='text-[22px] leading-[145%]'>
+                {totalSpend}
+              </CyDTokenValue>
+            </CyDView>
+          </>
+        ) : (
+          <CyDView className='flex-1 items-center justify-center'>
+            <CyDText className='font-manrope font-medium text-[14px] leading-[145%] text-n200'>
+              {'No spending data available'}
+            </CyDText>
+          </CyDView>
+        )}
       </CyDView>
 
       {showDropdown && (

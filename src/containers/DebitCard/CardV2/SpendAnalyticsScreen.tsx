@@ -48,6 +48,7 @@ const PERIOD_LABELS: Record<SpendPeriod, string> = {
   last_month: 'LAST MONTH',
   last_30_days: 'LAST 30 DAYS',
   last_90_days: 'LAST 90 DAYS',
+  all_time: 'ALL TIME',
 };
 
 const PERIOD_DISPLAY: Record<SpendPeriod, string> = {
@@ -55,6 +56,7 @@ const PERIOD_DISPLAY: Record<SpendPeriod, string> = {
   last_month: 'Last Month',
   last_30_days: 'Last 30 Days',
   last_90_days: 'Last 90 Days',
+  all_time: 'All Time',
 };
 
 const PERIOD_OPTIONS: SpendPeriod[] = [
@@ -62,6 +64,7 @@ const PERIOD_OPTIONS: SpendPeriod[] = [
   'last_month',
   'last_30_days',
   'last_90_days',
+  'all_time',
 ];
 
 function getCardTypeLabel(card: Card): string {
@@ -75,6 +78,7 @@ const PERIOD_API_MAP: Record<SpendPeriod, string> = {
   last_month: 'last_month',
   last_30_days: 'last_30_days',
   last_90_days: 'last_90_days',
+  all_time: 'all_time',
 };
 
 const CATEGORY_COLORS = [

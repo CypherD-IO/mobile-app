@@ -1,8 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  withSpring,
+  WithSpringConfig,
 } from 'react-native-reanimated';
 import {
   CyDMaterialDesignIcons,
@@ -12,6 +15,12 @@ import {
 import { setCardContainerOrder } from '../../../core/asyncStorage';
 
 const ITEM_HEIGHT = 53;
+
+const LIFT_SPRING: WithSpringConfig = {
+  damping: 20,
+  stiffness: 300,
+  mass: 0.6,
+};
 
 export interface CardContainer {
   id: string;
@@ -28,23 +37,48 @@ interface DraggableContainerRowProps {
   container: CardContainer;
   index: number;
   totalItems: number;
+  isActive: boolean;
+  isDragging: boolean;
   onReorder: (from: number, to: number) => void;
+  onDragStart: () => void;
+  onDragEnd: () => void;
 }
 
 function DraggableContainerRow({
   container,
   index,
   totalItems,
+  isActive,
+  isDragging,
   onReorder,
+  onDragStart,
+  onDragEnd,
 }: DraggableContainerRowProps): React.ReactElement {
   const translateY = useSharedValue(0);
-  const isActive = useSharedValue(false);
+  const scale = useSharedValue(1);
+  const rowOpacity = useSharedValue(1);
+  const lift = useSharedValue(0);
+
+  useEffect(() => {
+    if (isActive) {
+      scale.value = withSpring(1.06, LIFT_SPRING);
+      lift.value = withSpring(1, LIFT_SPRING);
+      rowOpacity.value = withSpring(1, LIFT_SPRING);
+    } else if (isDragging) {
+      scale.value = withSpring(1, LIFT_SPRING);
+      lift.value = withSpring(0, LIFT_SPRING);
+      rowOpacity.value = withSpring(0.4, LIFT_SPRING);
+    } else {
+      scale.value = withSpring(1, LIFT_SPRING);
+      lift.value = withSpring(0, LIFT_SPRING);
+      rowOpacity.value = withSpring(1, LIFT_SPRING);
+    }
+  }, [isActive, isDragging, scale, lift, rowOpacity]);
 
   const gesture = Gesture.Pan()
     .runOnJS(true)
-    .activateAfterLongPress(200)
     .onStart(() => {
-      isActive.value = true;
+      onDragStart();
     })
     .onUpdate(e => {
       translateY.value = e.translationY;
@@ -57,7 +91,7 @@ function DraggableContainerRow({
       );
 
       translateY.value = 0;
-      isActive.value = false;
+      onDragEnd();
 
       if (newIndex !== index) {
         onReorder(index, newIndex);
@@ -65,31 +99,55 @@ function DraggableContainerRow({
     })
     .onFinalize(() => {
       translateY.value = 0;
-      isActive.value = false;
+      onDragEnd();
     });
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    zIndex: isActive.value ? 999 : 0,
-    elevation: isActive.value ? 8 : 0,
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    const isLifted = lift.value > 0.5;
+
+    if (Platform.OS === 'android') {
+      return {
+        transform: [
+          { translateY: translateY.value },
+          { scale: scale.value },
+        ],
+        opacity: rowOpacity.value,
+        zIndex: isLifted ? 999 : 0,
+      };
+    }
+
+    return {
+      transform: [
+        { translateY: translateY.value },
+        { scale: scale.value },
+      ],
+      opacity: rowOpacity.value,
+      shadowColor: '#000',
+      shadowOpacity: lift.value * 0.18,
+      shadowRadius: lift.value * 10,
+      shadowOffset: { width: 0, height: lift.value * 6 },
+      zIndex: isLifted ? 999 : 0,
+    };
+  });
 
   return (
-    <GestureDetector gesture={gesture}>
-      <Animated.View style={animatedStyle}>
-        <CyDView className='flex-row items-center px-[16px] py-[16px] bg-n0'>
-          <CyDMaterialDesignIcons
-            name='menu'
-            size={20}
-            className='text-n100 mr-[12px]'
-          />
-          <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
-            {container.label}
-          </CyDText>
-        </CyDView>
-        <CyDView className='h-[1px] bg-n30 mx-[16px]' />
-      </Animated.View>
-    </GestureDetector>
+    <Animated.View style={animatedStyle}>
+      <CyDView className='flex-row items-center px-[16px] py-[16px] bg-n0'>
+        <GestureDetector gesture={gesture}>
+          <Animated.View hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}>
+            <CyDMaterialDesignIcons
+              name='menu'
+              size={20}
+              className='text-n100 mr-[12px]'
+            />
+          </Animated.View>
+        </GestureDetector>
+        <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
+          {container.label}
+        </CyDText>
+      </CyDView>
+      <CyDView className='h-[1px] bg-n30 mx-[16px]' />
+    </Animated.View>
   );
 }
 
@@ -104,6 +162,7 @@ export default function CustomizeContainersBottomSheet({
   onOrderChanged,
 }: CustomizeContainersBottomSheetProps): React.ReactElement {
   const [data, setData] = useState<CardContainer[]>(containers);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const handleReorder = useCallback(
     (fromIndex: number, toIndex: number): void => {
@@ -127,7 +186,11 @@ export default function CustomizeContainersBottomSheet({
           container={container}
           index={idx}
           totalItems={data.length}
+          isActive={activeIndex === idx}
+          isDragging={activeIndex !== null}
           onReorder={handleReorder}
+          onDragStart={() => setActiveIndex(idx)}
+          onDragEnd={() => setActiveIndex(null)}
         />
       ))}
     </CyDView>
