@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { BackHandler, ActivityIndicator } from 'react-native';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import InsufficientGasFeeDescription from '../../components/v2/InsufficientGasFeeDescription';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import { ButtonType } from '../../constants/enum';
@@ -221,10 +222,20 @@ export default function EnterAmount(props: any) {
         onFailure: hideModal,
       });
     } else if (!(await haveEnoughNativeBalance(cryptoValue, gasReserved))) {
+      const nativeToken = await getNativeToken(
+        tokenData.chainDetails.backendName,
+      );
       showModal('state', {
         type: 'error',
-        title: t('INSUFFICIENT_FUNDS'),
-        description: `You don't have sufficient ${nativeTokenSymbol} to pay gas fee.`,
+        title: t('INSUFFICIENT_GAS_FEE'),
+        description: (
+          <InsufficientGasFeeDescription
+            gasFeeInCrypto={String(gasReserved)}
+            balanceInCrypto={String(nativeToken?.balanceDecimal ?? '0')}
+            nativeTokenSymbol={nativeTokenSymbol}
+            nativeTokenPrice={nativeToken?.price}
+          />
+        ),
         onSuccess: hideModal,
         onFailure: hideModal,
       });

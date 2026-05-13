@@ -1452,16 +1452,16 @@ export const formatCurrencyWithSuffix = (value: number): string => {
 
 export const getMinimumCardLoadAmount = (
   tokenData: Holding | IHyperLiquidHolding | undefined,
-) => {
-  // hyperliquid spot account $15
-  // eth $50
-  // all other $10
-
-  return tokenData?.accountType === 'spot'
-    ? MINIMUM_TRANSFER_AMOUNT_HL_SPOT
-    : tokenData?.chainDetails?.backendName === CHAIN_ETH.backendName
-    ? MINIMUM_TRANSFER_AMOUNT_ETH
-    : 10;
+): number => {
+  if (tokenData?.accountType === 'spot') return MINIMUM_TRANSFER_AMOUNT_HL_SPOT;
+  if (tokenData?.chainDetails?.backendName === CHAIN_ETH.backendName) {
+    const coinGeckoId =
+      tokenData && 'coinGeckoId' in tokenData ? tokenData.coinGeckoId : '';
+    if (!['usd-coin', 'tether'].includes(coinGeckoId)) {
+      return MINIMUM_TRANSFER_AMOUNT_ETH;
+    }
+  }
+  return 10;
 };
 
 export const extractAddressFromURI = (content: string): string => {

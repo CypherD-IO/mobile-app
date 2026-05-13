@@ -1646,6 +1646,11 @@ const resources = {
       MAXIMUM_AMOUNT_POSSIBLE: 'Enter amount less than ',
       INSUFFICIENT_FUNDS_DESCRIPTION: `Your balance isn't sufficient to cover both the amount and the load fee. Use the 'Max' option to load the maximum amount possible`,
       INSUFFICIENT_GAS_FEE_DESCRIPTION: `Your native token balance isn't sufficient to cover the gas fee.`,
+      INSUFFICIENT_GAS_FEE_INTRO: `Your {{symbol}} balance isn't enough to cover the network fee.`,
+      INSUFFICIENT_GAS_FEE_REQUIRED: 'Required',
+      INSUFFICIENT_GAS_FEE_AVAILABLE: 'You have',
+      INSUFFICIENT_GAS_FEE_ESTIMATE_NOTE:
+        'This is an estimated gas fee. Actual cost may be lower.',
       GAS_FEE_ERROR: 'Gas Fee Estimation Failed',
       GAS_FEE_ERROR_DESCRIPTION:
         'Gas fee estimation failed. Please try again later. Contact support if the issue persists.',
