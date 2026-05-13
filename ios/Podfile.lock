@@ -1,6 +1,112 @@
 PODS:
+  - "AnalyticsSwiftCIO (1.7.3+cio.1)":
+    - JSONSafeEncoding (= 2.0.0)
+    - Sovran (= 1.1.2)
   - BVLinearGradient (2.8.3):
     - React-Core
+  - CioFirebaseWrapper (1.0.0):
+    - CustomerIOMessagingPushFCM (>= 4.0.0)
+    - FirebaseMessaging (< 13.0.0, >= 8.7.0)
+  - customerio-reactnative (6.3.1):
+    - customerio-reactnative/nopush (= 6.3.1)
+    - CustomerIO/DataPipelines (= 4.3.1)
+    - CustomerIO/MessagingInApp (= 4.3.1)
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - customerio-reactnative-richpush/fcm (6.3.1):
+    - CustomerIO/MessagingPushFCM (= 4.3.1)
+  - customerio-reactnative/fcm (6.3.1):
+    - CioFirebaseWrapper (= 1.0.0)
+    - CustomerIO/DataPipelines (= 4.3.1)
+    - CustomerIO/MessagingInApp (= 4.3.1)
+    - CustomerIO/MessagingPushFCM (= 4.3.1)
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - customerio-reactnative/nopush (6.3.1):
+    - CustomerIO/DataPipelines (= 4.3.1)
+    - CustomerIO/MessagingInApp (= 4.3.1)
+    - CustomerIO/MessagingPush (= 4.3.1)
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - CustomerIO/DataPipelines (4.3.1):
+    - CustomerIODataPipelines (= 4.3.1)
+  - CustomerIO/MessagingInApp (4.3.1):
+    - CustomerIOMessagingInApp (= 4.3.1)
+  - CustomerIO/MessagingPush (4.3.1):
+    - CustomerIOMessagingPush (= 4.3.1)
+  - CustomerIO/MessagingPushFCM (4.3.1):
+    - CustomerIOMessagingPushFCM (= 4.3.1)
+  - CustomerIOCommon (4.3.1)
+  - CustomerIODataPipelines (4.3.1):
+    - "AnalyticsSwiftCIO (= 1.7.3+cio.1)"
+    - CustomerIOCommon (= 4.3.1)
+    - CustomerIOTrackingMigration (= 4.3.1)
+  - CustomerIOMessagingInApp (4.3.1):
+    - CustomerIOCommon (= 4.3.1)
+    - LDSwiftEventSource (~> 3.3)
+  - CustomerIOMessagingPush (4.3.1):
+    - CustomerIOCommon (= 4.3.1)
+  - CustomerIOMessagingPushFCM (4.3.1):
+    - CustomerIOMessagingPush (= 4.3.1)
+  - CustomerIOTrackingMigration (4.3.1):
+    - CustomerIOCommon (= 4.3.1)
   - FBLazyVector (0.84.1)
   - Firebase/CoreOnly (12.10.0):
     - FirebaseCore (~> 12.10.0)
@@ -150,6 +256,8 @@ PODS:
     - Yoga
   - jail-monkey (2.8.5):
     - React-Core
+  - JSONSafeEncoding (2.0.0)
+  - LDSwiftEventSource (3.3.0)
   - libwebp (1.5.0):
     - libwebp/demux (= 1.5.0)
     - libwebp/mux (= 1.5.0)
@@ -2900,6 +3008,7 @@ PODS:
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
   - Sentry/HybridSDK (8.58.0)
+  - Sovran (1.1.2)
   - transfi-ramp-react-native-sdk (0.1.8):
     - hermes-engine
     - RCTRequired
@@ -2939,12 +3048,16 @@ PODS:
 
 DEPENDENCIES:
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
+  - customerio-reactnative (from `../node_modules/customerio-reactnative`)
+  - customerio-reactnative-richpush/fcm (from `../node_modules/customerio-reactnative`)
+  - customerio-reactnative/fcm (from `../node_modules/customerio-reactnative`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FirebaseABTesting
   - FirebaseCore
   - FirebaseCoreExtension
   - FirebaseCoreInternal
   - FirebaseInstallations
+  - FirebaseMessaging
   - FirebaseRemoteConfig
   - FirebaseSessions
   - GoogleDataTransport
@@ -3079,6 +3192,15 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AnalyticsSwiftCIO
+    - CioFirebaseWrapper
+    - CustomerIO
+    - CustomerIOCommon
+    - CustomerIODataPipelines
+    - CustomerIOMessagingInApp
+    - CustomerIOMessagingPush
+    - CustomerIOMessagingPushFCM
+    - CustomerIOTrackingMigration
     - Firebase
     - FirebaseABTesting
     - FirebaseAnalytics
@@ -3096,6 +3218,8 @@ SPEC REPOS:
     - GoogleDataTransport
     - GoogleUtilities
     - Intercom
+    - JSONSafeEncoding
+    - LDSwiftEventSource
     - libwebp
     - lottie-ios
     - nanopb
@@ -3105,11 +3229,16 @@ SPEC REPOS:
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
+    - Sovran
     - YttriumWrapper
 
 EXTERNAL SOURCES:
   BVLinearGradient:
     :path: "../node_modules/react-native-linear-gradient"
+  customerio-reactnative:
+    :path: "../node_modules/customerio-reactnative"
+  customerio-reactnative-richpush:
+    :path: "../node_modules/customerio-reactnative"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
   hermes-engine:
@@ -3365,7 +3494,18 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  AnalyticsSwiftCIO: cbded90bbfe53072cb1fa1bc091d249e99ef7c56
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
+  CioFirebaseWrapper: 7eba9daf8c158b583c9dfacb706f409ed184d46c
+  CustomerIO: 26170e94d2ccf020908fa7f6e8a113aeba5cbfdf
+  customerio-reactnative: db9b79a7e07c36d2fe2ce9f605ac3a856cca0eb0
+  customerio-reactnative-richpush: 07aa84ff5bc7762b0a4cc238f672dae067ef6481
+  CustomerIOCommon: ff7d879dc86b016017032edbb4378ebec81be7d6
+  CustomerIODataPipelines: fd6a72e8d4e98fe567a35a7e29bdcbb0a932592c
+  CustomerIOMessagingInApp: 208e9ea647c73ae9156b4b5b807f425255190128
+  CustomerIOMessagingPush: 5456cecbb49dccce6fdeff47138e008e764f8f18
+  CustomerIOMessagingPushFCM: 700d5d43c4d16532f104c9f54ed7841921dc98f1
+  CustomerIOTrackingMigration: 412ac0579e3e77cb349e2da4b59ca705bd1bfb61
   FBLazyVector: e97c19a5a442429d1988f182a1940fb08df514da
   Firebase: 99f203d3a114c6ba591f3b32263a9626e450af65
   FirebaseABTesting: fae111fe5476bd9e249968d0c85cd036385404ba
@@ -3383,10 +3523,12 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: 57270ccc2b77472d7e85c4cbe45972564eff78bb
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
-  hermes-engine: 27b1f8bb4642bf1d7effc8929cf64484c3070afe
+  hermes-engine: d792541fda6b34c118341db5548c87fcd7a11784
   Intercom: 92ef05062809d286270a541f716cb1ad72e0031a
   intercom-react-native: 5ee0d687447ed2cef3cd039b24b42ed78def5b2c
   jail-monkey: 561b37e135171fae4576181d87137b0400442c40
+  JSONSafeEncoding: 54722ebc4fe1482e3e60a8450e1287481e32dd8b
+  LDSwiftEventSource: b0826ca826ca890609a9833a05cae1f357fd3b99
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
   lottie-react-native: 6a080b2f109ef611c75c503a33ebb8ea75db0c91
@@ -3403,7 +3545,7 @@ SPEC CHECKSUMS:
   React: 1ba7d364ade7d883a1ec055bfc3606f35fdee17b
   React-callinvoker: bc2a26f8d84fb01f003fc6de6c9337b64715f95b
   React-Core: 7840d3a80b43a95c5e80ef75146bd70925ebab0f
-  React-Core-prebuilt: b9ab067d8fbbbf84b7ee3a454d2cd948a64c9a8c
+  React-Core-prebuilt: d527f70277455583aac627531d4c16028a3bf3e3
   React-CoreModules: 2eb010400b63b89e53a324ffb3c112e4c7c3ce42
   React-cxxreact: a558e92199d26f145afa9e62c4233cf8e7950efe
   React-debug: 755200a6e7f5e6e0a40ff8d215493d43cce285fc
@@ -3487,7 +3629,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: e96e93b493d8d86eeaee3e590ba0be53f6abe46f
   ReactCodegen: 797de5178718324c6eba3327b07f9a423fbd5787
   ReactCommon: 07572bf9e687c8a52fbe4a3641e9e3a1a477c78e
-  ReactNativeDependencies: 7f4dcaf3faf223125321729fb4abc0d6d77a9e4e
+  ReactNativeDependencies: a92f1096f00bde32f170f597a733b4695996b4a6
   RNCAsyncStorage: 7a5a6094f9f6b9158e72f1855cd86e769413d851
   RNCClipboard: 88d7eeb555d1183915f0885bdbc5c97eb6f7f3ba
   RNCMaskedView: d2578d41c59b936db122b2798ba37e4722d21035
@@ -3515,11 +3657,12 @@ SPEC CHECKSUMS:
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: d587a8fe91ca13503ecd69a1905f3e8a0fcf61be
+  Sovran: 117d186f9e9cd47a231ee48dace5cd064a4b8ec8
   transfi-ramp-react-native-sdk: e7d1093aa7d5d5f7d6119030ae28a560656fe05c
   VisionCamera: 0044a94f7489f19e19d5938e97dfc36f4784af3c
   Yoga: c0b3f2c7e8d3e327e450223a2414ca3fa296b9a2
   YttriumWrapper: cbddb60c835ebc4232d9f57064084ab30686a18e
 
-PODFILE CHECKSUM: 8f42bc8dda456bfa49eca4d67390758fc566ba25
+PODFILE CHECKSUM: 6430d6ec0001e173ea818f26d9be3bfbc928963a
 
 COCOAPODS: 1.16.2

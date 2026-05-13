@@ -223,6 +223,7 @@ export default function CardUnlockAuth() {
               error={otpError}
               onBlur={handleOtpBlur}
               length={4}
+              isOtp
             />
             <CyDTouchView
               className={'flex flex-row items-center mt-[8px]'}

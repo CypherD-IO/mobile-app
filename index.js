@@ -5,6 +5,7 @@ import 'whatwg-fetch';
 import './shim';
 import { AppRegistry, LogBox, NativeModules, UIManager } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import { CustomerIO } from 'customerio-reactnative';
 
 // E2E Testing: suppress ALL LogBox UI during test runs.
 // LogBox banners cover bottom-positioned buttons and block Detox taps.
@@ -70,7 +71,11 @@ if (__DEV__) {
 if (!isE2ETesting) {
   messaging().setBackgroundMessageHandler(async remoteMessage => {
     try {
-      await showNotification(remoteMessage.notification, remoteMessage.data);
+      const handled =
+        await CustomerIO.pushMessaging.onBackgroundMessageReceived(remoteMessage);
+      if (!handled) {
+        await showNotification(remoteMessage.notification, remoteMessage.data);
+      }
     } catch (e) {
       Sentry.captureException(e);
     }

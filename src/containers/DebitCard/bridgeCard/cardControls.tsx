@@ -76,6 +76,8 @@ import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionMo
 import { screenTitle } from '../../../constants';
 import Loading from '../../../components/v2/loading';
 import SaveChangesModal from '../../../components/v2/saveChangesModal';
+import DeleteCardModal from '../../../components/v2/deleteCardModal';
+import DeleteCardResultModal from '../../../components/v2/deleteCardResultModal';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import { countryMaster } from '../../../../assets/datasets/countryMaster';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
@@ -169,7 +171,8 @@ export default function CardControls(): React.JSX.Element {
     GlobalContext,
   ) as GlobalContextDef;
   const { getWalletProfile } = useCardUtilities();
-  const { getWithAuth, patchWithAuth, postWithAuth } = useAxios();
+  const { getWithAuth, patchWithAuth, postWithAuth, deleteWithAuth } =
+    useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
@@ -335,6 +338,18 @@ export default function CardControls(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [cardLimits, setCardLimits] = useState<CardLimitsV2Response>();
   const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
+  const [showDeleteCardModal, setShowDeleteCardModal] = useState(false);
+  const [showDeleteCardSuccess, setShowDeleteCardSuccess] = useState(false);
+  const [deletedCardInfo, setDeletedCardInfo] = useState<{
+    cardType: string;
+    last4: string;
+  }>({ cardType: '', last4: '' });
+  const [deleteErrorInfo, setDeleteErrorInfo] = useState<{
+    visible: boolean;
+    title: string;
+    description: string;
+  }>({ visible: false, title: '', description: '' });
+  const pendingDeleteRef = useRef(false);
 
   // Add a ref to store the exit action
   const exitActionRef = useRef<any>(null);
@@ -410,9 +425,15 @@ export default function CardControls(): React.JSX.Element {
           verifyWithOTP();
         }
       } catch (e: any) {
+        // Reset the button spinner before handing off to the OTP screen — the
+        // OTP screen owns its own loading state from this point on.
+        setIsFetchingCardDetails(false);
         verifyWithOTP();
       }
     } else {
+      // Same as above: the spinner was set true at the top of this function;
+      // reset it before the OTP nav so the Reveal button does not appear stuck.
+      setIsFetchingCardDetails(false);
       verifyWithOTP();
     }
   };
@@ -420,13 +441,31 @@ export default function CardControls(): React.JSX.Element {
   const verifyWithOTP = (): void => {
     if (!selectedCard) return;
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
-      onSuccess: (data: any, _cardProvider: CardProviders) => {
-        if (currentCardProvider === CardProviders.REAP_CARD) {
+      onSuccess: (data: any, providerArg: CardProviders) => {
+        // Prefer the explicit provider arg from the OTP screen, fall back to
+        // the screen-level provider. The empty-else case used to silently
+        // leave the spinner spinning on the Reveal Card button forever.
+        const dispatchProvider = providerArg ?? currentCardProvider;
+        if (dispatchProvider === CardProviders.REAP_CARD) {
           void decryptMessage(data);
-        } else if (currentCardProvider === CardProviders.RAIN_CARD) {
+        } else if (dispatchProvider === CardProviders.RAIN_CARD) {
           void decryptSecretKey(data);
-        } else if (currentCardProvider === CardProviders.PAYCADDY) {
+        } else if (dispatchProvider === CardProviders.PAYCADDY) {
           void sendCardDetails(data);
+        } else {
+          setIsFetchingCardDetails(false);
+          Sentry.captureException(
+            new Error(
+              `Reveal onSuccess: unhandled cardProvider "${String(dispatchProvider)}" for cardId ${String(selectedCard?.cardId)}`,
+            ),
+          );
+          showModal('state', {
+            type: 'error',
+            title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+            description: t('CONTACT_CYPHERD_SUPPORT'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
         }
       },
       currentCardProvider,
@@ -467,9 +506,19 @@ export default function CardControls(): React.JSX.Element {
         webviewUrl: trim(decryptedBuffer, '"'),
         userName: userNameValue ?? '',
       });
-      setIsFetchingCardDetails(false);
     } catch (error) {
+      // Catch used to swallow errors silently and leave the Reveal Card
+      // spinner running forever. Surface the failure to the user.
       Sentry.captureException(error);
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+        description: t('CONTACT_CYPHERD_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } finally {
+      setIsFetchingCardDetails(false);
     }
   };
 
@@ -1146,6 +1195,70 @@ export default function CardControls(): React.JSX.Element {
       onFailure: hideModal,
     });
   };
+
+  const handleDeleteCard = (): void => {
+    if (!selectedCard || !selectedCardId) return;
+    pendingDeleteRef.current = true;
+    setShowDeleteCardModal(false);
+  };
+
+  const onDeleteCardModalHide = async (): Promise<void> => {
+    if (!pendingDeleteRef.current) return;
+    pendingDeleteRef.current = false;
+
+    if (!selectedCard || !selectedCardId) return;
+    setLoading(true);
+    try {
+      const response = await deleteWithAuth(
+        '/v1/cards/active-card',
+        undefined,
+        undefined,
+        {
+          cardId: selectedCardId,
+          reason: 'User requested cancellation',
+        },
+      );
+
+      setLoading(false);
+
+      if (!response.isError) {
+        void logAnalyticsToFirebase(AnalyticEvent.CARD_SETTINGS_RESET, {
+          cardId: selectedCardId,
+          cardProvider: currentCardProvider,
+          action: 'delete_card',
+        });
+
+        setDeletedCardInfo({
+          cardType: getDisplayCardType(selectedCard),
+          last4: selectedCard.last4 ?? '',
+        });
+        setShowDeleteCardSuccess(true);
+      } else {
+        const errorMessage =
+          response.error?.message ?? t('DELETE_CARD_SOMETHING_WENT_WRONG');
+
+        setDeleteErrorInfo({
+          visible: true,
+          title: t('DELETE_CARD_FAILED'),
+          description: errorMessage,
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      Sentry.captureException(error);
+      setDeleteErrorInfo({
+        visible: true,
+        title: t('DELETE_CARD_FAILED'),
+        description: t('DELETE_CARD_SOMETHING_WENT_WRONG'),
+      });
+    }
+  };
+
+  const handleDeleteCardSuccessDismiss = (): void => {
+    setShowDeleteCardSuccess(false);
+    navigation.goBack();
+  };
+
   useEffect(() => {
     // Handle back navigation for iOS and Android
     const unsubscribe = navigation.addListener('beforeRemove', e => {
@@ -1724,13 +1837,20 @@ export default function CardControls(): React.JSX.Element {
         }}
       />
 
-      {/* Reset Card Settings */}
+      {/* Reset Card Settings & Delete Card */}
       <CyDView className='mt-[16px] bg-n0 rounded-[10px] px-[16px]'>
         <CyDTouchView
-          className='flex flex-row items-center py-[16px]'
+          className='flex flex-row items-center py-[16px] border-b border-n40'
           onPress={handleResetCardSettings}>
-          <CyDText className='text-[16px] text-red400'>
+          <CyDText className='text-[16px] text-base400'>
             Reset Card Settings
+          </CyDText>
+        </CyDTouchView>
+        <CyDTouchView
+          className='flex flex-row items-center py-[16px]'
+          onPress={() => setShowDeleteCardModal(true)}>
+          <CyDText className='text-[16px] text-red400'>
+            {t('DELETE_CARD')}
           </CyDText>
         </CyDTouchView>
       </CyDView>
@@ -1774,7 +1894,9 @@ export default function CardControls(): React.JSX.Element {
               </CyDText>
             </CyDView>
 
-            <CyDView className='w-full mt-[50px] shadow-lg shadow-black/30' style={{ aspectRatio: CARD_IMAGE_ASPECT_RATIO }}>
+            <CyDView
+              className='w-full mt-[50px] shadow-lg shadow-black/30'
+              style={{ aspectRatio: CARD_IMAGE_ASPECT_RATIO }}>
               <CyDFastImage
                 source={getCardImage(
                   selectedCard,
@@ -2044,6 +2166,31 @@ export default function CardControls(): React.JSX.Element {
           cardProvider={currentCardProvider as CardProviders}
           cardId={selectedCardId}
         />
+        <DeleteCardModal
+          isModalVisible={showDeleteCardModal}
+          setIsModalVisible={setShowDeleteCardModal}
+          onDeleteCard={handleDeleteCard}
+          onModalHide={() => {
+            onDeleteCardModalHide().catch(Sentry.captureException);
+          }}
+        />
+        <DeleteCardResultModal
+          isModalVisible={showDeleteCardSuccess}
+          cardType={deletedCardInfo.cardType}
+          last4={deletedCardInfo.last4}
+          onOkay={handleDeleteCardSuccessDismiss}
+        />
+        <DeleteCardResultModal
+          isModalVisible={deleteErrorInfo.visible}
+          type='error'
+          cardType={deletedCardInfo.cardType}
+          last4={deletedCardInfo.last4}
+          title={deleteErrorInfo.title}
+          description={deleteErrorInfo.description}
+          onOkay={() =>
+            setDeleteErrorInfo(prev => ({ ...prev, visible: false }))
+          }
+        />
       </>
     );
   }
@@ -2226,6 +2373,30 @@ export default function CardControls(): React.JSX.Element {
         setIsModalVisible={setPlanChangeModalVisible}
         cardProvider={currentCardProvider as CardProviders}
         cardId={selectedCardId}
+      />
+
+      <DeleteCardModal
+        isModalVisible={showDeleteCardModal}
+        setIsModalVisible={setShowDeleteCardModal}
+        onDeleteCard={handleDeleteCard}
+        onModalHide={() => {
+          onDeleteCardModalHide().catch(Sentry.captureException);
+        }}
+      />
+      <DeleteCardResultModal
+        isModalVisible={showDeleteCardSuccess}
+        cardType={deletedCardInfo.cardType}
+        last4={deletedCardInfo.last4}
+        onOkay={handleDeleteCardSuccessDismiss}
+      />
+      <DeleteCardResultModal
+        isModalVisible={deleteErrorInfo.visible}
+        type='error'
+        cardType={deletedCardInfo.cardType}
+        last4={deletedCardInfo.last4}
+        title={deleteErrorInfo.title}
+        description={deleteErrorInfo.description}
+        onOkay={() => setDeleteErrorInfo(prev => ({ ...prev, visible: false }))}
       />
     </>
   );

@@ -1646,6 +1646,11 @@ const resources = {
       MAXIMUM_AMOUNT_POSSIBLE: 'Enter amount less than ',
       INSUFFICIENT_FUNDS_DESCRIPTION: `Your balance isn't sufficient to cover both the amount and the load fee. Use the 'Max' option to load the maximum amount possible`,
       INSUFFICIENT_GAS_FEE_DESCRIPTION: `Your native token balance isn't sufficient to cover the gas fee.`,
+      INSUFFICIENT_GAS_FEE_INTRO: `Your {{symbol}} balance isn't enough to cover the network fee.`,
+      INSUFFICIENT_GAS_FEE_REQUIRED: 'Required',
+      INSUFFICIENT_GAS_FEE_AVAILABLE: 'You have',
+      INSUFFICIENT_GAS_FEE_ESTIMATE_NOTE:
+        'This is an estimated gas fee. Actual cost may be lower.',
       GAS_FEE_ERROR: 'Gas Fee Estimation Failed',
       GAS_FEE_ERROR_DESCRIPTION:
         'Gas fee estimation failed. Please try again later. Contact support if the issue persists.',
@@ -1787,6 +1792,40 @@ const resources = {
         'Are you sure you want to reset all card settings to default?',
       CARD_SETTINGS_RESET_SUCCESSFULLY: 'Card settings reset successfully.',
       UNABLE_TO_RESET_CARD_SETTINGS: 'Unable to reset card settings.',
+      DELETE_CARD: 'Delete Card',
+      DELETE_CARD_TITLE: 'Are you sure?',
+      DELETE_CARD_WARNING:
+        'Warning: Deleting this cypher card is final and can\'t be reversed! Just type "delete" below to confirm you really want to delete this card.',
+      DELETE_CARD_PLACEHOLDER: 'Type "delete" to confirm',
+      DELETE_CARD_SUCCESS_TITLE: 'Your card has been deleted',
+      DELETE_CARD_SUCCESS_DESC:
+        'Your {{cardType}} card ending ** {{last4}} has been permanently removed from your account.',
+      DELETE_CARD_CANCEL: 'Cancel',
+      REQUEST_CARD_CANCEL: 'Request Card Cancel',
+      PHYSICAL_CARD_CANCELLATION: '{{cardType}} card\nCancellation',
+      PHYSICAL_CARD_CANCEL_CONFIRMATION: '{{cardType}} card\nConfirmation',
+      PHYSICAL_CARD_CANCEL_SUBTITLE:
+        'Please review your details. Once cancelled, the action cannot be reversed.',
+      PHYSICAL_CARD_CANCELLATION_CHARGES: '{{cardType}} card\ncancellation charges',
+      TOTAL_REFUND_AMOUNT: 'Total Refund amount',
+      CANCELLING_CARD: 'Cancelling card',
+      REFUNDING_TO: 'Refunding to',
+      CARD_SPENDING_BALANCE: 'i.e card spending balance',
+      FREE_LABEL: '🎉Free',
+      CANCEL_ORDER_TITLE: 'Are you sure?',
+      CANCEL_ORDER_WARNING:
+        'Warning: Cancelling this {{cardType}} card order is final and can\'t be reversed! Just type "confirm" below to proceed.',
+      CANCEL_ORDER_PLACEHOLDER: 'Type "confirm" to proceed',
+      CANCEL_ORDER_ACTION: 'Confirm',
+      CANCEL_ORDER_FAILED: 'Cancellation Failed',
+      CANCEL_ORDER_SOMETHING_WENT_WRONG:
+        'Something went wrong while cancelling. Please contact support.',
+      CANCEL_ORDER_SUCCESS_TITLE: 'Your card order has been cancelled',
+      CANCEL_ORDER_SUCCESS_DESC:
+        'Your {{cardType}} card ending ** {{last4}} order has been successfully cancelled.',
+      DELETE_CARD_FAILED: 'Card Deletion Failed',
+      DELETE_CARD_SOMETHING_WENT_WRONG:
+        'Something went wrong. Please contact support.',
       APPLY_CHANGES_TO_ALL_CARDS: 'Apply Changes to All Cards',
       APPLY_CHANGES_TO_ALL_CARDS_DESCRIPTION:
         'Do you want to apply these changes to all your cards?',
@@ -2432,6 +2471,9 @@ const resources = {
       NO_TRANSACTION_FOUND: 'No Transaction Found',
       NO_TRANSACTION_SUBTITLE:
         'Use your cypher card and keep an eye on your transactions right here!',
+      CONFIRM_ACTION: 'Confirm',
+      ACTIVATE_PHYSICAL_CARD_DESC:
+        'Activate Physical card and enjoy the convenience of making purchases worldwide',
     },
   },
 };

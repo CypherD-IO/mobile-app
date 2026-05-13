@@ -10,7 +10,7 @@ import {
 } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { get, isEmpty, trim } from 'lodash';
+import { capitalize, get, isEmpty, trim } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +41,8 @@ import FastImage from 'react-native-fast-image';
 import AppImages from '../../../../assets/images/appImages';
 import { getCardColorByHex } from '../../../constants/cardColours';
 import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
+import CyDModalLayout from '../../../components/v2/modal';
+import DeleteCardResultModal from '../../../components/v2/deleteCardResultModal';
 import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import GradientText from '../../../components/gradientText';
@@ -359,14 +361,101 @@ interface RouteParams {
   cardProvider: CardProviders;
 }
 
+function ShipmentInfoContent({
+  trackingDetail,
+  isShipped,
+  copyTrackingNumber,
+}: {
+  trackingDetail: ITrackingDetailsResponse[string];
+  isShipped: boolean;
+  copyTrackingNumber: (trackingNumber: string) => void;
+}): React.ReactElement {
+  const { t } = useTranslation();
+
+  if (isShipped) {
+    return (
+      <CyDView className='flex flex-row bg-n0 items-center rounded-[12px] pt-[12px] pr-[12px]'>
+        <CyDFastImage
+          source={AppImages.CARD_SHIPMENT_ENVELOPE}
+          className='h-[76px] w-[80px] mt-[8px] ml-[9px]'
+          resizeMode='contain'
+        />
+        <CyDView className='flex-1 ml-[12px] pb-[4px]'>
+          <CyDText className='font-bold text-[14px]'>
+            {t('CARD_ON_WAY')}
+          </CyDText>
+          <CyDText className='text-[12px] mt-[6px]'>
+            {t('CARD_SHIP_DESCRIPTION_SUB1') +
+              String(trackingDetail?.last4 ?? '') +
+              t('CARD_SHIP_DESCRIPTION_SUB2')}
+          </CyDText>
+          {trackingDetail?.trackingId && (
+            <CyDView className='mt-[6px]'>
+              <CyDText>{t('FEDEX_TRACKING_NO')}</CyDText>
+              <CyDView className='flex flex-row items-center gap-2'>
+                <CyDText className='max-w-[50%] text-base400'>
+                  {trackingDetail.trackingId}
+                </CyDText>
+                <CyDTouchView
+                  onPress={() => copyTrackingNumber(trackingDetail.trackingId)}>
+                  <CyDMaterialDesignIcons
+                    name={'content-copy'}
+                    size={14}
+                    className='text-base400'
+                  />
+                </CyDTouchView>
+              </CyDView>
+            </CyDView>
+          )}
+        </CyDView>
+      </CyDView>
+    );
+  }
+
+  return (
+    <CyDView className='flex flex-row bg-n0 items-center rounded-[12px] pt-[12px] pr-[12px]'>
+      <CyDFastImage
+        source={AppImages.CARDS_IN_PRODUCTION}
+        className='h-[48px] w-[73px] mt-[23px] ml-[10px]'
+        resizeMode='contain'
+      />
+      <CyDView className='flex-1 ml-[12px] pb-[4px]'>
+        <CyDText className='font-bold text-[14px]'>{t('CARD_ON_WAY')}</CyDText>
+        <CyDText className='text-[12px] mt-[6px]'>
+          {t('CARD_PRINTING_DESCRIPTION_SUB1') +
+            String(trackingDetail?.last4 ?? '') +
+            t('CARD_PRINTING_DESCRIPTION_SUB2')}
+        </CyDText>
+      </CyDView>
+    </CyDView>
+  );
+}
+
 function PhysicalCardShipmentSection({
   trackingDetail,
   onActivate,
+  navigation,
+  card,
+  cardProvider,
+  cardBalance,
 }: {
   trackingDetail: ITrackingDetailsResponse[string] | undefined;
   onActivate: () => void;
+  navigation: NavigationProp<ParamListBase>;
+  card: Card;
+  cardProvider: CardProviders;
+  cardBalance: string;
 }): React.ReactElement {
   const { t } = useTranslation();
+  const { getWithAuth } = useAxios();
+  const [isOptionsModalVisible, setIsOptionsModalVisible] = useState(false);
+  const [isFetchingOrderStatus, setIsFetchingOrderStatus] = useState(false);
+  const [orderStatusError, setOrderStatusError] = useState<{
+    visible: boolean;
+    title: string;
+    description: string;
+  }>({ visible: false, title: '', description: '' });
+  const pendingCancelRef = React.useRef(false);
 
   const isShipped =
     trackingDetail?.trackingStatus ===
@@ -381,107 +470,176 @@ function PhysicalCardShipmentSection({
     });
   };
 
-  if (!trackingDetail) {
-    return (
-      <CyDView className='mt-[12px]'>
-        <CyDText className='text-[14px] font-semibold text-center mt-[6px]'>
-          Activate Physical card and enjoy the convenience of making purchases
-          worldwide
-        </CyDText>
-        <Button
-          title='Activate Card'
-          type={ButtonType.PRIMARY}
-          style='w-full mt-[18px]'
-          onPress={() => {
-            onActivate();
-          }}
-        />
-      </CyDView>
-    );
-  }
+  const handleContactSupport = (): void => {
+    setIsOptionsModalVisible(false);
+    void Intercom.present();
+  };
 
-  if (isShipped) {
-    return (
-      <CyDView className='mt-[12px]'>
-        <CyDView className='flex flex-row bg-n0 items-center rounded-[12px] pt-[12px] pr-[12px]'>
-          <CyDFastImage
-            source={AppImages.CARD_SHIPMENT_ENVELOPE}
-            className='h-[76px] w-[80px] mt-[8px] ml-[9px]'
-            resizeMode='contain'
-          />
-          <CyDView className='flex-1 ml-[12px] pb-[4px]'>
-            <CyDText className='font-bold text-[14px]'>
-              {t('CARD_ON_WAY')}
-            </CyDText>
-            <CyDText className='text-[12px] mt-[6px]'>
-              {t('CARD_SHIP_DESCRIPTION_SUB1') +
-                String(trackingDetail?.last4 ?? '') +
-                t('CARD_SHIP_DESCRIPTION_SUB2')}
-            </CyDText>
-            {trackingDetail?.trackingId && (
-              <CyDView className='mt-[6px]'>
-                <CyDText>{t('FEDEX_TRACKING_NO')}</CyDText>
-                <CyDView className='flex flex-row items-center gap-2'>
-                  <CyDText className='max-w-[50%] text-base400'>
-                    {trackingDetail.trackingId}
-                  </CyDText>
-                  <CyDTouchView
-                    onPress={() =>
-                      copyTrackingNumber(trackingDetail.trackingId)
-                    }>
-                    <CyDMaterialDesignIcons
-                      name={'content-copy'}
-                      size={14}
-                      className='text-base400'
-                    />
-                  </CyDTouchView>
-                </CyDView>
-              </CyDView>
-            )}
-          </CyDView>
-        </CyDView>
-        <Button
-          title='Activate Card'
-          type={ButtonType.PRIMARY}
-          style='w-full mt-[20px]'
-          onPress={() => {
-            onActivate();
-          }}
-        />
-      </CyDView>
-    );
-  }
+  const handleRequestCardCancel = (): void => {
+    pendingCancelRef.current = true;
+    setIsOptionsModalVisible(false);
+  };
+
+  const onOptionsModalHide = async (): Promise<void> => {
+    if (!pendingCancelRef.current) return;
+    pendingCancelRef.current = false;
+
+    setIsFetchingOrderStatus(true);
+
+    try {
+      const response = await getWithAuth(
+        `/v1/cards/physical-card-order/status/${card.cardId}`,
+      );
+
+      setIsFetchingOrderStatus(false);
+
+      if (!response.isError && response.data) {
+        const displayCardType =
+          card?.type === CardType.PHYSICAL &&
+          card?.physicalCardType === PhysicalCardType.METAL
+            ? 'Metal'
+            : capitalize(card?.type);
+
+        navigation.navigate(screenTitle.REQUEST_PHYSICAL_CARD_CANCEL, {
+          card,
+          cardProvider,
+          trackingDetail,
+          cardBalance,
+          orderStatus: response.data,
+          cardType: displayCardType,
+        });
+      } else {
+        const errorMessage =
+          response.error?.message ?? t('CANCEL_ORDER_SOMETHING_WENT_WRONG');
+        setOrderStatusError({
+          visible: true,
+          title: t('CANCEL_ORDER_FAILED'),
+          description: errorMessage,
+        });
+      }
+    } catch (error) {
+      setIsFetchingOrderStatus(false);
+      Sentry.captureException(error);
+      setOrderStatusError({
+        visible: true,
+        title: t('CANCEL_ORDER_FAILED'),
+        description: t('CANCEL_ORDER_SOMETHING_WENT_WRONG'),
+      });
+    }
+  };
 
   return (
     <CyDView className='mt-[12px]'>
-      <CyDView className='flex flex-row bg-n0 items-center rounded-[12px] pt-[12px] pr-[12px]'>
-        <CyDFastImage
-          source={AppImages.CARDS_IN_PRODUCTION}
-          className='h-[48px] w-[73px] mt-[23px] ml-[10px]'
-          resizeMode='contain'
+      {!trackingDetail ? (
+        <CyDText className='text-[14px] font-semibold text-center mt-[6px]'>
+          {t('ACTIVATE_PHYSICAL_CARD_DESC')}
+        </CyDText>
+      ) : (
+        <ShipmentInfoContent
+          trackingDetail={trackingDetail}
+          isShipped={isShipped}
+          copyTrackingNumber={copyTrackingNumber}
         />
-        <CyDView className='flex-1 ml-[12px] pb-[4px]'>
-          <CyDText className='font-bold text-[14px]'>
-            {t('CARD_ON_WAY')}
+      )}
+
+      <CyDView className='flex-row items-center mt-[20px] gap-x-[8px]'>
+        <CyDTouchView
+          className='h-[52px] w-[61px] rounded-full bg-n30 items-center justify-center'
+          onPress={() => setIsOptionsModalVisible(true)}>
+          <CyDMaterialDesignIcons
+            name='dots-vertical'
+            size={24}
+            className='text-base400'
+          />
+        </CyDTouchView>
+
+        <CyDTouchView
+          className='flex-1 h-[52px] rounded-full bg-buttonColor items-center justify-center'
+          onPress={() => onActivate()}>
+          <CyDText className='font-extrabold text-[16px] text-black text-center'>
+            {t('ACTIVATE_CARD')}
           </CyDText>
-          <CyDText className='text-[12px] mt-[6px]'>
-            {t('CARD_PRINTING_DESCRIPTION_SUB1') +
-              String(trackingDetail?.last4 ?? '') +
-              t('CARD_PRINTING_DESCRIPTION_SUB2')}
-          </CyDText>
-        </CyDView>
+        </CyDTouchView>
       </CyDView>
-      <Button
-        title='Activate Card'
-        type={ButtonType.PRIMARY}
-        style='w-full mt-[24px]'
-        onPress={() => {
-          onActivate();
+
+      <CyDModalLayout
+        isModalVisible={isOptionsModalVisible}
+        setModalVisible={setIsOptionsModalVisible}
+        animationIn='slideInUp'
+        animationOut='slideOutDown'
+        swipeDirection={['down']}
+        onSwipeComplete={() => setIsOptionsModalVisible(false)}
+        onModalHide={() => {
+          onOptionsModalHide().catch(Sentry.captureException);
         }}
+        backdropTransitionOutTiming={0}
+        hideModalContentWhileAnimating={false}
+        style={physicalCardShipmentStyles.modalLayout}>
+        <CyDView className='bg-n40 rounded-t-[20px] px-[16px] pt-[12px] pb-[32px]'>
+          <CyDView className='items-center mb-[16px]'>
+            <CyDView className='w-[36px] h-[4px] rounded-full bg-n100' />
+          </CyDView>
+
+          <CyDView className='bg-n0 rounded-[12px] px-[16px]'>
+            <CyDView className='py-[12px]'>
+              {trackingDetail ? (
+                <ShipmentInfoContent
+                  trackingDetail={trackingDetail}
+                  isShipped={isShipped}
+                  copyTrackingNumber={copyTrackingNumber}
+                />
+              ) : (
+                <CyDText className='text-[14px] font-semibold py-[4px]'>
+                  {t('ACTIVATE_PHYSICAL_CARD_DESC')}
+                </CyDText>
+              )}
+            </CyDView>
+
+            <CyDView className='h-[1px] bg-n40' />
+
+            <CyDTouchView className='py-[16px]' onPress={handleContactSupport}>
+              <CyDText className='font-manrope font-medium text-[16px] leading-[140%] tracking-[-0.4px] text-base400'>
+                {t('CONTACT_SUPPORT')}
+              </CyDText>
+            </CyDTouchView>
+
+            <CyDView className='h-[1px] bg-n40' />
+
+            <CyDTouchView
+              className='py-[16px] flex-row items-center'
+              disabled={isFetchingOrderStatus}
+              onPress={handleRequestCardCancel}>
+              <CyDText className='font-manrope font-medium text-[16px] leading-[140%] tracking-[-0.4px] text-red400'>
+                {isFetchingOrderStatus
+                  ? t('LOADING_DATA')
+                  : t('REQUEST_CARD_CANCEL')}
+              </CyDText>
+            </CyDTouchView>
+          </CyDView>
+        </CyDView>
+      </CyDModalLayout>
+
+      <DeleteCardResultModal
+        isModalVisible={orderStatusError.visible}
+        type='error'
+        cardType={capitalize(card?.type) ?? ''}
+        last4={card?.last4 ?? ''}
+        title={orderStatusError.title}
+        description={orderStatusError.description}
+        onOkay={() =>
+          setOrderStatusError(prev => ({ ...prev, visible: false }))
+        }
       />
     </CyDView>
   );
 }
+
+const physicalCardShipmentStyles = StyleSheet.create({
+  modalLayout: {
+    margin: 0,
+    justifyContent: 'flex-end',
+  },
+});
 
 const CARD_TRANSACTIONS_SHEET_ID = 'card-transactions-sheet';
 
@@ -1406,7 +1564,7 @@ export default function CypherCardScreen() {
       });
     }
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
-      onSuccess: (data: any, _provider: CardProviders) => {
+      onSuccess: (data: any, providerArg: CardProviders) => {
         setIsFetchingCardDetails(true);
         setCardDetailsModal({
           showCardDetailsModal: true,
@@ -1415,12 +1573,32 @@ export default function CypherCardScreen() {
           webviewUrl: '',
           userName: '',
         });
-        if (resolvedProvider === CardProviders.REAP_CARD) {
+        // Prefer the provider arg passed by the OTP screen (truth at OTP-screen
+        // time), fall back to the captured `resolvedProvider`. Without an
+        // explicit else, an unknown provider would silently leave the spinner
+        // running on the Reveal Card button forever.
+        const dispatchProvider = providerArg ?? resolvedProvider;
+        if (dispatchProvider === CardProviders.REAP_CARD) {
           void decryptMessage(data, card);
-        } else if (resolvedProvider === CardProviders.RAIN_CARD) {
+        } else if (dispatchProvider === CardProviders.RAIN_CARD) {
           void decryptSecretKeyData(data, card);
-        } else if (resolvedProvider === CardProviders.PAYCADDY) {
+        } else if (dispatchProvider === CardProviders.PAYCADDY) {
           void sendCardDetailsForPaycaddy(data, card);
+        } else {
+          setIsFetchingCardDetails(false);
+          setCardDetailsModal(prev => ({ ...prev, showCardDetailsModal: false }));
+          Sentry.captureException(
+            new Error(
+              `Reveal onSuccess: unhandled cardProvider "${String(dispatchProvider)}" for cardId ${String(card?.cardId)}`,
+            ),
+          );
+          showModal('state', {
+            type: 'error',
+            title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+            description: t('CONTACT_CYPHERD_SUPPORT'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
         }
       },
       currentCardProvider: cardProvider,
@@ -1745,6 +1923,10 @@ export default function CypherCardScreen() {
               <PhysicalCardShipmentSection
                 trackingDetail={trackingDetailsMap[card.cardId]}
                 onActivate={() => onPressActivateCard(card)}
+                navigation={navigation}
+                card={card}
+                cardProvider={cardProvider}
+                cardBalance={cardBalance}
               />
             ) : (
               <CyDView className='flex-row justify-between items-center mt-[12px]'>

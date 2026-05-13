@@ -3,14 +3,16 @@ import * as Sentry from '@sentry/react-native';
 import JailMonkey from 'jail-monkey';
 import RNExitApp from 'react-native-exit-app';
 import {
+  CardProviders,
   ConnectionTypes,
+  CypherCardPrograms,
   AllChainsEnum,
   GlobalContextType,
   PinPresentStates,
   RPCPreference,
   SignMessageValidationType,
 } from '../../constants/enum';
-import { initializeHostsFromAsync } from '../../global';
+import { hostWorker, initializeHostsFromAsync } from '../../global';
 import {
   getActivities,
   getAuthToken,
@@ -32,6 +34,7 @@ import {
 } from '../../core/globalContext';
 import { get, has, set } from 'lodash';
 import useAxios from '../../core/HttpRequest';
+import axios from '../../core/Http';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
   isBiometricEnabled,
@@ -64,10 +67,12 @@ import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
+import useCustomerIO from '../useCustomerIO';
 import useWeb3Auth from '../useWeb3Auth';
 
 export default function useInitializer() {
   const { getWithoutAuth, postWithAuth } = useAxios();
+  const { identifyCustomerIOUser } = useCustomerIO();
   const globalContext = useContext<any>(GlobalContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
@@ -77,6 +82,7 @@ export default function useInitializer() {
   const { getWalletProfile } = useCardUtilities();
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
   const [isMigrating, setIsMigrating] = useState(false);
+
 
   // Data scrubbing is now handled in App.tsx Sentry initialization
 
@@ -107,6 +113,7 @@ export default function useInitializer() {
         // throws error if user is already registered
       });
     }
+
     void setAnalyticsCollectionEnabled(getAnalytics(), !devMode);
   }
 
@@ -372,6 +379,63 @@ export default function useInitializer() {
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
     });
+    const email = data?.email?.trim();
+    const cioUserId = data?.rcAccountId;
+    if (cioUserId) {
+      const allCards = [
+        ...(data?.[CardProviders.REAP_CARD]?.cards ?? []),
+        ...(data?.[CardProviders.PAYCADDY]?.cards ?? []),
+      ];
+      const virtualCardCount = allCards.filter(
+        c => c.type === 'virtual',
+      ).length;
+      const physicalCardCount = allCards.filter(
+        c => c.type === 'physical',
+      ).length;
+      const metalCardCount = allCards.filter(c => c.type === 'metal').length;
+
+      let country = '';
+      const provider = data?.provider;
+
+      if (provider) {
+        const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+        const authHeaders = {
+          headers: { Authorization: `Bearer ${String(token)}` },
+        };
+
+        try {
+          const userDataResponse = await axios.get(
+            `${ARCH_HOST}/v1/cards/${provider}/user-data`,
+            authHeaders,
+          );
+          if (userDataResponse.data) {
+            country = userDataResponse.data.country ?? '';
+          }
+        } catch (error: any) {
+          Sentry.captureException(error);
+        }
+      }
+
+      const appVersion = DeviceInfo.getVersion();
+      const traits: Record<string, unknown> = {
+        email: email ?? '',
+        iosAppVersion: Platform.OS === 'ios' ? appVersion : '',
+        androidAppVersion: Platform.OS === 'android' ? appVersion : '',
+        country,
+        cardProvider: provider ?? '',
+        cardProgram: CypherCardPrograms.CYPHER,
+        planId: data?.planInfo?.planId ?? '',
+        virtualCardCount,
+        physicalCardCount,
+        metalCardCount,
+      };
+      if (Platform.OS === 'ios') {
+        traits.iosAppVersion = appVersion;
+      } else {
+        traits.androidAppVersion = appVersion;
+      }
+      void identifyCustomerIOUser(cioUserId, traits);
+    }
   };
 
   const getLoginMethod = (connectionType?: ConnectionTypes | null): string => {

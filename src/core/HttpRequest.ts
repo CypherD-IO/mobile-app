@@ -310,8 +310,15 @@ export default function useAxios() {
     url: string,
     timeout = DEFAULT_AXIOS_TIMEOUT,
     config?: AxiosRequestConfig<object> | undefined,
+    body?: any,
   ) => {
-    return await request('DELETE', url, timeout, undefined, config);
+    return await request(
+      'DELETE',
+      url,
+      timeout,
+      body ? { data: body } : undefined,
+      config,
+    );
   };
   const deleteWithoutAuth = async (
     url: string,

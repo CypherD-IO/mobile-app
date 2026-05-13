@@ -30,12 +30,15 @@ export interface CardProfile {
     isRcUpgradable?: boolean;
     preferredName?: string;
     isRainDeclined?: boolean;
+    accountId?: string;
   };
   lifetimeAmountUsd: number;
   physicalCardEligibilityLimit: number;
+  // eslint-disable-next-line @typescript-eslint/array-type
   children?: Array<{ address: string; label: string }>;
   child?: string;
   planInfo?: PlanInfo;
   telegramId: string | null;
+  rcAccountId?: string;
   evmAddress?: string;
 }

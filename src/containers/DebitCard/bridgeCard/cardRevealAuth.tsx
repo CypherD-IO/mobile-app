@@ -357,6 +357,7 @@ export default function CardRevealAuthScreen() {
             error={otpError}
             onBlur={handleOtpBlur}
             length={4}
+            isOtp
             className='flex-row justify-start'
           />
           <CyDTouchView

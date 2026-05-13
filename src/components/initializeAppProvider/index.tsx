@@ -45,6 +45,8 @@ import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import { screenTitle } from '../../constants';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import { CustomerIO } from 'customerio-reactnative';
+import useCustomerIO from '../../hooks/useCustomerIO';
 
 interface UseInitializerReturn {
   exitIfJailBroken: () => Promise<void>;
@@ -85,6 +87,7 @@ export const InitializeAppProvider = ({
     checkAPIAccessibility,
     isMigrating,
   } = useInitializer() as UseInitializerReturn;
+  const { initializeCustomerIO } = useCustomerIO();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [pinAuthenticated, setPinAuthenticated] = useState(false);
@@ -128,7 +131,17 @@ export const InitializeAppProvider = ({
     // notifications, so no coverage lost.
     const unsubscribeOnMessage = isE2ETesting
       ? () => {}
-      : onMessage(getMessaging(), response => {
+      : onMessage(getMessaging(), async response => {
+          let handledByCio = false;
+          try {
+            handledByCio =
+              await CustomerIO.pushMessaging.onMessageReceived(response);
+          } catch (error) {
+            Sentry.captureException(error);
+          }
+          if (handledByCio) {
+            return;
+          }
           if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
             setTimeout(() => {
               showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
@@ -168,6 +181,9 @@ export const InitializeAppProvider = ({
           // impact is bounded to app boot.
           void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
           void loadActivitiesFromAsyncStorage();
+          if (!isE2ETesting) {
+            await initializeCustomerIO();
+          }
           await requestUserPermission();
         }
       } catch (e) {
@@ -268,10 +284,13 @@ export const InitializeAppProvider = ({
       }
       // For iOS: Only attribution token available, needs server-side resolution
       else if (Platform.OS === 'ios' && referrerData.attribution_token) {
-        void logAnalyticsToFirebase(AnalyticEvent.IOS_ATTRIBUTION_TOKEN_RECEIVED, {
-          attribution_token: referrerData.attribution_token,
-          requires_server_resolution: true,
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.IOS_ATTRIBUTION_TOKEN_RECEIVED,
+          {
+            attribution_token: referrerData.attribution_token,
+            requires_server_resolution: true,
+          },
+        );
 
         // Note: Server needs to resolve the token and communicate back to the app
         // for any referral code handling
@@ -467,7 +486,9 @@ export const InitializeAppProvider = ({
         : t<string>('NEW_MUST_UPDATE_MSG');
 
       const goToStore = () => {
-        logEvent(getAnalytics(), 'update_now', {}).catch(Sentry.captureException);
+        logEvent(getAnalytics(), 'update_now', {}).catch(
+          Sentry.captureException,
+        );
         setUpdateModal(false);
         if (Platform.OS === 'android') {
           void Linking.openURL('market://details?id=com.cypherd.androidwallet');
