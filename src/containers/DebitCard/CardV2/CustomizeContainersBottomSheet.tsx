@@ -170,8 +170,10 @@ export default function CustomizeContainersBottomSheet({
         const next = [...prev];
         const [moved] = next.splice(fromIndex, 1);
         next.splice(toIndex, 0, moved);
-        onOrderChanged(next);
-        void setCardContainerOrder(next.map(c => c.id));
+        setTimeout(() => {
+          onOrderChanged(next);
+          void setCardContainerOrder(next.map(c => c.id));
+        }, 0);
         return next;
       });
     },
