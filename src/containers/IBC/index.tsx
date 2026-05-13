@@ -39,6 +39,7 @@ import {
 } from '../../reducers/activity_reducer';
 import { genId } from '../utilities/activityUtilities';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import InsufficientGasFeeDescription from '../../components/v2/InsufficientGasFeeDescription';
 import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
@@ -236,8 +237,15 @@ export default function IBC({
           } else {
             await showModal('state', {
               type: 'error',
-              title: 'Insufficient balance for gas',
-              description: `You do not have enough balance in ${nativeToken?.name} to perform this action. Please load more ${nativeToken?.name} tokens in ${tokenData.chainDetails.name} chain to continue.`,
+              title: t('INSUFFICIENT_GAS_FEE'),
+              description: (
+                <InsufficientGasFeeDescription
+                  gasFeeInCrypto={String(gasDetails?.gasFeeInCrypto ?? '0')}
+                  balanceInCrypto={String(nativeToken?.balanceDecimal ?? '0')}
+                  nativeTokenSymbol={String(nativeToken?.symbol ?? '')}
+                  nativeTokenPrice={nativeToken?.price}
+                />
+              ),
               onSuccess: hideModal,
               onFailure: hideModal,
             });

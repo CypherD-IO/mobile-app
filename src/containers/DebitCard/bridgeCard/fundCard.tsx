@@ -14,6 +14,7 @@ import Button from '../../../components/v2/button';
 import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import InsufficientGasFeeDescription from '../../../components/v2/InsufficientGasFeeDescription';
 import Loading from '../../../components/v2/loading';
 import CyDNumberPad from '../../../components/v2/numberpad';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
@@ -49,6 +50,7 @@ import useAxios from '../../../core/HttpRequest';
 import { Holding, IHyperLiquidHolding } from '../../../core/portfolio';
 import {
   formatAmount,
+  getMinimumCardLoadAmount,
   getViemPublicClient,
   getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
@@ -211,18 +213,7 @@ export default function BridgeFundCardScreen({
         // Filter tokens that are fundable and have value > minimum required
         const fundableTokens = localPortfolio.totalHoldings.filter(token => {
           if (!token.isFundable || !token.isVerified) return false;
-
-          // Check minimum value requirements based on chain and account type
-          const { backendName } = token.chainDetails;
-          let minimumValue = minTokenValueLimit;
-
-          if (backendName === CHAIN_ETH.backendName) {
-            minimumValue = minTokenValueEth;
-          } else if (token.accountType === 'spot') {
-            minimumValue = minTokenValueHlSpot;
-          }
-
-          return Number(token.totalValue) >= minimumValue;
+          return Number(token.totalValue) >= getMinimumCardLoadAmount(token);
         });
 
         // Sort by total value (descending) and select the first one
@@ -241,10 +232,7 @@ export default function BridgeFundCardScreen({
           setNativeTokenBalance(nativeToken?.balanceDecimal ?? '0');
 
           // Set suggested amounts
-          const tempMinTokenValue =
-            defaultToken.chainDetails.backendName === CHAIN_ETH.backendName
-              ? minTokenValueEth
-              : minTokenValueLimit;
+          const tempMinTokenValue = getMinimumCardLoadAmount(defaultToken);
           const splittableAmount = defaultToken.totalValue - tempMinTokenValue;
           if (splittableAmount >= tempMinTokenValue) {
             setSuggestedAmounts({
@@ -445,7 +433,16 @@ export default function BridgeFundCardScreen({
           showModal('state', {
             type: 'error',
             title: t('INSUFFICIENT_GAS_FEE'),
-            description: t('INSUFFICIENT_GAS_FEE_DESCRIPTION'),
+            description: (
+              <InsufficientGasFeeDescription
+                gasFeeInCrypto={String(gasDetails?.gasFeeInCrypto)}
+                balanceInCrypto={nativeTokenBalance}
+                nativeTokenSymbol={String(
+                  selectedToken?.chainDetails?.symbol ?? '',
+                )}
+                nativeTokenPrice={nativeToken?.price}
+              />
+            ),
             onSuccess: hideModal,
             onFailure: hideModal,
           });

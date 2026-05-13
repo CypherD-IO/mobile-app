@@ -27,6 +27,7 @@ import AppImages from '../../../assets/images/appImages';
 import ChooseChainModalV2 from '../../components/v2/chooseChainModal';
 import MoreViewModal from '../../components/MoreViewModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import InsufficientGasFeeDescription from '../../components/v2/InsufficientGasFeeDescription';
 import Loading from '../../components/v2/loading';
 import { INJECTED_WEB3_CDN } from '../../constants/data';
 import { Web3Origin } from '../../constants/enum';
@@ -367,8 +368,15 @@ export default function Browser() {
         setTimeout(() => {
           showModal('state', {
             type: 'error',
-            title: t('INSUFFICIENT_FUNDS'),
-            description: `You don't have sufficient ${nativeToken.symbol} to pay gas fee`,
+            title: t('INSUFFICIENT_GAS_FEE'),
+            description: (
+              <InsufficientGasFeeDescription
+                gasFeeInCrypto={String(gasDetails.gasFeeInCrypto)}
+                balanceInCrypto={String(nativeToken.balanceDecimal)}
+                nativeTokenSymbol={nativeToken.symbol}
+                nativeTokenPrice={nativeToken.price}
+              />
+            ),
             onSuccess: hideModal,
             onFailure: hideModal,
           });

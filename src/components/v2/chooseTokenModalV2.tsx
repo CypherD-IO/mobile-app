@@ -44,7 +44,11 @@ import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
-import { formatCurrencyWithSuffix, parseErrorMessage } from '../../core/util';
+import {
+  formatCurrencyWithSuffix,
+  getMinimumCardLoadAmount,
+  parseErrorMessage,
+} from '../../core/util';
 import Toast from 'react-native-toast-message';
 import CyDTokenValue from './tokenValue';
 
@@ -253,17 +257,8 @@ const RenderToken = React.memo(
   }) => {
     const { t } = useTranslation();
     const getMinimumTokenValue = (token: Holding | SupportedToken) => {
-      if (
-        type === TokenModalType.CARD_LOAD &&
-        token.chainDetails.chain_id === CHAIN_ETH.chain_id &&
-        !['usd-coin', 'tether'].includes(token.coinGeckoId)
-      ) {
-        return minTokenValueEth;
-      } else if (
-        type === TokenModalType.CARD_LOAD &&
-        token.accountType === 'spot'
-      ) {
-        return minTokenValueHlSpot;
+      if (type === TokenModalType.CARD_LOAD) {
+        return getMinimumCardLoadAmount(token as Holding);
       }
       return minTokenValueLimit;
     };
