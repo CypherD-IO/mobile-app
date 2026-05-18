@@ -91,6 +91,8 @@ export default function useCypherAgent() {
   };
 
   useEffect(() => {
+    // Run-once on mount. getWithAuth is intentionally excluded — refetching
+    // the CDN script on every render would defeat the checksum verification.
     void injectWeb3FromCDN();
   }, []);
 
