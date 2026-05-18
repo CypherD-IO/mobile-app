@@ -163,7 +163,7 @@ interface TopMerchant {
   logoUrl?: string;
 }
 
-interface WeeklySpend {
+interface PeriodicSpend {
   label: string;
   categories: number[];
 }
@@ -172,8 +172,8 @@ interface SpendAnalyticsData {
   totalSpend: number;
   categories: SpendCategory[];
   topMerchants: TopMerchant[];
-  weeklyBreakdown: WeeklySpend[];
-  averageWeeklySpend: number;
+  periodicBreakdown: PeriodicSpend[];
+  averagePeriodicSpend: number;
 }
 
 interface SpendAnalyticsRouteParams extends Record<string, object | undefined> {
@@ -308,21 +308,21 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
   const totalSpend = analyticsData?.totalSpend ?? initialTotalSpend;
   const topMerchants = analyticsData?.topMerchants ?? [];
   const categories = analyticsData?.categories ?? [];
-  const weeklyBreakdown = analyticsData?.weeklyBreakdown ?? [];
+  const periodicBreakdown = analyticsData?.periodicBreakdown ?? [];
 
-  const avgWeekly = useMemo((): number => {
+  const avgPeriodic = useMemo((): number => {
     if (
-      analyticsData?.averageWeeklySpend &&
-      analyticsData.averageWeeklySpend > 0
+      analyticsData?.averagePeriodicSpend &&
+      analyticsData.averagePeriodicSpend > 0
     ) {
-      return analyticsData.averageWeeklySpend;
+      return analyticsData.averagePeriodicSpend;
     }
-    if (weeklyBreakdown.length === 0) return 0;
-    const weekTotals = weeklyBreakdown.map(w =>
+    if (periodicBreakdown.length === 0) return 0;
+    const periodTotals = periodicBreakdown.map(w =>
       w.categories.reduce((sum, val) => sum + val, 0),
     );
-    return weekTotals.reduce((sum, t) => sum + t, 0) / weekTotals.length;
-  }, [analyticsData?.averageWeeklySpend, weeklyBreakdown]);
+    return periodTotals.reduce((sum, t) => sum + t, 0) / periodTotals.length;
+  }, [analyticsData?.averagePeriodicSpend, periodicBreakdown]);
 
   const pieData = useMemo(
     () =>
@@ -350,12 +350,12 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
 
   const maxStackedTotal = useMemo(() => {
     let max = 0;
-    weeklyBreakdown.forEach(week => {
-      const total = week.categories.reduce((sum, val) => sum + val, 0);
+    periodicBreakdown.forEach(period => {
+      const total = period.categories.reduce((sum, val) => sum + val, 0);
       if (total > max) max = total;
     });
     return max;
-  }, [weeklyBreakdown]);
+  }, [periodicBreakdown]);
 
   const yStep = useMemo(
     () => getNiceStep(maxStackedTotal, TARGET_TICKS),
@@ -392,17 +392,17 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
 
   const barDataWithPad = useMemo(
     () =>
-      weeklyBreakdown.map(week => {
+      periodicBreakdown.map(period => {
         const entry: Record<string, number> = {};
         let total = 0;
-        week.categories.forEach((val, i) => {
+        period.categories.forEach((val, i) => {
           entry[`cat${i}`] = val;
           total += val;
         });
         entry.__pad = Math.max(0, yMax - total);
         return entry;
       }),
-    [weeklyBreakdown, yMax],
+    [periodicBreakdown, yMax],
   );
 
   const barHeightStyle = useMemo(
@@ -411,11 +411,11 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
   );
 
   const avgLineTop = useMemo(() => {
-    if (avgWeekly <= 0 || yMax <= 0) return 0;
+    if (avgPeriodic <= 0 || yMax <= 0) return 0;
     const topInset = 10;
     const usable = barChartHeight - topInset;
-    return topInset + usable * (1 - avgWeekly / yMax);
-  }, [avgWeekly, yMax, barChartHeight]);
+    return topInset + usable * (1 - avgPeriodic / yMax);
+  }, [avgPeriodic, yMax, barChartHeight]);
 
   const avgAboveStyle = useMemo(() => ({ top: avgLineTop - 18 }), [avgLineTop]);
 
@@ -525,7 +525,7 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
                   </CyDView>
                 </CyDView>
 
-                {weeklyBreakdown.length > 0 && (
+                {periodicBreakdown.length > 0 && (
                   <CyDView className='border-[1px] border-n40 rounded-[16px] mx-[16px] mt-[16px] p-[16px] bg-n0'>
                     <CyDView className='flex-row'>
                       <CyDView className='flex-1'>
@@ -550,7 +550,7 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
                               );
                             })}
 
-                            {avgWeekly > 0 && (
+                            {avgPeriodic > 0 && (
                               <>
                                 <Circle
                                   cx={4}
@@ -637,21 +637,21 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
                         </CyDView>
 
                         <CyDView className='flex-row mt-[8px] ml-[35px] mr-[-10px]'>
-                          {weeklyBreakdown.map((week, index) => (
+                          {periodicBreakdown.map((period, index) => (
                             <CyDText
                               key={index}
                               className='flex-1 font-manrope font-medium text-[12px] leading-[150%] text-n50 text-center'>
-                              {week.label}
+                              {period.label}
                             </CyDText>
                           ))}
                         </CyDView>
                       </CyDView>
 
-                      {avgWeekly > 0 && (
+                      {avgPeriodic > 0 && (
                         <CyDView style={styles.avgLabelColumn}>
                           <CyDView className='absolute' style={avgAboveStyle}>
                             <CyDText className='font-manrope font-semibold text-[10px] leading-[160%] text-[#006A31]'>
-                              {`$${avgWeekly.toFixed(1)}`}
+                              {`$${avgPeriodic.toFixed(1)}`}
                             </CyDText>
                           </CyDView>
                           <CyDView className='absolute' style={avgBelowStyle}>
