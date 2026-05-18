@@ -176,6 +176,7 @@ export default function CoinbasePay({ route, navigation }) {
       {onRampURL === '' && <Loading />}
       {onRampURL !== '' && (
         <WebView
+          webviewDebuggingEnabled={__DEV__}
           startInLoadingState={true}
           renderLoading={() => {
             return <Loading />;

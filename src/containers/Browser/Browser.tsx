@@ -1149,7 +1149,7 @@ export default function Browser() {
           })}>
           <WebView
             key={webviewKey}
-            webviewDebuggingEnabled={true}
+            webviewDebuggingEnabled={__DEV__}
             source={{ uri: search }}
             ref={webviewRef}
             startInLoadingState

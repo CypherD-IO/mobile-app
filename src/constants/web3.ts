@@ -1,5 +1,5 @@
 export const Web3Method = {
-  WALLET_PUSH_PERRMISSION: 'wallet_pushPermission',
+  WALLET_PUSH_PERMISSION: 'wallet_pushPermission',
   SEND_TRANSACTION: 'eth_sendTransaction',
   BLOCK_NUMBER: 'eth_blockNumber',
   BLOCK_BY_NUMBER: 'eth_getBlockByNumber',

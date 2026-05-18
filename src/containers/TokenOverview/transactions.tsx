@@ -145,6 +145,7 @@ export function TokenTransactions({
     return (
       <CyDView className={'w-[100%] bg-n20'} style={{ height: height - 230 }}>
         <WebView
+          webviewDebuggingEnabled={__DEV__}
           renderLoading={() => {
             return <Loading />;
           }}

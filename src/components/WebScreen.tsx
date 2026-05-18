@@ -63,6 +63,7 @@ export default function WebScreen({
 
   return (
     <WebView
+      webviewDebuggingEnabled={__DEV__}
       injectedJavaScriptBeforeContentLoaded={injectedCode}
       ref={webviewRef}
       source={{ uri: url }}

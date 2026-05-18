@@ -48,6 +48,7 @@ export default function OpenLegalScreen() {
   return (
     <CyDSafeAreaView className='bg-n20'>
       <WebView
+        webviewDebuggingEnabled={__DEV__}
         renderLoading={() => {
           return <Loading />;
         }}

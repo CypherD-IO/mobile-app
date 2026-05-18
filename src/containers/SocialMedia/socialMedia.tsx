@@ -52,6 +52,7 @@ export default function SocialMediaScreen() {
       <CyDView className='flex-1 bg-n20'>
         {isLoading && <Loading />}
         <WebView
+          webviewDebuggingEnabled={__DEV__}
           source={{ uri }}
           onLoadStart={() => setIsLoading(true)}
           onLoadEnd={() => setIsLoading(false)}
