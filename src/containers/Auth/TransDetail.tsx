@@ -93,6 +93,7 @@ export default function TransDetail({
       <PageHeader title={'DETAILS'} navigation={navigation} />
       <CyDView className='flex-row items-center justify-center m-[10px] flex-1 bg-n20'>
         <WebView
+          webviewDebuggingEnabled={__DEV__}
           injectedJavaScriptBeforeContentLoaded={injectedCode}
           ref={webviewRef}
           source={{ uri: url }}

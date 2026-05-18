@@ -206,6 +206,7 @@ const KYCWebView = () => {
         {isLoading && <Loading />}
         {!!kycUrl && (
           <WebView
+            webviewDebuggingEnabled={__DEV__}
             source={{ uri: kycUrl }}
             onLoadStart={() => setIsLoading(true)}
             onLoadEnd={() => setIsLoading(false)}

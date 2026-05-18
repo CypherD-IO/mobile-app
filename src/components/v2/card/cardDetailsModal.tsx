@@ -216,6 +216,7 @@ export default function CardDetailsModal({
         return (
           <CyDView className='w-full h-[220px] self-center'>
             <WebView
+              webviewDebuggingEnabled={__DEV__}
               renderLoading={() => {
                 return <Loading isTransparent={true} />;
               }}
