@@ -56,7 +56,7 @@ jobs:
           path: |
             node_modules
             ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
@@ -67,7 +67,7 @@ jobs:
             ios/Pods
             ~/Library/Caches/CocoaPods
             ~/.cocoapods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
 
