@@ -29,13 +29,18 @@ jobs:
     timeout-minutes: 45 # Prevent hanging builds
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
-      ENVIRONMENT: ${{secrets.ENVIRONMENT}}
+      # Hardcoded to "staging" for E2E only — must NOT be a global secret,
+      # otherwise the Play Store / App Store release pipelines would also
+      # build as staging. Pairs with MOCK_INTEGRITY_TOKEN to bypass real
+      # App Attest / Play Integrity (mock bypass is gated to non-prod envs).
+      ENVIRONMENT: staging
       INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
       INTERCOM_ANDROID_SDK_KEY: ${{secrets.INTERCOM_ANDROID_SDK_KEY}}
       MOBILE_WALLETKIT_PROJECTID: ${{secrets.MOBILE_WALLETKIT_PROJECTID}}
       MOBILE_APPKIT_PROJECTID: ${{secrets.MOBILE_APPKIT_PROJECTID}}
       HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
       WEB3_AUTH_CLIENT_ID: ${{ secrets.WEB3_AUTH_CLIENT_ID }}
+      MOCK_INTEGRITY_TOKEN: ${{ secrets.MOCK_INTEGRITY_TOKEN }}
       CI: true
       IS_TESTING: "true"
       NODE_ENV: development
@@ -116,9 +121,10 @@ jobs:
           echo "INTERCOM_APP_KEY=${{ secrets.INTERCOM_APP_KEY }}" >> .env
           echo "INTERCOM_ANDROID_SDK_KEY=${{ secrets.INTERCOM_ANDROID_SDK_KEY }}" >> .env
           echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
-          echo "ENVIRONMENT=${{ secrets.ENVIRONMENT }}" >> .env
+          echo "ENVIRONMENT=staging" >> .env
           echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
           echo "WEB3_AUTH_CLIENT_ID=${{ secrets.WEB3_AUTH_CLIENT_ID }}" >> .env
+          echo "MOCK_INTEGRITY_TOKEN=${{ secrets.MOCK_INTEGRITY_TOKEN }}" >> .env
           # IS_TESTING and CI flags must be baked into the .env BEFORE the
           # iOS build — react-native-config reads the file at build time
           # and inlines values into the native binary. If we write these
