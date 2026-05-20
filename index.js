@@ -3,9 +3,20 @@
  */
 import 'whatwg-fetch';
 import './shim';
-import { AppRegistry, LogBox, NativeModules, UIManager } from 'react-native';
+import { AppRegistry, LogBox, NativeModules, Platform, UIManager } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import { CustomerIO } from 'customerio-reactnative';
+import notifee, { AndroidImportance } from '@notifee/react-native';
+
+if (Platform.OS === 'android') {
+  notifee
+    .createChannel({
+      id: 'com.cypherd.androidwallet',
+      name: 'Cypher Wallet Notifications',
+      importance: AndroidImportance.HIGH,
+    })
+    .catch(() => {});
+}
 
 // E2E Testing: suppress ALL LogBox UI during test runs.
 // LogBox banners cover bottom-positioned buttons and block Detox taps.

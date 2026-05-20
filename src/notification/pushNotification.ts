@@ -10,6 +10,7 @@ import {
   requestPermission as requestMessagingPermission,
 } from '@react-native-firebase/messaging';
 import * as Sentry from '@sentry/react-native';
+import { CustomerIO } from 'customerio-reactnative';
 import { hostWorker } from '../global';
 import axios from '../core/Http';
 import { isAddressSet } from '../core/util';
@@ -262,7 +263,7 @@ export async function RouteNotificationAction({
   }
 }
 
-export async function requestUserPermission() {
+export async function requestUserPermission(): Promise<void> {
   const authStatus = await requestMessagingPermission(getMessaging());
   const enabled =
     authStatus === AuthorizationStatus.AUTHORIZED ||
@@ -270,7 +271,17 @@ export async function requestUserPermission() {
 
   if (enabled) {
     await notifee.requestPermission();
-
     await setCategories();
+  }
+
+  // Let Customer.io track the push permission status so it's visible in
+  // the CIO dashboard. This won't re-prompt the user — the OS only shows
+  // the permission dialog once — it just reads the current status.
+  try {
+    await CustomerIO.showPromptForPushNotifications({
+      ios: { sound: true, badge: true },
+    });
+  } catch (error) {
+    Sentry.captureException(error);
   }
 }

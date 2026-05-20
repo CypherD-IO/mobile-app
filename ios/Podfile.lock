@@ -7,10 +7,10 @@ PODS:
   - CioFirebaseWrapper (1.0.0):
     - CustomerIOMessagingPushFCM (>= 4.0.0)
     - FirebaseMessaging (< 13.0.0, >= 8.7.0)
-  - customerio-reactnative (6.3.1):
-    - customerio-reactnative/nopush (= 6.3.1)
-    - CustomerIO/DataPipelines (= 4.3.1)
-    - CustomerIO/MessagingInApp (= 4.3.1)
+  - customerio-reactnative (6.4.2):
+    - customerio-reactnative/nopush (= 6.4.2)
+    - CustomerIO/DataPipelines (= 4.4.1)
+    - CustomerIO/MessagingInApp (= 4.4.1)
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -32,13 +32,13 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - customerio-reactnative-richpush/fcm (6.3.1):
-    - CustomerIO/MessagingPushFCM (= 4.3.1)
-  - customerio-reactnative/fcm (6.3.1):
+  - customerio-reactnative-richpush/fcm (6.4.2):
+    - CustomerIO/MessagingPushFCM (= 4.4.1)
+  - customerio-reactnative/fcm (6.4.2):
     - CioFirebaseWrapper (= 1.0.0)
-    - CustomerIO/DataPipelines (= 4.3.1)
-    - CustomerIO/MessagingInApp (= 4.3.1)
-    - CustomerIO/MessagingPushFCM (= 4.3.1)
+    - CustomerIO/DataPipelines (= 4.4.1)
+    - CustomerIO/MessagingInApp (= 4.4.1)
+    - CustomerIO/MessagingPushFCM (= 4.4.1)
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -60,10 +60,10 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - customerio-reactnative/nopush (6.3.1):
-    - CustomerIO/DataPipelines (= 4.3.1)
-    - CustomerIO/MessagingInApp (= 4.3.1)
-    - CustomerIO/MessagingPush (= 4.3.1)
+  - customerio-reactnative/nopush (6.4.2):
+    - CustomerIO/DataPipelines (= 4.4.1)
+    - CustomerIO/MessagingInApp (= 4.4.1)
+    - CustomerIO/MessagingPush (= 4.4.1)
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -85,28 +85,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - CustomerIO/DataPipelines (4.3.1):
-    - CustomerIODataPipelines (= 4.3.1)
-  - CustomerIO/MessagingInApp (4.3.1):
-    - CustomerIOMessagingInApp (= 4.3.1)
-  - CustomerIO/MessagingPush (4.3.1):
-    - CustomerIOMessagingPush (= 4.3.1)
-  - CustomerIO/MessagingPushFCM (4.3.1):
-    - CustomerIOMessagingPushFCM (= 4.3.1)
-  - CustomerIOCommon (4.3.1)
-  - CustomerIODataPipelines (4.3.1):
+  - CustomerIO/DataPipelines (4.4.1):
+    - CustomerIODataPipelines (= 4.4.1)
+  - CustomerIO/MessagingInApp (4.4.1):
+    - CustomerIOMessagingInApp (= 4.4.1)
+  - CustomerIO/MessagingPush (4.4.1):
+    - CustomerIOMessagingPush (= 4.4.1)
+  - CustomerIO/MessagingPushFCM (4.4.1):
+    - CustomerIOMessagingPushFCM (= 4.4.1)
+  - CustomerIOCommon (4.4.1)
+  - CustomerIODataPipelines (4.4.1):
     - "AnalyticsSwiftCIO (= 1.7.3+cio.1)"
-    - CustomerIOCommon (= 4.3.1)
-    - CustomerIOTrackingMigration (= 4.3.1)
-  - CustomerIOMessagingInApp (4.3.1):
-    - CustomerIOCommon (= 4.3.1)
+    - CustomerIOCommon (= 4.4.1)
+    - CustomerIOTrackingMigration (= 4.4.1)
+  - CustomerIOMessagingInApp (4.4.1):
+    - CustomerIOCommon (= 4.4.1)
     - LDSwiftEventSource (~> 3.3)
-  - CustomerIOMessagingPush (4.3.1):
-    - CustomerIOCommon (= 4.3.1)
-  - CustomerIOMessagingPushFCM (4.3.1):
-    - CustomerIOMessagingPush (= 4.3.1)
-  - CustomerIOTrackingMigration (4.3.1):
-    - CustomerIOCommon (= 4.3.1)
+  - CustomerIOMessagingPush (4.4.1):
+    - CustomerIOCommon (= 4.4.1)
+  - CustomerIOMessagingPushFCM (4.4.1):
+    - CustomerIOMessagingPush (= 4.4.1)
+  - CustomerIOTrackingMigration (4.4.1):
+    - CustomerIOCommon (= 4.4.1)
   - FBLazyVector (0.84.1)
   - Firebase/CoreOnly (12.10.0):
     - FirebaseCore (~> 12.10.0)
@@ -3497,15 +3497,15 @@ SPEC CHECKSUMS:
   AnalyticsSwiftCIO: cbded90bbfe53072cb1fa1bc091d249e99ef7c56
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
   CioFirebaseWrapper: 7eba9daf8c158b583c9dfacb706f409ed184d46c
-  CustomerIO: 26170e94d2ccf020908fa7f6e8a113aeba5cbfdf
-  customerio-reactnative: db9b79a7e07c36d2fe2ce9f605ac3a856cca0eb0
-  customerio-reactnative-richpush: 07aa84ff5bc7762b0a4cc238f672dae067ef6481
-  CustomerIOCommon: ff7d879dc86b016017032edbb4378ebec81be7d6
-  CustomerIODataPipelines: fd6a72e8d4e98fe567a35a7e29bdcbb0a932592c
-  CustomerIOMessagingInApp: 208e9ea647c73ae9156b4b5b807f425255190128
-  CustomerIOMessagingPush: 5456cecbb49dccce6fdeff47138e008e764f8f18
-  CustomerIOMessagingPushFCM: 700d5d43c4d16532f104c9f54ed7841921dc98f1
-  CustomerIOTrackingMigration: 412ac0579e3e77cb349e2da4b59ca705bd1bfb61
+  CustomerIO: e06718c36496754e1fa4c041d543d882188c99da
+  customerio-reactnative: fce594a297c79d43b89e96fbf625c4ca22c9f704
+  customerio-reactnative-richpush: 7c365666fb29b8eeec69e34706cdebf2b34e7429
+  CustomerIOCommon: e754e41e5f05f24984d19b95f50cee872c4e1a74
+  CustomerIODataPipelines: 8ad6c480b4bfe8f899c4598917551bd34160b6ff
+  CustomerIOMessagingInApp: 3e3bb7e6cf88f4552295af79fbc0c3c7ee7e01f3
+  CustomerIOMessagingPush: 0ab97262b0f6f9b377b9387056a86799295d779a
+  CustomerIOMessagingPushFCM: 5b9eefdf2e8a5cc8b188b144312ac80c33753491
+  CustomerIOTrackingMigration: f828810ed9b9b36737bbd5ff44ac324ced6affe9
   FBLazyVector: e97c19a5a442429d1988f182a1940fb08df514da
   Firebase: 99f203d3a114c6ba591f3b32263a9626e450af65
   FirebaseABTesting: fae111fe5476bd9e249968d0c85cd036385404ba
