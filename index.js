@@ -15,7 +15,10 @@ if (Platform.OS === 'android') {
       name: 'Cypher Wallet Notifications',
       importance: AndroidImportance.HIGH,
     })
-    .catch(() => {});
+    .catch(err => {
+      console.error('[notifee] createChannel(com.cypherd.androidwallet) failed:', err);
+      Sentry.captureException(err);
+    });
 }
 
 // E2E Testing: suppress ALL LogBox UI during test runs.
