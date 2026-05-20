@@ -90,16 +90,21 @@ export default function useInitializer() {
   const { showModal, hideModal } = useGlobalModalContext();
   const [isMigrating, setIsMigrating] = useState(false);
 
-  // One attempt at integrity + signIn. On failure, surface an informational
-  // modal; user decides to Retry (loop) or Exit (RNExitApp.exitApp).
+  // One attempt at integrity + signIn. On a true backend failure (no response
+  // at all) we surface the retry/exit modal. Structured responses like INVALID
+  // (tamper-detected) or NEEDS_UPDATE are returned to the caller as-is so it
+  // can drive the appropriate modal — retrying integrity won't fix those.
   // Lower layers already handle single-step recoveries (INVALID_KEY inside
   // getIntegrityToken; stale-keyId cleared here before retry).
   const signInWithIntegrity = async (
     setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
   ): Promise<any> => {
-    const performOnce = async (): Promise<
-      { kind: 'success'; response: any } | { kind: 'failed' }
-    > => {
+    type Outcome =
+      | { kind: 'success'; response: any }
+      | { kind: 'structured'; response: any }
+      | { kind: 'failed' };
+
+    const performOnce = async (): Promise<Outcome> => {
       try {
         const integrity = await getIntegrityToken();
         const response = await signIn(
@@ -113,9 +118,15 @@ export default function useInitializer() {
         ) {
           return { kind: 'success', response };
         }
-        // signIn swallows backend errors into `undefined`. If we were asserting,
-        // the backend may have rejected the stored keyId — clear it so the next
-        // retry attests fresh.
+        // A non-VALID response with a message (INVALID, NEEDS_UPDATE, etc.) is
+        // a deliberate backend verdict — surface it to the caller instead of
+        // retrying integrity (which won't change the verdict).
+        if (response?.message) {
+          return { kind: 'structured', response };
+        }
+        // signIn swallowed a backend error into `undefined`. If we were
+        // asserting, the backend may have rejected the stored keyId — clear it
+        // so the next retry attests fresh.
         if (integrity.isAssertion) {
           await handleBackendIntegrityRejection();
         }
@@ -150,7 +161,9 @@ export default function useInitializer() {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const outcome = await performOnce();
-      if (outcome.kind === 'success') return outcome.response;
+      if (outcome.kind === 'success' || outcome.kind === 'structured') {
+        return outcome.response;
+      }
       const shouldRetry = await askUserToRetry();
       if (!shouldRetry) {
         RNExitApp.exitApp();
