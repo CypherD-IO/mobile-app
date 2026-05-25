@@ -14,7 +14,11 @@ public class CioAppPushNotificationsHandler: NSObject {
   /// handle push notification click events that originate from Customer.io.
   @objc(setupCustomerIOClickHandling)
   public func setupCustomerIOClickHandling() {
-    MessagingPushFCM.initialize(withConfig: MessagingPushConfigBuilder().build())
+    MessagingPushFCM.initialize(
+      withConfig: MessagingPushConfigBuilder()
+        .appGroupId("group.com.cypherd.ioswalletv1.cio")
+        .build()
+    )
   }
 
   /// Forwards FCM registration tokens to Customer.io so it can

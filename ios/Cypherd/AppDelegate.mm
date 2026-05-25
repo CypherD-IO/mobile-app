@@ -106,6 +106,8 @@ CioAppPushNotificationsHandler *cioPnHandlerObj = [[CioAppPushNotificationsHandl
   // Initialize Customer.io push click handling
   [cioPnHandlerObj setupCustomerIOClickHandling];
 
+  [application registerForRemoteNotifications];
+
   // Define UNUserNotificationCenter
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   center.delegate = self;
