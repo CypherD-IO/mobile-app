@@ -285,6 +285,13 @@ const TabStack = React.memo(
             });
             break;
 
+          case screenTitle.NOTIFICATION_INBOX:
+            navigateToScreenInTab(screenTitle.PORTFOLIO, {
+              screen: data.screenToNavigate,
+              params: data.params,
+            });
+            break;
+
           case screenTitle.CYPHER_AGENT_SCREEN:
             navigateToScreenInTab(screenTitle.CYPHER_AGENT, {
               screen: data.screenToNavigate,

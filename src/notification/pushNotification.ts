@@ -25,6 +25,8 @@ import {
 import { screenTitle } from '../constants';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { getConnectionType } from '../core/asyncStorage';
+import { saveNotificationInboxItem } from './notificationInbox';
+import type { NotificationInboxItem } from './notificationInbox';
 
 export const getToken = async (address: string) => {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -126,11 +128,29 @@ const getAndroidActions = (categoryId?: CypherDeclineCodes | RPCODES) => {
 export const showNotification = async (
   notification: FirebaseMessagingTypes.Notification | undefined,
   data?: any,
+  inboxOptions: { messageId?: string; scopeId?: string } = {},
 ) => {
   const channelId = await createNotificationChannel();
   const title = notification?.title ?? data?.notificationTitle;
   const body = notification?.body ?? data?.notificationBody;
   if (title && body) {
+    const inboxData =
+      inboxOptions.messageId && !data?.messageId
+        ? { ...data, messageId: inboxOptions.messageId }
+        : data;
+
+    await saveNotificationInboxItem(
+      {
+        ...(inboxOptions.messageId ? { messageId: inboxOptions.messageId } : {}),
+        notification: { title, body },
+        data: inboxData,
+      },
+      {
+        source: 'notifee-display',
+        ...(inboxOptions.scopeId ? { scopeId: inboxOptions.scopeId } : {}),
+      },
+    );
+
     await notifee.displayNotification({
       title,
       body,
@@ -259,6 +279,48 @@ export async function RouteNotificationAction({
 
   if (notificationId) {
     await notifee.cancelNotification(notificationId);
+  }
+}
+
+export async function routeNotificationInboxAction({
+  item,
+  realNotificationId,
+  navigation,
+  showModal,
+  hideModal,
+}: {
+  item: NotificationInboxItem;
+  realNotificationId?: string;
+  navigation: NavigationProp<ParamListBase>;
+  showModal: (type: GlobalModalType, data: any) => void;
+  hideModal: () => void;
+}) {
+  switch (item.action.type) {
+    case 'navigate':
+      navigation?.navigate(item.action.tab, {
+        screen: item.action.screen,
+        params: item.action.params,
+      });
+      break;
+    case 'quickAction':
+      await RouteNotificationAction({
+        // Inbox ids are synthetic local storage ids. Only pass through a real
+        // Notifee notification id when one is available so the helper never
+        // cancels an OS notification using a synthetic inbox id.
+        notificationId: realNotificationId ?? '',
+        actionId: item.action.actionId,
+        data: item.action.params,
+        navigation,
+        showModal,
+        hideModal,
+      });
+      break;
+    case 'none':
+    default:
+      // Informational records, including sanitized 3DS approval inbox entries,
+      // are marked read by callers and intentionally do not replay modals or
+      // notification actions.
+      break;
   }
 }
 

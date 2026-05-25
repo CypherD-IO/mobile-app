@@ -1,10 +1,4 @@
-import notifee, { EventType } from '@notifee/react-native';
-import {
-  FirebaseMessagingTypes,
-  getInitialNotification,
-  getMessaging,
-  onNotificationOpenedApp,
-} from '@react-native-firebase/messaging';
+import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import {
   ParamListBase,
   useIsFocused,
@@ -83,7 +77,7 @@ import {
 import usePortfolio from '../../hooks/usePortfolio';
 import { DeFiFilter } from '../../models/defi.interface';
 import { IPortfolioData } from '../../models/portfolioData.interface';
-import { RouteNotificationAction } from '../../notification/pushNotification';
+import { getNotificationInboxScope } from '../../notification/notificationInbox';
 import {
   BridgeContext,
   BridgeContextDef,
@@ -112,6 +106,7 @@ import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import GetTokenBottomSheetContent from '../../components/v2/GetTokenBottomSheetContent';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import useBridgeV2Sheet from '../../features/bridgeV2/hooks/useBridgeV2Sheet';
+import useNotificationOpenHandlers from '../../hooks/useNotificationOpenHandlers';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { colorScheme } from 'nativewind';
 import CyDModalLayout from '../../components/v2/modal';
@@ -120,6 +115,7 @@ import type { QRScanEvent } from '../../types/qr';
 export interface PortfolioProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
 }
+
 
 interface IBuyOptionsData {
   index: number;
@@ -173,6 +169,10 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     false;
   const globalStateContext = useContext(GlobalContext);
   const hdWallet = useContext(HdWalletContext);
+  const notificationInboxScope = useMemo(
+    () => getNotificationInboxScope(hdWallet?.state),
+    [hdWallet?.state],
+  );
   const [isPortfolioLoading, setIsPortfolioLoading] = useState<boolean>();
   const [isPortfolioRefreshing, setIsPortfolioRefreshing] =
     useState<boolean>(false);
@@ -600,6 +600,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   ];
   const [tabIndex, setTabIndex] = useState<number>(0);
 
+  // eslint-disable-next-line @typescript-eslint/array-type
   const swipeableRefs: Array<Swipeable | null> = [];
   let previousOpenedSwipeableRef: Swipeable | null;
 
@@ -793,71 +794,15 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   };
 
+  useNotificationOpenHandlers({
+    navigation,
+    showModal,
+    hideModal,
+    notificationInboxScope,
+    onPushNotification: handlePushNotification,
+  });
+
   useEffect(() => {
-    const messagingInstance = getMessaging();
-    void getInitialNotification(messagingInstance)
-      .then(async response => {
-        await handlePushNotification(response);
-      })
-      .catch(error => {
-        Sentry.captureException(error);
-      });
-
-    const unsubscribeNotificationOpenedApp = onNotificationOpenedApp(
-      messagingInstance,
-      async response => {
-        await handlePushNotification(response);
-      },
-    );
-
-    notifee
-      .getInitialNotification()
-      .then(async response => {
-        if (response?.notification) {
-          await handlePushNotification(response?.notification as any);
-        }
-      })
-      .catch(error => {
-        Sentry.captureException(error);
-      });
-
-    notifee.onBackgroundEvent(async remoteMessage => {
-      const { type, detail } = remoteMessage;
-
-      if (type === EventType.ACTION_PRESS) {
-        const { notification, pressAction } = detail;
-        if (notification?.id && pressAction?.id) {
-          await RouteNotificationAction({
-            notificationId: notification?.id,
-            actionId: pressAction?.id,
-            data: notification?.data,
-            navigation,
-            showModal,
-            hideModal,
-          });
-        }
-      }
-    });
-
-    const unsubscribe = notifee.onForegroundEvent(remoteMessage => {
-      const { type, detail } = remoteMessage;
-      if (type === EventType.ACTION_PRESS) {
-        const { notification, pressAction } = detail;
-        if (notification?.id && pressAction?.id) {
-          RouteNotificationAction({
-            notificationId: notification?.id,
-            actionId: pressAction?.id,
-            data: notification?.data,
-            navigation,
-            showModal,
-            hideModal,
-          }).catch(error => {
-            Sentry.captureException(error);
-          });
-        }
-      }
-    });
-
     const getIBCStatus = async () => {
       const data = await getIBC();
       let IBCStatus = false;
@@ -874,10 +819,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     });
 
     void getBridgeData().catch;
-    return () => {
-      unsubscribe();
-      unsubscribeNotificationOpenedApp();
-    };
   }, []);
 
   useEffect(() => {
@@ -1361,6 +1302,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               navigation={navigation}
               onWCSuccess={onWCSuccess}
               selectedChain={selectedChain}
+              rightIconName='bell-outline'
+              rightActionAccessibilityLabel={t('NOTIFICATION_INBOX')}
+              onRightActionPress={() =>
+                navigation.navigate(C.screenTitle.NOTIFICATION_INBOX)
+              }
             />
           </CyDView>
           <SectionList

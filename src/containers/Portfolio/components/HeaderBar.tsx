@@ -21,6 +21,7 @@ import useEns from '../../../hooks/useEns';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import {
   CyDIcons,
+  CyDMaterialDesignIcons,
   CyDImage,
   CyDText,
   CyDTouchView,
@@ -30,9 +31,12 @@ import { get } from 'lodash';
 import type { QRScanEvent } from '../../../types/qr';
 
 interface HeaderBarProps {
-  navigation: any;
+  navigation: { navigate: (screen: string, params?: unknown) => void };
   onWCSuccess: (e: QRScanEvent) => void;
   selectedChain: Chain;
+  rightIconName?: string;
+  rightActionAccessibilityLabel?: string;
+  onRightActionPress?: () => void;
 }
 
 /**
@@ -57,6 +61,9 @@ export const HeaderBar = ({
   navigation,
   onWCSuccess,
   selectedChain,
+  rightIconName,
+  rightActionAccessibilityLabel,
+  onRightActionPress,
 }: HeaderBarProps) => {
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { wallet } = hdWalletContext.state;
@@ -224,6 +231,18 @@ export const HeaderBar = ({
             gradientColors={['#FA9703', '#F89408', '#F6510A']}
             locations={[0, 0.3, 0.6]}
           />
+        )}
+
+        {onRightActionPress && (
+          <CyDTouchView
+            accessibilityLabel={rightActionAccessibilityLabel}
+            onPress={onRightActionPress}>
+            <CyDMaterialDesignIcons
+              name={rightIconName ?? 'bell-outline'}
+              size={30}
+              className='text-base400'
+            />
+          </CyDTouchView>
         )}
 
         {connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (

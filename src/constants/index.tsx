@@ -24,6 +24,7 @@ export const screenTitle = {
   SEED_PHRASE: 'SeedPhrase',
   PRIVATE_KEY: 'PrivateKey',
   NOTIFICATION_SETTINGS: 'NotificationSettings',
+  NOTIFICATION_INBOX: 'NotificationInbox',
   IMPORT_ANOTHER_WALLET: 'ImportAnotherWallet',
   DELETE_WALLET: 'DeleteWallet',
   QRCODE: 'QrCode',

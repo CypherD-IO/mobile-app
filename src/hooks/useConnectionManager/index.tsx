@@ -36,6 +36,7 @@ import useWalletConnectMobile from '../useWalletConnectMobile';
 import Web3Auth from '@web3auth/react-native-sdk/dist/types/Web3Auth';
 import useWeb3Auth from '../useWeb3Auth';
 import useCustomerIO from '../useCustomerIO';
+import { clearAllNotificationInboxScopes } from '../../notification/notificationInbox';
 
 export default function useConnectionManager() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -67,6 +68,7 @@ export default function useConnectionManager() {
       await removeCredentialsFromKeychain();
     }
     await clearCustomerIOUser();
+    await clearAllNotificationInboxScopes();
     await clearAllData();
     await hdWalletContext.dispatch({ type: 'RESET_WALLET' });
     await activityContext.dispatch({ type: ActivityReducerAction.RESET });
