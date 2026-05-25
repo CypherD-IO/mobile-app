@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Alert, Linking, Platform } from 'react-native';
@@ -47,6 +47,10 @@ import PinAuthRoute from '../../routes/pinAuthRoute';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import { CustomerIO } from 'customerio-reactnative';
 import useCustomerIO from '../../hooks/useCustomerIO';
+import {
+  getNotificationInboxScope,
+  saveNotificationInboxItem,
+} from '../../notification/notificationInbox';
 
 interface UseInitializerReturn {
   exitIfJailBroken: () => Promise<void>;
@@ -121,6 +125,13 @@ export const InitializeAppProvider = ({
 
   // State to track if wallet data is still loading
   const [walletLoading, setWalletLoading] = useState<boolean>(true);
+  const notificationInboxScopeRef = useRef<string | undefined>(
+    getNotificationInboxScope(hdWallet?.state),
+  );
+
+  useEffect(() => {
+    notificationInboxScopeRef.current = getNotificationInboxScope(hdWallet?.state);
+  }, [hdWallet?.state]);
 
   useEffect(() => {
     const isE2ETesting = Config.IS_TESTING === 'true';
@@ -130,8 +141,14 @@ export const InitializeAppProvider = ({
     // periodic firelog/firebase-settings polls). Tests never exercise push
     // notifications, so no coverage lost.
     const unsubscribeOnMessage = isE2ETesting
-      ? () => {}
+      ? () => undefined
       : onMessage(getMessaging(), async response => {
+          const notificationInboxScope = notificationInboxScopeRef.current;
+          await saveNotificationInboxItem(response, {
+            source: 'firebase-foreground',
+            scopeId: notificationInboxScope,
+          });
+
           let handledByCio = false;
           try {
             handledByCio =
@@ -163,9 +180,10 @@ export const InitializeAppProvider = ({
               });
             }, 1000);
           } else {
-            void showNotification(response.notification, response.data).catch(
-              Sentry.captureException,
-            );
+            void showNotification(response.notification, response.data, {
+              messageId: response.messageId,
+              scopeId: notificationInboxScope,
+            }).catch(Sentry.captureException);
           }
         });
 

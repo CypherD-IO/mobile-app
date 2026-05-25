@@ -10,6 +10,23 @@ const resources = {
   en: {
     translation: {
       english: 'English',
+      NOTIFICATION_INBOX: 'Notifications',
+      NOTIFICATION_INBOX_EMPTY_TITLE: 'No notifications yet',
+      NOTIFICATION_INBOX_EMPTY_SUBTITLE:
+        'Recent alerts will appear here after they are received on this device.',
+      NOTIFICATION_INBOX_MARK_ALL_READ: 'Mark all read',
+      NOTIFICATION_INBOX_ALL: 'All',
+      NOTIFICATION_INBOX_UNREAD: 'Unread',
+      NOTIFICATION_INBOX_CATEGORY_CARD: 'Card',
+      NOTIFICATION_INBOX_CATEGORY_SECURITY: 'Security',
+      NOTIFICATION_INBOX_CATEGORY_REWARDS: 'Rewards',
+      NOTIFICATION_INBOX_CATEGORY_BRIDGE_SWAP: 'Bridge/Swap',
+      NOTIFICATION_INBOX_CATEGORY_QUICK_ACTION: 'Quick Actions',
+      NOTIFICATION_INBOX_CATEGORY_GENERAL: 'General',
+      NOTIFICATION_INBOX_OPEN: 'Open',
+      NOTIFICATION_INBOX_REVIEW: 'Review',
+      NOTIFICATION_INBOX_TAKE_ACTION: 'Take action',
+      NOTIFICATION_INBOX_VIEW_DETAILS: 'View details',
       LETS_CONNECT_MSG: "Let's connect to Cypher wallet",
       LETS_CONNECT_SUB_MSG:
         'Create or import wallet to keep your crypto securely',

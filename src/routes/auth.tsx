@@ -70,6 +70,7 @@ import Onmeta from '../containers/FundCardScreen/onmeta';
 import IBC from '../containers/IBC';
 import OpenLegalScreen from '../containers/InfoScreen/openLegalDoc';
 import { NFTHoldingsScreen, NFTOverviewScreen } from '../containers/NFT';
+import NotificationInbox from '../containers/Notifications/NotificationInbox';
 import ManageWallet from '../containers/Options/ManageWallet';
 import NotificationSettings from '../containers/Options/NotificationSettings';
 import PrivateKey from '../containers/Options/PrivateKey';
@@ -241,6 +242,20 @@ export function PortfolioStackScreen() {
         name={screenTitle.PORTFOLIO_SCREEN}
         component={PortfolioScreen}
         options={{ headerShown: false }}
+      />
+
+      <PortfolioStack.Screen
+        name={screenTitle.NOTIFICATION_INBOX}
+        component={NotificationInbox}
+        options={({ navigation }) => ({
+          header: () => (
+            <CustomHeader
+              title={t('NOTIFICATION_INBOX')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
+        })}
       />
 
       <PortfolioStack.Screen

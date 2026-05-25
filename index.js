@@ -30,6 +30,7 @@ if (isE2ETesting) {
 }
 import { name as appName } from './app.json';
 import { showNotification } from './src/notification/pushNotification';
+import { saveNotificationInboxItem } from './src/notification/notificationInbox';
 import Sentry from '@sentry/react-native';
 
 /**
@@ -71,10 +72,18 @@ if (__DEV__) {
 if (!isE2ETesting) {
   messaging().setBackgroundMessageHandler(async remoteMessage => {
     try {
+      // Local inbox archive only captures background messages that reach this
+      // JavaScript handler; OS/native-rendered notifications may still bypass it.
+      await saveNotificationInboxItem(remoteMessage, {
+        source: 'firebase-background',
+      });
+
       const handled =
         await CustomerIO.pushMessaging.onBackgroundMessageReceived(remoteMessage);
       if (!handled) {
-        await showNotification(remoteMessage.notification, remoteMessage.data);
+        await showNotification(remoteMessage.notification, remoteMessage.data, {
+          messageId: remoteMessage.messageId,
+        });
       }
     } catch (e) {
       Sentry.captureException(e);
