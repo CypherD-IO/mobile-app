@@ -912,6 +912,8 @@ const resources = {
       RISK_FOOTER_IGNORE_ALL: 'Ignore all',
       APPROVE_AMOUNT_EXCEEDS_BALANCE:
         'The approval amount is greater than your current {{symbol}} balance. Verify the amount before proceeding.',
+      PERMIT_AMOUNT_EXCEEDS_BALANCE: 'Exceeds current balance',
+      DEADLINE: 'Deadline',
       METHOD: 'Method',
       WALLET_CONNECT_PROPOSAL_EXPIRED: 'Connection request expired',
       WC_PROPOSAL_EXPIRED_DESCRIPTION:

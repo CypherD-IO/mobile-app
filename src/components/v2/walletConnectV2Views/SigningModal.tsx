@@ -49,6 +49,8 @@ import {
   RenderTypedTransactionSignModal,
 } from './SigningModals/TxnModals';
 import { RiskAlertFooter } from './SigningModals/RiskAlertFooter';
+import { RenderPermitSignModal } from './SigningModals/PermitSignModal';
+import { parsePermitTypedData } from '../../../utils/permitParser';
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
 import Button from '../button';
 import { DecimalHelper } from '../../../utils/decimalHelper';
@@ -603,21 +605,43 @@ export default function SigningModal({
               {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA ||
                 method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 ||
                 method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) &&
-                (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT ? (
-                  <RenderTypedTransactionSignModal
-                    dAppInfo={dAppInfo}
-                    chain={chain}
-                    method={method}
-                    messageParams={requestParams}
-                  />
-                ) : (
-                  <RenderTypedTransactionSignModal
-                    dAppInfo={dAppInfo}
-                    chain={chain}
-                    method={method}
-                    messageParams={paramsFromPayload}
-                  />
-                ))}
+                (() => {
+                  const activeParams =
+                    payloadFrom === SigningModalPayloadFrom.WALLETCONNECT
+                      ? requestParams
+                      : paramsFromPayload;
+                  const typedDataJson = Array.isArray(activeParams)
+                    ? activeParams[1]
+                    : undefined;
+                  const ownerFromParams = Array.isArray(activeParams)
+                    ? typeof activeParams[0] === 'string'
+                      ? activeParams[0]
+                      : undefined
+                    : undefined;
+                  const permit =
+                    method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4
+                      ? parsePermitTypedData(typedDataJson)
+                      : null;
+                  if (permit) {
+                    return (
+                      <RenderPermitSignModal
+                        dAppInfo={dAppInfo}
+                        permit={permit}
+                        publicClient={publicClient}
+                        ownerAddress={ownerFromParams}
+                        onRiskAssessed={setRiskGateRequired}
+                      />
+                    );
+                  }
+                  return (
+                    <RenderTypedTransactionSignModal
+                      dAppInfo={dAppInfo}
+                      chain={chain}
+                      method={method}
+                      messageParams={activeParams}
+                    />
+                  );
+                })()}
             </CyDScrollView>
             <CyDView className={'w-full px-[25px] mt-[12px] mb-[24px]'}>
               <Button

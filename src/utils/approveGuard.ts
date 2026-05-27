@@ -2,6 +2,7 @@ import type {
   DeBankToken,
   IDecodedTransactionResponse,
 } from '../models/txnDecode.interface';
+import type { NormalizedPermit, PermitItem } from './permitParser';
 
 const UINT256_MAX = BigInt(
   '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
@@ -54,6 +55,108 @@ export type ApproveBannerCopy = {
   titleKey: string;
   message: string;
 } | null;
+
+export interface PermitRiskAssessment {
+  level: ApproveRiskLevel;
+  isUnlimited: boolean;
+  isFarOverBalance: boolean;
+  isOverBalance: boolean;
+  requiresHardGate: boolean;
+  perItem: PermitItemAssessment[];
+}
+
+export interface PermitItemAssessment {
+  item: PermitItem;
+  isUnlimited: boolean;
+  isOverBalance: boolean;
+  isFarOverBalance: boolean;
+  balanceRaw: bigint | null;
+}
+
+export function assessPermitRisk(
+  permit: NormalizedPermit | null | undefined,
+  balanceLookup: (tokenAddress: string) => bigint | null,
+): PermitRiskAssessment {
+  const empty: PermitRiskAssessment = {
+    level: 'none',
+    isUnlimited: false,
+    isFarOverBalance: false,
+    isOverBalance: false,
+    requiresHardGate: false,
+    perItem: [],
+  };
+  if (!permit) return empty;
+
+  let isUnlimited = false;
+  let isOverBalance = false;
+  let isFarOverBalance = false;
+  const perItem: PermitItemAssessment[] = [];
+
+  for (const item of permit.items) {
+    const balanceRaw = balanceLookup(item.token);
+    const overBalance =
+      !item.isUnlimited && balanceRaw !== null && item.amount > balanceRaw;
+    const farOverBalance =
+      !item.isUnlimited &&
+      balanceRaw !== null &&
+      balanceRaw > 0n &&
+      item.amount > balanceRaw * BigInt(OVER_BALANCE_MULTIPLE_BLOCK);
+    if (item.isUnlimited) isUnlimited = true;
+    if (overBalance) isOverBalance = true;
+    if (farOverBalance) isFarOverBalance = true;
+    perItem.push({
+      item,
+      isUnlimited: item.isUnlimited,
+      isOverBalance: overBalance,
+      isFarOverBalance: farOverBalance,
+      balanceRaw,
+    });
+  }
+
+  const requiresHardGate = isUnlimited || isFarOverBalance;
+  const level: ApproveRiskLevel =
+    isUnlimited || isFarOverBalance
+      ? 'danger'
+      : isOverBalance
+        ? 'warn'
+        : 'none';
+  return {
+    level,
+    isUnlimited,
+    isFarOverBalance,
+    isOverBalance,
+    requiresHardGate,
+    perItem,
+  };
+}
+
+export function permitBannerCopy(risk: PermitRiskAssessment): ApproveBannerCopy {
+  if (risk.isUnlimited) {
+    return {
+      level: 'danger',
+      titleKey: 'ACKNOWLEDGE_RISK_TITLE',
+      message:
+        'Site requests an off-chain unlimited approval (permit). Scammers use this to drain wallets without spending gas.',
+    };
+  }
+  if (risk.isFarOverBalance) {
+    return {
+      level: 'danger',
+      titleKey: 'ACKNOWLEDGE_RISK_TITLE',
+      message:
+        'Permit amount is far above your current balance. Common drainer pattern.',
+    };
+  }
+  if (risk.isOverBalance) {
+    return {
+      level: 'warn',
+      titleKey: 'SUSPICIOUS_WARNING_TITLE',
+      message:
+        'Permit amount exceeds your current balance. Verify before signing.',
+    };
+  }
+  return null;
+}
 
 export function approveBannerCopy(risk: ApproveRiskAssessment): ApproveBannerCopy {
   if (risk.isScamToken) {
