@@ -650,7 +650,6 @@ export default function SigningModal({
                 style='p-[3%] mt-[12px]'
                 title={renderAcceptTitle(method)}
                 onPress={() => {
-                  if (!canConfirm) return;
                   void handleAccept();
                   void intercomAnalyticsLog('signModal_accept_click');
                 }}

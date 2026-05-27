@@ -311,7 +311,6 @@ export function assessApproveRisk(
     if (level !== 'danger') level = 'danger';
   } else if (isOverBalance) {
     reasons.push("Approval amount exceeds your current token balance.");
-    if (level !== 'danger') level = 'warn';
   }
   if (isSuspiciousToken && level === 'none') {
     reasons.push('Token marked as suspicious.');

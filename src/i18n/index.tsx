@@ -913,6 +913,12 @@ const resources = {
       APPROVE_AMOUNT_EXCEEDS_BALANCE:
         'The approval amount is greater than your current {{symbol}} balance. Verify the amount before proceeding.',
       PERMIT_AMOUNT_EXCEEDS_BALANCE: 'Exceeds current balance',
+      PERMIT_AMOUNT_UNLIMITED: 'Unlimited {{symbol}}',
+      PERMIT_AMOUNT_RAW: '{{amount}} {{symbol}} (raw units)',
+      PERMIT_EXPIRES_AT: 'Expires {{when}}',
+      PERMIT_KIND_EIP2612: 'Off-chain approval (EIP-2612)',
+      PERMIT_KIND_PERMIT2_SINGLE: 'Off-chain approval (Permit2)',
+      PERMIT_KIND_PERMIT2_BATCH: 'Off-chain batch approval (Permit2)',
       DEADLINE: 'Deadline',
       SCAM_DOMAIN_BLOCKED_TITLE: 'Scam site blocked',
       SCAM_DOMAIN_BLOCKED_DESCRIPTION:

@@ -21,10 +21,10 @@ import {
 import { useTokenBalances } from '../../../../hooks/useTokenBalances';
 import { getMaskedAddress } from '../../../../core/util';
 
-const KIND_LABEL: Record<NormalizedPermit['kind'], string> = {
-  eip2612: 'Off-chain approval (EIP-2612)',
-  'permit2-single': 'Off-chain approval (Permit2)',
-  'permit2-batch': 'Off-chain batch approval (Permit2)',
+const KIND_TITLE_KEY: Record<NormalizedPermit['kind'], string> = {
+  eip2612: 'PERMIT_KIND_EIP2612',
+  'permit2-single': 'PERMIT_KIND_PERMIT2_SINGLE',
+  'permit2-batch': 'PERMIT_KIND_PERMIT2_BATCH',
 };
 
 const noopRiskAssessed = (_required: boolean): void => {
@@ -78,7 +78,7 @@ export const RenderPermitSignModal = ({
       ) : null}
       <CyDView className='my-[10px]'>
         <CyDText className='text-[14px] font-bold mb-[6px] ml-[4px]'>
-          {KIND_LABEL[permit.kind]}
+          {t<string>(KIND_TITLE_KEY[permit.kind])}
         </CyDText>
         <CyDView className='bg-n40 rounded-[8px] py-[12px] px-[12px]'>
           {risk.perItem.map((entry, idx) => (
@@ -135,12 +135,16 @@ const PermitItemRow = ({ entry }: { entry: PermitItemAssessment }) => {
               isUnlimited ? 'text-errorTextRed' : ''
             }`}>
             {isUnlimited
-              ? `Unlimited ${item.tokenSymbol ?? ''}`.trim()
+              ? t<string>('PERMIT_AMOUNT_UNLIMITED', {
+                  symbol: item.tokenSymbol ?? '',
+                }).trim()
               : formatPermitAmount(item)}
           </CyDText>
           {item.expiration ? (
             <CyDText className='text-[11px] text-subTextColor'>
-              {`Expires ${formatDeadline(item.expiration)}`}
+              {t<string>('PERMIT_EXPIRES_AT', {
+                when: formatDeadline(item.expiration),
+              })}
             </CyDText>
           ) : null}
           {isOverBalance && !isUnlimited ? (
@@ -156,13 +160,27 @@ const PermitItemRow = ({ entry }: { entry: PermitItemAssessment }) => {
 
 function formatPermitAmount(item: PermitItem): string {
   const symbol = item.tokenSymbol ?? '';
-  try {
-    if (item.amount === 0n) return `0 ${symbol}`.trim();
-    const display = formatUnits(item.amount, 18).replace(/\.?0+$/, '');
-    return `${display}${symbol ? ` ${symbol}` : ''} (raw)`;
-  } catch {
-    return `${item.amount.toString()} ${symbol}`.trim();
+  if (item.amount === 0n) return `0 ${symbol}`.trim();
+  const hasDecimals =
+    typeof item.decimals === 'number' &&
+    Number.isInteger(item.decimals) &&
+    item.decimals >= 0 &&
+    item.decimals <= 78;
+  if (hasDecimals) {
+    try {
+      const display = formatUnits(item.amount, item.decimals as number).replace(
+        /\.?0+$/,
+        '',
+      );
+      return `${display}${symbol ? ` ${symbol}` : ''}`;
+    } catch {
+      // fall through to raw display
+    }
   }
+  return t<string>('PERMIT_AMOUNT_RAW', {
+    amount: item.amount.toString(),
+    symbol,
+  }).trim();
 }
 
 function formatDeadline(deadlineUnix: number): string {

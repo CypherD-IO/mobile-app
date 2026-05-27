@@ -13,6 +13,7 @@ export type PermitKind = 'eip2612' | 'permit2-single' | 'permit2-batch';
 export interface PermitItem {
   token: string;
   tokenSymbol?: string;
+  decimals?: number;
   amount: bigint;
   isUnlimited: boolean;
   expiration?: number;
@@ -109,7 +110,13 @@ function parseEip2612(
   const tokenContract = lowerOrUndef(domain.verifyingContract);
   const spender = lowerOrUndef(message.spender);
   if (!tokenContract || !spender) return null;
-  const amount = parseBigIntLoose(message.value ?? message.allowed);
+  const rawAllowed = message.allowed;
+  const amount =
+    typeof rawAllowed === 'boolean'
+      ? rawAllowed
+        ? UINT256_MAX
+        : 0n
+      : parseBigIntLoose(message.value ?? rawAllowed);
   const deadline = parseNumberLoose(message.deadline);
   if (amount === null) return null;
   return {

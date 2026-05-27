@@ -1182,6 +1182,21 @@ export default function Browser() {
               return true;
             }}
             onNavigationStateChange={navState => {
+              if (isKnownScamUrl(navState.url)) {
+                webviewRef.current?.stopLoading?.();
+                showModal('state', {
+                  type: 'error',
+                  title: t('SCAM_DOMAIN_BLOCKED_TITLE'),
+                  description: t('SCAM_DOMAIN_BLOCKED_DESCRIPTION', {
+                    url: navState.url,
+                  }),
+                  onSuccess: hideModal,
+                  onFailure: hideModal,
+                });
+                setSearch(homePageUrl);
+                setCurrentUrl(homePageUrl);
+                return;
+              }
               setCanGoBack(navState.canGoBack);
               setCurrentUrl(navState.url);
             }}
