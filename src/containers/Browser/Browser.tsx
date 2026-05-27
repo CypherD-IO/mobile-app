@@ -31,6 +31,7 @@ import InsufficientGasFeeDescription from '../../components/v2/InsufficientGasFe
 import Loading from '../../components/v2/loading';
 import { INJECTED_WEB3_CDN } from '../../constants/data';
 import { Web3Origin } from '../../constants/enum';
+import { isKnownScamUrl } from '../../constants/knownDrainers';
 import {
   Chain,
   ALL_CHAINS,
@@ -1163,6 +1164,23 @@ export default function Browser() {
               return <Loading />;
             }}
             style={{ marginTop: 0 }}
+            onShouldStartLoadWithRequest={request => {
+              if (isKnownScamUrl(request.url)) {
+                showModal('state', {
+                  type: 'error',
+                  title: t('SCAM_DOMAIN_BLOCKED_TITLE'),
+                  description: t('SCAM_DOMAIN_BLOCKED_DESCRIPTION', {
+                    url: request.url,
+                  }),
+                  onSuccess: hideModal,
+                  onFailure: hideModal,
+                });
+                setSearch(homePageUrl);
+                setCurrentUrl(homePageUrl);
+                return false;
+              }
+              return true;
+            }}
             onNavigationStateChange={navState => {
               setCanGoBack(navState.canGoBack);
               setCurrentUrl(navState.url);

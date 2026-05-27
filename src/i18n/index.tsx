@@ -914,6 +914,9 @@ const resources = {
         'The approval amount is greater than your current {{symbol}} balance. Verify the amount before proceeding.',
       PERMIT_AMOUNT_EXCEEDS_BALANCE: 'Exceeds current balance',
       DEADLINE: 'Deadline',
+      SCAM_DOMAIN_BLOCKED_TITLE: 'Scam site blocked',
+      SCAM_DOMAIN_BLOCKED_DESCRIPTION:
+        '{{url}} is on our known-scam list. Reported by support and confirmed to drain wallets. Returning to home page.',
       METHOD: 'Method',
       WALLET_CONNECT_PROPOSAL_EXPIRED: 'Connection request expired',
       WC_PROPOSAL_EXPIRED_DESCRIPTION:

@@ -3,6 +3,7 @@ import type {
   IDecodedTransactionResponse,
 } from '../models/txnDecode.interface';
 import type { NormalizedPermit, PermitItem } from './permitParser';
+import { isKnownDrainerAddress } from '../constants/knownDrainers';
 
 const UINT256_MAX = BigInt(
   '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
@@ -18,6 +19,7 @@ export interface ApproveRiskAssessment {
   level: ApproveRiskLevel;
   isScamToken: boolean;
   isSuspiciousToken: boolean;
+  isScamSpender: boolean;
   isUnlimited: boolean;
   isOverBalance: boolean;
   isFarOverBalance: boolean;
@@ -61,6 +63,7 @@ export interface PermitRiskAssessment {
   isUnlimited: boolean;
   isFarOverBalance: boolean;
   isOverBalance: boolean;
+  isScamSpender: boolean;
   requiresHardGate: boolean;
   perItem: PermitItemAssessment[];
 }
@@ -82,6 +85,7 @@ export function assessPermitRisk(
     isUnlimited: false,
     isFarOverBalance: false,
     isOverBalance: false,
+    isScamSpender: false,
     requiresHardGate: false,
     perItem: [],
   };
@@ -90,6 +94,7 @@ export function assessPermitRisk(
   let isUnlimited = false;
   let isOverBalance = false;
   let isFarOverBalance = false;
+  const isScamSpender = isKnownDrainerAddress(permit.spender);
   const perItem: PermitItemAssessment[] = [];
 
   for (const item of permit.items) {
@@ -113,9 +118,9 @@ export function assessPermitRisk(
     });
   }
 
-  const requiresHardGate = isUnlimited || isFarOverBalance;
+  const requiresHardGate = isScamSpender || isUnlimited || isFarOverBalance;
   const level: ApproveRiskLevel =
-    isUnlimited || isFarOverBalance
+    isScamSpender || isUnlimited || isFarOverBalance
       ? 'danger'
       : isOverBalance
         ? 'warn'
@@ -125,12 +130,21 @@ export function assessPermitRisk(
     isUnlimited,
     isFarOverBalance,
     isOverBalance,
+    isScamSpender,
     requiresHardGate,
     perItem,
   };
 }
 
 export function permitBannerCopy(risk: PermitRiskAssessment): ApproveBannerCopy {
+  if (risk.isScamSpender) {
+    return {
+      level: 'danger',
+      titleKey: 'SCAM_WARNING_TITLE',
+      message:
+        'Spender address is on our known-drainer list. Do not sign.',
+    };
+  }
   if (risk.isUnlimited) {
     return {
       level: 'danger',
@@ -159,6 +173,14 @@ export function permitBannerCopy(risk: PermitRiskAssessment): ApproveBannerCopy 
 }
 
 export function approveBannerCopy(risk: ApproveRiskAssessment): ApproveBannerCopy {
+  if (risk.isScamSpender) {
+    return {
+      level: 'danger',
+      titleKey: 'SCAM_WARNING_TITLE',
+      message:
+        'Spender address is on our known-drainer list. Do not approve.',
+    };
+  }
   if (risk.isScamToken) {
     return {
       level: 'danger',
@@ -221,6 +243,7 @@ export function assessApproveRisk(
     level: 'none',
     isScamToken: false,
     isSuspiciousToken: false,
+    isScamSpender: false,
     isUnlimited: false,
     isOverBalance: false,
     isFarOverBalance: false,
@@ -236,6 +259,7 @@ export function assessApproveRisk(
   const token: DeBankToken | undefined = approval.token;
   const isScamToken = Boolean(token?.is_scam);
   const isSuspiciousToken = Boolean(token?.is_suspicious);
+  const isScamSpender = isKnownDrainerAddress(approval.spender);
 
   const amountRaw =
     safeParseAmount(token?.raw_amount_str) ??
@@ -266,6 +290,10 @@ export function assessApproveRisk(
   const reasons: string[] = [];
   let level: ApproveRiskLevel = 'none';
 
+  if (isScamSpender) {
+    reasons.push('Spender address flagged as known drainer.');
+    level = 'danger';
+  }
   if (isScamToken) {
     reasons.push('Token flagged as scam by our database.');
     level = 'danger';
@@ -290,12 +318,13 @@ export function assessApproveRisk(
     level = 'warn';
   }
 
-  const requiresHardGate = isUnlimited || isFarOverBalance;
+  const requiresHardGate = isScamSpender || isUnlimited || isFarOverBalance;
 
   return {
     level,
     isScamToken,
     isSuspiciousToken,
+    isScamSpender,
     isUnlimited,
     isOverBalance,
     isFarOverBalance,
