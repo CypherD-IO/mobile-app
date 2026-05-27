@@ -48,6 +48,7 @@ import {
   RenderTransactionSignModal,
   RenderTypedTransactionSignModal,
 } from './SigningModals/TxnModals';
+import { RiskAlertFooter } from './SigningModals/RiskAlertFooter';
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
 import Button from '../button';
 import { DecimalHelper } from '../../../utils/decimalHelper';
@@ -70,6 +71,9 @@ export default function SigningModal({
   const [acceptingRequest, setAcceptingRequest] = useState(false);
   const [rejectingRequest, setRejectingRequest] = useState(false);
   const [dataIsReady, setDataIsReady] = useState(false);
+  const [riskGateRequired, setRiskGateRequired] = useState(false);
+  const [riskIgnored, setRiskIgnored] = useState(false);
+  const canConfirm = !riskGateRequired || riskIgnored;
   const [nativeSendTxnData, setNativeSendTxnData] =
     useState<ISendTxnData | null>(null);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -92,7 +96,7 @@ export default function SigningModal({
     requestSession,
     dAppInfo: IDAppInfo | undefined,
     chain: Chain | undefined,
-    publicClient: PublicClient;
+    publicClient: PublicClient | undefined;
   const isMessageModalForSigningTypedData =
     modalPayload?.params && 'signMessageTitle' in modalPayload.params;
 
@@ -590,6 +594,8 @@ export default function SigningModal({
                     method={method}
                     data={decodedABIData}
                     nativeSendTxnData={nativeSendTxnData}
+                    publicClient={publicClient}
+                    onRiskAssessed={setRiskGateRequired}
                   />
                 ) : (
                   <Loader />
@@ -616,9 +622,11 @@ export default function SigningModal({
             <CyDView className={'w-full px-[25px] mt-[12px] mb-[24px]'}>
               <Button
                 loading={acceptingRequest}
+                disabled={!canConfirm}
                 style='p-[3%] mt-[12px]'
                 title={renderAcceptTitle(method)}
                 onPress={() => {
+                  if (!canConfirm) return;
                   void handleAccept();
                   void intercomAnalyticsLog('signModal_accept_click');
                 }}
@@ -634,6 +642,9 @@ export default function SigningModal({
                 }}
               />
             </CyDView>
+            {riskGateRequired && !riskIgnored ? (
+              <RiskAlertFooter onIgnoreAll={() => setRiskIgnored(true)} />
+            ) : null}
           </CyDView>
         ) : (
           <Loader />

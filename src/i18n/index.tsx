@@ -905,6 +905,13 @@ const resources = {
       APPROVAL_TOKEN: 'Approval Token',
       SPENDER: 'Spender',
       APPROVE_TO: 'Approve to',
+      SCAM_WARNING_TITLE: 'Scam detected',
+      SUSPICIOUS_WARNING_TITLE: 'Proceed with caution',
+      ACKNOWLEDGE_RISK_TITLE: 'Acknowledge risk',
+      RISK_FOOTER_MESSAGE: 'Please review the alert above before signing.',
+      RISK_FOOTER_IGNORE_ALL: 'Ignore all',
+      APPROVE_AMOUNT_EXCEEDS_BALANCE:
+        'The approval amount is greater than your current {{symbol}} balance. Verify the amount before proceeding.',
       METHOD: 'Method',
       WALLET_CONNECT_PROPOSAL_EXPIRED: 'Connection request expired',
       WC_PROPOSAL_EXPIRED_DESCRIPTION:
