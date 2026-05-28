@@ -803,6 +803,9 @@ export default function CypherCardScreen() {
     useState<SpendPeriod>('this_month');
   const [spendChartData, setSpendChartData] = useState<number[]>([]);
   const [totalMonthlySpend, setTotalMonthlySpend] = useState<number>(0);
+  const [spendAnalyticsFullData, setSpendAnalyticsFullData] = useState<
+    Record<string, unknown> | null
+  >(null);
 
   // Restore saved container order from AsyncStorage on mount
   useEffect(() => {
@@ -1308,8 +1311,9 @@ export default function CypherCardScreen() {
   };
 
   /**
-   * Fetches the spend analytics summary for the widget chart.
-   * Retrieves chart data points and total spend for the given period.
+   * Fetches the full spend analytics for the widget chart and detail screen.
+   * Uses the same /spend-analytics endpoint so the response can be forwarded
+   * to SpendAnalyticsScreen without a duplicate API call.
    *
    * Auto-fallback: when called with 'this_month' and the total spend is 0,
    * automatically retries with 'last_90_days'. If that is also 0, retries
@@ -1327,13 +1331,13 @@ export default function CypherCardScreen() {
 
     const fetchForPeriod = async (
       p: SpendPeriod,
-    ): Promise<{ chartData: number[]; totalSpend: number } | null> => {
+    ): Promise<Record<string, unknown> | null> => {
       try {
         const response = await getWithAuth(
-          `/v1/cards/spend-analytics/summary?period=${p}`,
+          `/v1/cards/spend-analytics?period=${p}`,
         );
         if (!response.isError && response.data) {
-          return response.data as { chartData: number[]; totalSpend: number };
+          return response.data as Record<string, unknown>;
         }
       } catch (error) {
         Sentry.captureException(error);
@@ -1348,13 +1352,15 @@ export default function CypherCardScreen() {
     for (const candidate of periodsToTry) {
       const data = await fetchForPeriod(candidate);
       if (data) {
-        const { chartData, totalSpend } = data;
+        const chartData = (data.chartData as number[]) ?? [];
+        const totalSpend = (data.totalSpend as number) ?? 0;
         if (
           totalSpend > 0 ||
           candidate === periodsToTry[periodsToTry.length - 1]
         ) {
-          setSpendChartData(chartData ?? []);
-          setTotalMonthlySpend(totalSpend ?? 0);
+          setSpendChartData(chartData);
+          setTotalMonthlySpend(totalSpend);
+          setSpendAnalyticsFullData(data);
           setSelectedSpendPeriod(candidate);
           return;
         }
@@ -1363,6 +1369,7 @@ export default function CypherCardScreen() {
 
     setSpendChartData([]);
     setTotalMonthlySpend(0);
+    setSpendAnalyticsFullData(null);
     setSelectedSpendPeriod(periodsToTry[periodsToTry.length - 1]);
   };
 
@@ -2586,6 +2593,7 @@ export default function CypherCardScreen() {
                     selectedPeriod={selectedSpendPeriod}
                     onPeriodChange={handleSpendPeriodChange}
                     navigation={navigation}
+                    analyticsData={spendAnalyticsFullData}
                   />
                 );
 

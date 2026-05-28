@@ -44,6 +44,7 @@ interface SpendAnalyticsWidgetProps {
   selectedPeriod: SpendPeriod;
   onPeriodChange: (period: SpendPeriod) => void;
   navigation: NavigationProp<ParamListBase>;
+  analyticsData: Record<string, unknown> | null;
 }
 
 const TARGET_CHART_POINTS = 15;
@@ -52,9 +53,9 @@ function ChartGradient(): React.ReactElement {
   return (
     <Defs>
       <LinearGradient id='areaGradient' x1='0' y1='0' x2='0' y2='1'>
-        <Stop offset='0' stopColor='#2497FF' stopOpacity={0.3} />
-        <Stop offset='0.3' stopColor='#2497FF' stopOpacity={0.1} />
-        <Stop offset='1' stopColor='#FFFFFF' stopOpacity={0} />
+        <Stop offset='0' stopColor='#2497FF' stopOpacity={0.8} />
+        <Stop offset='0.3' stopColor='#2497FF' stopOpacity={0.5} />
+        <Stop offset='1' stopColor='#2497FF' stopOpacity={0.0} />
       </LinearGradient>
     </Defs>
   );
@@ -71,6 +72,7 @@ export default function SpendAnalyticsWidget({
   selectedPeriod,
   onPeriodChange,
   navigation,
+  analyticsData,
 }: SpendAnalyticsWidgetProps): React.ReactElement {
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -81,27 +83,50 @@ export default function SpendAnalyticsWidget({
 
   const smoothedData = useMemo((): number[] => {
     const nonZero = spendData.filter(v => v > 0);
-    if (nonZero.length <= TARGET_CHART_POINTS) return nonZero;
-    const bucketSize = nonZero.length / TARGET_CHART_POINTS;
-    const result: number[] = [];
-    for (let i = 0; i < TARGET_CHART_POINTS; i++) {
-      const start = Math.floor(i * bucketSize);
-      const end = Math.floor((i + 1) * bucketSize);
-      let sum = 0;
-      for (let j = start; j < end; j++) {
-        sum += nonZero[j];
+    if (nonZero.length === 0) return [];
+
+    let data: number[];
+    if (nonZero.length <= TARGET_CHART_POINTS) {
+      data = nonZero;
+    } else {
+      const bucketSize = nonZero.length / TARGET_CHART_POINTS;
+      data = [];
+      for (let i = 0; i < TARGET_CHART_POINTS; i++) {
+        const start = Math.floor(i * bucketSize);
+        const end = Math.floor((i + 1) * bucketSize);
+        let sum = 0;
+        for (let j = start; j < end; j++) {
+          sum += nonZero[j];
+        }
+        data.push(sum / (end - start));
       }
-      result.push(sum / (end - start));
     }
-    return result;
+
+    const MIN_CHART_POINTS = 3;
+    if (data.length >= MIN_CHART_POINTS) {
+      const peak = Math.max(...data);
+      const minRatio = 0.6;
+      data = data.map(
+        v => peak * minRatio + (v / peak) * (peak * (1 - minRatio)),
+      );
+    } else {
+      const peak = Math.max(...data);
+      const baseline = peak * 0.6;
+      while (data.length < MIN_CHART_POINTS) {
+        data.unshift(baseline);
+      }
+    }
+
+    return data;
   }, [spendData]);
 
   const handleViewMore = useCallback((): void => {
     navigation.navigate(screenTitle.SPEND_ANALYTICS_SCREEN, {
       selectedPeriod,
       initialTotalSpend: totalSpend,
+      analyticsData,
     });
-  }, [navigation, selectedPeriod, totalSpend]);
+  }, [navigation, selectedPeriod, totalSpend, analyticsData]);
 
   const handlePeriodSelect = useCallback(
     (period: SpendPeriod): void => {
@@ -150,6 +175,8 @@ export default function SpendAnalyticsWidget({
               <AreaChart
                 style={styles.chart}
                 data={smoothedData}
+                yMin={0}
+                yMax={Math.max(...smoothedData) * 1.5 || 10}
                 contentInset={{ top: 20, bottom: 0, left: -1, right: -1 }}
                 curve={shape.curveNatural}
                 svg={{ fill: 'url(#areaGradient)' }}>

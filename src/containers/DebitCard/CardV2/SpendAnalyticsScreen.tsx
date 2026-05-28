@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useCallback, useContext, useMemo } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+} from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -29,9 +36,11 @@ import {
   CyDTouchView,
   CyDSafeAreaView,
   CyDScrollView,
+  CyDFastImage,
   CyDMaterialDesignIcons,
 } from '../../../styles/tailwindComponents';
 import useAxios from '../../../core/HttpRequest';
+import { toProxyUrl } from '../../../core/util';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import { type SpendPeriod } from './SpendAnalyticsWidget';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
@@ -80,6 +89,33 @@ const PERIOD_API_MAP: Record<SpendPeriod, string> = {
   last_90_days: 'last_90_days',
   all_time: 'all_time',
 };
+
+const AVATAR_COLORS_LIGHT = [
+  '#5B5FC7',
+  '#C4314B',
+  '#0E7A6B',
+  '#D97A00',
+  '#4F6BED',
+  '#C239B3',
+  '#2E7D32',
+  '#8B5CF6',
+];
+
+const AVATAR_COLORS_DARK = [
+  '#7B7FE0',
+  '#E8607A',
+  '#2DB89A',
+  '#F5A623',
+  '#7B93F5',
+  '#D96BD4',
+  '#66BB6A',
+  '#A78BFA',
+];
+
+function getAvatarColor(index: number, isDark: boolean): string {
+  const palette = isDark ? AVATAR_COLORS_DARK : AVATAR_COLORS_LIGHT;
+  return palette[index % palette.length];
+}
 
 const CATEGORY_COLORS = [
   '#F7C034',
@@ -139,11 +175,7 @@ function PieGradients({ count }: { count: number }): React.ReactElement {
             x2='0.3'
             y2='1'>
             <Stop offset='0' stopColor={color} stopOpacity={1} />
-            <Stop
-              offset='1'
-              stopColor={darkenHex(color, 50)}
-              stopOpacity={1}
-            />
+            <Stop offset='1' stopColor={darkenHex(color, 50)} stopOpacity={1} />
           </SvgLinearGradient>
         );
       })}
@@ -163,6 +195,42 @@ interface TopMerchant {
   logoUrl?: string;
 }
 
+function MerchantAvatar({
+  merchant,
+  index,
+  isDarkMode,
+}: {
+  merchant: TopMerchant;
+  index: number;
+  isDarkMode: boolean;
+}): React.ReactElement {
+  const [imgFailed, setImgFailed] = useState(false);
+  const hasLogo = Boolean(merchant.logoUrl) && !imgFailed;
+
+  if (hasLogo) {
+    return (
+      <CyDView className='w-[48px] h-[48px] rounded-full bg-n30 items-center justify-center mb-[6px] overflow-hidden'>
+        <CyDFastImage
+          source={{ uri: toProxyUrl(merchant.logoUrl ?? '') }}
+          className='w-[48px] h-[48px] rounded-full'
+          resizeMode='cover'
+          onError={() => setImgFailed(true)}
+        />
+      </CyDView>
+    );
+  }
+
+  return (
+    <CyDView
+      className='w-[48px] h-[48px] rounded-full items-center justify-center mb-[6px]'
+      style={{ backgroundColor: getAvatarColor(index, isDarkMode) }}>
+      <CyDText className='font-bold text-[20px] text-white'>
+        {merchant.name?.charAt(0)?.toUpperCase() ?? '?'}
+      </CyDText>
+    </CyDView>
+  );
+}
+
 interface PeriodicSpend {
   label: string;
   categories: number[];
@@ -180,6 +248,7 @@ interface SpendAnalyticsRouteParams extends Record<string, object | undefined> {
   SpendAnalyticsScreen: {
     selectedPeriod: SpendPeriod;
     initialTotalSpend?: number;
+    analyticsData?: Record<string, unknown> | null;
   };
 }
 
@@ -215,12 +284,17 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
 
   const initialPeriod = route.params?.selectedPeriod ?? 'this_month';
   const initialTotalSpend = route.params?.initialTotalSpend ?? 0;
+  const passedAnalyticsData = route.params?.analyticsData ?? null;
+
   const [selectedPeriod, setSelectedPeriod] =
     useState<SpendPeriod>(initialPeriod);
   const [analyticsData, setAnalyticsData] = useState<SpendAnalyticsData | null>(
-    null,
+    passedAnalyticsData
+      ? (passedAnalyticsData as unknown as SpendAnalyticsData)
+      : null,
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const hasInitialData = Boolean(passedAnalyticsData);
+  const [isLoading, setIsLoading] = useState(!hasInitialData);
   const [isFetchError, setIsFetchError] = useState(false);
   const [fetchErrorMessage, setFetchErrorMessage] = useState('');
 
@@ -301,7 +375,12 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
     }
   }, [selectedPeriod, selectedCardIds]);
 
+  const hasUsedInitialData = useRef(hasInitialData);
   useEffect(() => {
+    if (hasUsedInitialData.current) {
+      hasUsedInitialData.current = false;
+      return;
+    }
     void fetchAnalytics();
   }, [fetchAnalytics]);
 
@@ -676,13 +755,11 @@ export default function SpendAnalyticsScreen(): React.ReactElement {
                         <CyDView
                           key={index}
                           className='items-center mb-[16px] w-1/3'>
-                          <CyDView className='w-[48px] h-[48px] rounded-tl-[8px] rounded-br-[8px] bg-[#EBEDF0] items-center justify-center p-[12px] mb-[6px]'>
-                            <CyDMaterialDesignIcons
-                              name='store'
-                              size={24}
-                              className='text-b20'
-                            />
-                          </CyDView>
+                          <MerchantAvatar
+                            merchant={merchant}
+                            index={index}
+                            isDarkMode={isDarkMode}
+                          />
                           <CyDText
                             className='font-manrope font-medium text-[14px] leading-[145%] tracking-[-0.6px] text-n200 text-center'
                             numberOfLines={1}>
