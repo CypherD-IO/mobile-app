@@ -1354,8 +1354,10 @@ export default function CypherCardScreen() {
       if (data) {
         const chartData = (data.chartData as number[]) ?? [];
         const totalSpend = (data.totalSpend as number) ?? 0;
+        const hasNonZeroChart = chartData.some(v => v > 0);
         if (
           totalSpend > 0 ||
+          hasNonZeroChart ||
           candidate === periodsToTry[periodsToTry.length - 1]
         ) {
           setSpendChartData(chartData);

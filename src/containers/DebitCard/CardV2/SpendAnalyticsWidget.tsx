@@ -169,7 +169,7 @@ export default function SpendAnalyticsWidget({
       </CyDView>
 
       <CyDView className='flex-1 relative overflow-hidden rounded-b-[12px]'>
-        {totalSpend > 0 ? (
+        {smoothedData.length > 0 ? (
           <>
             <CyDView className='absolute top-0 left-0 right-0 bottom-0'>
               <AreaChart
