@@ -32,7 +32,11 @@ export default function LegalScreen() {
       <PageHeader title={'TERMS_AND_CONDITIONS'} navigation={navigation} />
       <CyDView className='flex-1 bg-n20'>
         <CyDView className={'h-full w-full bg-n20'}>
-          <WebView source={{ uri }} backgroundColor={'transparent'} />
+          <WebView
+            source={{ uri }}
+            backgroundColor={'transparent'}
+            webviewDebuggingEnabled={__DEV__}
+          />
         </CyDView>
       </CyDView>
     </CyDSafeAreaView>

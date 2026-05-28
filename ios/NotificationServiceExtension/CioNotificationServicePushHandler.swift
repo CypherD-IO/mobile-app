@@ -27,6 +27,7 @@ public class CioNotificationServicePushHandler: NSObject {
 
     MessagingPushFCM.initializeForExtension(
       withConfig: MessagingPushConfigBuilder(cdpApiKey: cdpApiKey)
+        .appGroupId("group.com.cypherd.ioswalletv1.cio")
         .build()
     )
 

@@ -423,6 +423,7 @@ export default function Onmeta({ route }) {
             }}
           /> */}
           <WebView
+            webviewDebuggingEnabled={__DEV__}
             source={{
               uri: clientDetails.uri,
             }}

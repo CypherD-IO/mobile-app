@@ -941,7 +941,7 @@ export default function useWeb3(origin: Web3Origin) {
           }
           break;
         }
-        case Web3Method.WALLET_PUSH_PERRMISSION: {
+        case Web3Method.WALLET_PUSH_PERMISSION: {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           const [{ app_id, app_name, appImage, reasonMessage }] = params;
           const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
