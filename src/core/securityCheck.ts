@@ -87,6 +87,20 @@ export async function checkSecurity(input: {
       result.hosts[host] = Boolean(hit);
       writeCache(hostCache, host, Boolean(hit));
     }
+    // Backfill any inputs the server omitted from the response so the cache
+    // remembers the "miss" verdict instead of re-asking next call.
+    for (const addr of uncachedAddresses) {
+      if (!(addr in result.addresses)) {
+        result.addresses[addr] = false;
+        writeCache(addressCache, addr, false);
+      }
+    }
+    for (const host of uncachedHosts) {
+      if (!(host in result.hosts)) {
+        result.hosts[host] = false;
+        writeCache(hostCache, host, false);
+      }
+    }
   } catch {
     // Fail open — leave uncached entries as `false`. Bundled list covers the floor.
     for (const addr of uncachedAddresses) result.addresses[addr] = false;

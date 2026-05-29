@@ -43,34 +43,43 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       // Block scam dApp origins before the pairing modal renders. Bundled
       // `isKnownScamHost` is the offline floor; arch's SecurityService extends
       // coverage to the ScamSniffer corpus.
-      try {
-        const dappUrl: string | undefined =
-          proposal?.params?.proposer?.metadata?.url;
-        if (dappUrl) {
-          const host = new URL(dappUrl).hostname;
-          const isScam =
-            isKnownScamHost(host) || (await isHostScamRemote(host));
-          if (isScam) {
-            try {
-              await web3wallet?.rejectSession({
-                id: proposal.id,
-                reason: getSdkError('USER_REJECTED'),
-              });
-            } catch (rejectErr) {
-              Sentry.captureException(rejectErr);
-            }
-            showModal('state', {
-              type: 'error',
-              title: t('SCAM_DOMAIN_BLOCKED_TITLE'),
-              description: t('SCAM_DOMAIN_BLOCKED_DESCRIPTION', { url: dappUrl }),
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-            return;
-          }
+      const dappUrl: string | undefined =
+        proposal?.params?.proposer?.metadata?.url;
+      if (dappUrl) {
+        // Normalise scheme-less URLs (e.g. `farmeth.io`) so `new URL` doesn't
+        // throw and let a malformed value bypass the check.
+        const normalisedUrl = /^https?:\/\//i.test(dappUrl)
+          ? dappUrl
+          : `https://${dappUrl}`;
+        let host: string | null = null;
+        try {
+          host = new URL(normalisedUrl).hostname;
+        } catch {
+          host = null;
         }
-      } catch {
-        // Malformed URL or network blip — fall through to pairing modal.
+        // Treat unparseable proposer metadata as untrusted: reject + warn.
+        const isScam =
+          host === null ||
+          isKnownScamHost(host) ||
+          (await isHostScamRemote(host));
+        if (isScam) {
+          try {
+            await web3wallet?.rejectSession({
+              id: proposal.id,
+              reason: getSdkError('USER_REJECTED'),
+            });
+          } catch (rejectErr) {
+            Sentry.captureException(rejectErr);
+          }
+          showModal('state', {
+            type: 'error',
+            title: t('SCAM_DOMAIN_BLOCKED_TITLE'),
+            description: t('SCAM_DOMAIN_BLOCKED_DESCRIPTION', { url: dappUrl }),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          return;
+        }
       }
 
       showModal(GlobalModalType.WALLET_CONNECT_V2_PAIRING, {

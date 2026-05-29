@@ -125,9 +125,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const [addressText, setAddressText] = useState<string>(sendAddress);
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
-  // User-acknowledged scam-recipient flag; tapping "Send anyway" sets it so the
-  // re-entry into submitSendTransaction doesn't show the same warning again.
-  const scamRecipientAcknowledgedRef = useRef(false);
+  // User-acknowledged scam recipient (lowercased). Tapping "Send anyway" stores
+  // the resolved address here so re-entry skips the warning, but changing the
+  // recipient mid-flow re-prompts because the new address won't match.
+  const scamRecipientAcknowledgedRef = useRef<string | null>(null);
   const [isAddressValid, setIsAddressValid] = useState(true);
   const [addressError, setAddressError] = useState<string>('');
   const [memo, setMemo] = useState<string>(t('SEND_TOKENS_MEMO'));
@@ -642,30 +643,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const submitSendTransaction = async () => {
     setLoading(true);
 
-    // Server-side recipient blocklist check. Best-effort: failure / 5xx falls
-    // through. Bundled `knownDrainers` not consulted here because that list is
-    // spender-focused; recipient checks rely on the broader ScamSniffer corpus
-    // served by arch's SecurityService.
-    const recipientCandidate = addressText?.trim() ?? '';
-    if (recipientCandidate && !scamRecipientAcknowledgedRef.current) {
-      const isScamRecipient = await isAddressScamRemote(recipientCandidate);
-      if (isScamRecipient) {
-        setLoading(false);
-        showModal('state', {
-          type: 'warning',
-          title: t('SCAM_RECIPIENT_TITLE'),
-          description: t('SCAM_RECIPIENT_DESCRIPTION'),
-          onSuccess: () => {
-            scamRecipientAcknowledgedRef.current = true;
-            hideModal();
-            void submitSendTransaction();
-          },
-          onFailure: hideModal,
-        });
-        return;
-      }
-    }
-
     const id = genId();
     const activityData: SendTransactionActivity = {
       id,
@@ -708,6 +685,33 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           title: t('NOT_VALID_ENS'),
           description: `This ens domain is not mapped for ${tokenData.chainDetails.name.toLowerCase()} in ens.domains`,
           onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+    }
+
+    // Server-side recipient blocklist check on the RESOLVED address so an ENS
+    // that resolves to a known drainer is still caught. Best-effort: any 5xx /
+    // network failure falls through. Acknowledged-recipient ref is keyed on the
+    // resolved address so switching recipients re-prompts.
+    const resolvedRecipient = addressRef.current?.trim().toLowerCase() ?? '';
+    if (
+      resolvedRecipient &&
+      scamRecipientAcknowledgedRef.current !== resolvedRecipient
+    ) {
+      const isScamRecipient = await isAddressScamRemote(resolvedRecipient);
+      if (isScamRecipient) {
+        setLoading(false);
+        showModal('state', {
+          type: 'warning',
+          title: t('SCAM_RECIPIENT_TITLE'),
+          description: t('SCAM_RECIPIENT_DESCRIPTION'),
+          onSuccess: () => {
+            scamRecipientAcknowledgedRef.current = resolvedRecipient;
+            hideModal();
+            void submitSendTransaction();
+          },
           onFailure: hideModal,
         });
         return;

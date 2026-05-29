@@ -385,10 +385,13 @@ export function assessSendRisk(
   for (const token of decoded.balance_change?.receive_token_list ?? []) {
     visit(token);
   }
-  // Recipient blocklist hit comes from arch's SecurityService check on
-  // `type_send.to_addr`. Bundled drainer list is not consulted here because
-  // it is spender-focused; the server already unions ScamSniffer + manual.
-  const isScamRecipient = Boolean(decoded.type_send?.is_scam_recipient);
+  // Recipient blocklist hit: server-side flag unioned with the bundled drainer
+  // list. Bundled inclusion handles older arch versions that don't yet return
+  // `is_scam_recipient`, and keeps the offline floor working when the network
+  // check times out at the server layer.
+  const isScamRecipient =
+    Boolean(decoded.type_send?.is_scam_recipient) ||
+    isKnownDrainerAddress(decoded.type_send?.to_addr);
   const reasons: string[] = [];
   if (isScamRecipient) {
     reasons.push(
