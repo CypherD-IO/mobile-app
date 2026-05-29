@@ -31,6 +31,8 @@ import InsufficientGasFeeDescription from '../../components/v2/InsufficientGasFe
 import Loading from '../../components/v2/loading';
 import { INJECTED_WEB3_CDN } from '../../constants/data';
 import { Web3Origin } from '../../constants/enum';
+import { isKnownScamUrl } from '../../constants/knownDrainers';
+import { isHostScamRemote } from '../../core/securityCheck';
 import {
   Chain,
   ALL_CHAINS,
@@ -1163,7 +1165,63 @@ export default function Browser() {
               return <Loading />;
             }}
             style={{ marginTop: 0 }}
+            onShouldStartLoadWithRequest={request => {
+              if (isKnownScamUrl(request.url)) {
+                showModal('state', {
+                  type: 'error',
+                  title: t('SCAM_DOMAIN_BLOCKED_TITLE'),
+                  description: t('SCAM_DOMAIN_BLOCKED_DESCRIPTION', {
+                    url: request.url,
+                  }),
+                  onSuccess: hideModal,
+                  onFailure: hideModal,
+                });
+                setSearch(homePageUrl);
+                setCurrentUrl(homePageUrl);
+                return false;
+              }
+              return true;
+            }}
             onNavigationStateChange={navState => {
+              if (isKnownScamUrl(navState.url)) {
+                webviewRef.current?.stopLoading?.();
+                showModal('state', {
+                  type: 'error',
+                  title: t('SCAM_DOMAIN_BLOCKED_TITLE'),
+                  description: t('SCAM_DOMAIN_BLOCKED_DESCRIPTION', {
+                    url: navState.url,
+                  }),
+                  onSuccess: hideModal,
+                  onFailure: hideModal,
+                });
+                setSearch(homePageUrl);
+                setCurrentUrl(homePageUrl);
+                return;
+              }
+              // Async server-side host check. Bundled list above is the instant
+              // floor; this catches the long tail from ScamSniffer + manual list
+              // without blocking the sync nav flow. Result is cached so SPA
+              // redirects do not hammer the endpoint.
+              try {
+                const host = new URL(navState.url).hostname;
+                void isHostScamRemote(host).then(isScam => {
+                  if (!isScam) return;
+                  webviewRef.current?.stopLoading?.();
+                  showModal('state', {
+                    type: 'error',
+                    title: t('SCAM_DOMAIN_BLOCKED_TITLE'),
+                    description: t('SCAM_DOMAIN_BLOCKED_DESCRIPTION', {
+                      url: navState.url,
+                    }),
+                    onSuccess: hideModal,
+                    onFailure: hideModal,
+                  });
+                  setSearch(homePageUrl);
+                  setCurrentUrl(homePageUrl);
+                });
+              } catch {
+                // malformed URL — let the bundled check be the floor
+              }
               setCanGoBack(navState.canGoBack);
               setCurrentUrl(navState.url);
             }}

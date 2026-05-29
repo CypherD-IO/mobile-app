@@ -905,6 +905,27 @@ const resources = {
       APPROVAL_TOKEN: 'Approval Token',
       SPENDER: 'Spender',
       APPROVE_TO: 'Approve to',
+      SCAM_WARNING_TITLE: 'Scam detected',
+      SUSPICIOUS_WARNING_TITLE: 'Proceed with caution',
+      ACKNOWLEDGE_RISK_TITLE: 'Acknowledge risk',
+      RISK_FOOTER_MESSAGE: 'Please review the alert above before signing.',
+      RISK_FOOTER_IGNORE_ALL: 'Ignore all',
+      APPROVE_AMOUNT_EXCEEDS_BALANCE:
+        'The approval amount is greater than your current {{symbol}} balance. Verify the amount before proceeding.',
+      SCAM_RECIPIENT_TITLE: 'Recipient flagged as scam',
+      SCAM_RECIPIENT_DESCRIPTION:
+        'This address is on our known-drainer list. Sending here usually means your funds are lost. Cancel and double-check the address, or tap continue to send anyway.',
+      PERMIT_AMOUNT_EXCEEDS_BALANCE: 'Exceeds current balance',
+      PERMIT_AMOUNT_UNLIMITED: 'Unlimited {{symbol}}',
+      PERMIT_AMOUNT_RAW: '{{amount}} {{symbol}} (raw units)',
+      PERMIT_EXPIRES_AT: 'Expires {{when}}',
+      PERMIT_KIND_EIP2612: 'Off-chain approval (EIP-2612)',
+      PERMIT_KIND_PERMIT2_SINGLE: 'Off-chain approval (Permit2)',
+      PERMIT_KIND_PERMIT2_BATCH: 'Off-chain batch approval (Permit2)',
+      DEADLINE: 'Deadline',
+      SCAM_DOMAIN_BLOCKED_TITLE: 'Scam site blocked',
+      SCAM_DOMAIN_BLOCKED_DESCRIPTION:
+        '{{url}} is on our known-scam list. Reported by support and confirmed to drain wallets. Returning to home page.',
       METHOD: 'Method',
       WALLET_CONNECT_PROPOSAL_EXPIRED: 'Connection request expired',
       WC_PROPOSAL_EXPIRED_DESCRIPTION:

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
+import type { PublicClient } from 'viem';
 import { DecodedResponseTypes } from '../../../../constants/enum';
 import { Chain } from '../../../../constants/server';
 import { intercomAnalyticsLog } from '../../../../containers/utilities/analyticsUtility';
@@ -26,6 +27,17 @@ import {
 import { t } from 'i18next';
 import AppImages from '../../../../../assets/images/appImages';
 import { DecimalHelper } from '../../../../utils/decimalHelper';
+import { ScamWarningBanner } from './ScamWarningBanner';
+import {
+  approveBannerCopy,
+  assessApproveRisk,
+  assessSendRisk,
+  sendBannerCopy,
+} from '../../../../utils/approveGuard';
+import { useTokenBalanceForApprove } from '../../../../hooks/useTokenBalanceForApprove';
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noopRiskAssessed = (_required: boolean): void => {};
 
 export const RenderTransactionSignModal = ({
   dAppInfo,
@@ -33,12 +45,16 @@ export const RenderTransactionSignModal = ({
   method,
   data,
   nativeSendTxnData,
+  publicClient,
+  onRiskAssessed = noopRiskAssessed,
 }: {
   dAppInfo: IDAppInfo | undefined;
   chain: Chain;
   method: string;
   data: IExtendedDecodedTxnResponse | null;
   nativeSendTxnData: ISendTxnData | null;
+  publicClient?: PublicClient;
+  onRiskAssessed?: (required: boolean) => void;
 }) => {
   if (!nativeSendTxnData) {
     if (data && 'to' in data) {
@@ -55,6 +71,8 @@ export const RenderTransactionSignModal = ({
     switch (data?.type) {
       case DecodedResponseTypes.SEND: {
         void intercomAnalyticsLog('eth_sendTransaction_SEND');
+        const sendRisk = assessSendRisk(data);
+        const sendCopy = sendBannerCopy(sendRisk);
         if (data?.gasPrice && data.native_token.amount && data.type_send) {
           const gasPriceInWei = DecimalHelper.multiply(
             data?.gasPrice,
@@ -89,19 +107,37 @@ export const RenderTransactionSignModal = ({
             availableBalance,
           };
           return (
-            <RenderSendTransactionSignModal
-              dAppInfo={dAppInfo}
-              sendTxnData={sendTxnData}
-            />
+            <CyDView>
+              {sendCopy ? (
+                <ScamWarningBanner
+                  level={sendCopy.level}
+                  title={t<string>(sendCopy.titleKey)}
+                  message={sendCopy.message}
+                />
+              ) : null}
+              <RenderSendTransactionSignModal
+                dAppInfo={dAppInfo}
+                sendTxnData={sendTxnData}
+              />
+            </CyDView>
           );
         } else {
           return (
-            <RenderDefaultSignModal
-              dAppInfo={dAppInfo}
-              chain={chain}
-              method={method}
-              data={data}
-            />
+            <CyDView>
+              {sendCopy ? (
+                <ScamWarningBanner
+                  level={sendCopy.level}
+                  title={t<string>(sendCopy.titleKey)}
+                  message={sendCopy.message}
+                />
+              ) : null}
+              <RenderDefaultSignModal
+                dAppInfo={dAppInfo}
+                chain={chain}
+                method={method}
+                data={data}
+              />
+            </CyDView>
           );
         }
       }
@@ -125,11 +161,15 @@ export const RenderTransactionSignModal = ({
             approvalTokenLogo: approvalToken.logo_url,
             chainLogo: chain.logo_url,
             amount: {
-              inTokensWithSymbol: `${data.type_token_approval.token_amount} ${data.type_token_approval.token_symbol}`,
-              inUSDWithSymbol: `$${DecimalHelper.multiply(
-                data.type_token_approval.token_amount,
-                approvalToken.price,
-              ).toString()}`,
+              inTokensWithSymbol: data.type_token_approval.is_infinity
+                ? `Unlimited ${data.type_token_approval.token_symbol}`
+                : `${data.type_token_approval.token_amount} ${data.type_token_approval.token_symbol}`,
+              inUSDWithSymbol: data.type_token_approval.is_infinity
+                ? '—'
+                : `$${DecimalHelper.multiply(
+                    data.type_token_approval.token_amount,
+                    approvalToken.price,
+                  ).toString()}`,
             },
             spender: {
               address: getMaskedAddress(data.type_token_approval.spender, 10),
@@ -146,11 +186,17 @@ export const RenderTransactionSignModal = ({
             availableBalance: `${formatAmount(data.native_token.amount)} ${
               data.native_token.symbol
             }`,
+            tokenAddress: approvalToken.id,
+            tokenSymbol: data.type_token_approval.token_symbol,
+            ownerAddress: data.from_addr,
           };
           return (
             <RenderApproveTokenModal
               dAppInfo={dAppInfo}
               approveTokenData={approveTokenData}
+              decoded={data}
+              publicClient={publicClient}
+              onRiskAssessed={onRiskAssessed}
             />
           );
         } else {
@@ -166,6 +212,8 @@ export const RenderTransactionSignModal = ({
       }
       case DecodedResponseTypes.CALL: {
         void intercomAnalyticsLog('eth_sendTransaction_CALL');
+        const callRisk = assessSendRisk(data);
+        const callCopy = sendBannerCopy(callRisk);
         if (data?.gasPrice) {
           const {
             send_token_list: sendTokenList,
@@ -224,29 +272,56 @@ export const RenderTransactionSignModal = ({
               },
             };
             return (
-              <RenderSwapTransactionSignModal
-                dAppInfo={dAppInfo}
-                swapTxnData={swapTxnData}
-              />
+              <CyDView>
+                {callCopy ? (
+                  <ScamWarningBanner
+                    level={callCopy.level}
+                    title={t<string>(callCopy.titleKey)}
+                    message={callCopy.message}
+                  />
+                ) : null}
+                <RenderSwapTransactionSignModal
+                  dAppInfo={dAppInfo}
+                  swapTxnData={swapTxnData}
+                />
+              </CyDView>
             );
           } else {
             return (
+              <CyDView>
+                {callCopy ? (
+                  <ScamWarningBanner
+                    level={callCopy.level}
+                    title={t<string>(callCopy.titleKey)}
+                    message={callCopy.message}
+                  />
+                ) : null}
+                <RenderDefaultSignModal
+                  dAppInfo={dAppInfo}
+                  chain={chain}
+                  method={method}
+                  data={data}
+                />
+              </CyDView>
+            );
+          }
+        } else {
+          return (
+            <CyDView>
+              {callCopy ? (
+                <ScamWarningBanner
+                  level={callCopy.level}
+                  title={t<string>(callCopy.titleKey)}
+                  message={callCopy.message}
+                />
+              ) : null}
               <RenderDefaultSignModal
                 dAppInfo={dAppInfo}
                 chain={chain}
                 method={method}
                 data={data}
               />
-            );
-          }
-        } else {
-          return (
-            <RenderDefaultSignModal
-              dAppInfo={dAppInfo}
-              chain={chain}
-              method={method}
-              data={data}
-            />
+            </CyDView>
           );
         }
       }
@@ -592,23 +667,58 @@ const RenderSwapTransactionSignModal = ({
 const RenderApproveTokenModal = ({
   dAppInfo,
   approveTokenData,
+  decoded,
+  publicClient,
+  onRiskAssessed = noopRiskAssessed,
 }: {
   dAppInfo: IDAppInfo | undefined;
   approveTokenData: IApproveTokenData;
+  decoded?: IExtendedDecodedTxnResponse | null;
+  publicClient?: PublicClient;
+  onRiskAssessed?: (required: boolean) => void;
 }) => {
   const {
     approvalTokenLogo,
     chainLogo,
+    amount,
     spender,
     gasWithUSDAppx,
     availableBalance,
+    tokenAddress,
+    tokenSymbol,
+    ownerAddress,
   } = approveTokenData;
+
+  const { balanceRaw } = useTokenBalanceForApprove(
+    publicClient,
+    tokenAddress,
+    ownerAddress,
+  );
+
+  const risk = useMemo(
+    () => assessApproveRisk(decoded, balanceRaw),
+    [decoded, balanceRaw],
+  );
+
+  const bannerCopy = useMemo(() => approveBannerCopy(risk), [risk]);
+
+  useEffect(() => {
+    onRiskAssessed(risk.requiresHardGate);
+  }, [risk.requiresHardGate, onRiskAssessed]);
+
   return (
     <CyDView>
       {dAppInfo ? (
         <>
           <RenderDAPPInfo dAppInfo={dAppInfo} />
         </>
+      ) : null}
+      {bannerCopy ? (
+        <ScamWarningBanner
+          level={bannerCopy.level}
+          title={t<string>(bannerCopy.titleKey)}
+          message={bannerCopy.message}
+        />
       ) : null}
       <CyDView className='my-[10px]'>
         <CyDView className='flex flex-col items-center rounded-[8px] bg-n40'>
@@ -618,14 +728,14 @@ const RenderApproveTokenModal = ({
             </CyDText>
           </CyDView>
           <CyDView
-            className={'flex flex-row justify-center items-center my-[10px]'}>
-            <CyDView className='flex flex-row h-full mb-[10px] items-center self-center pr-[10px]'>
+            className={'flex flex-col justify-center items-center my-[10px]'}>
+            <CyDView className='flex flex-row h-full items-center self-center'>
               <CyDFastImage
                 className={'h-[60px] w-[60px] rounded-[50px]'}
                 source={{ uri: approvalTokenLogo }}
                 resizeMode='contain'
               />
-              <CyDView className='absolute top-[60%] right-[3px]'>
+              <CyDView className='absolute top-[60%] right-[-6px]'>
                 <CyDFastImage
                   className={
                     'h-[26px] w-[26px] rounded-[50px] border-[1px] border-n40 bg-n0'
@@ -635,8 +745,35 @@ const RenderApproveTokenModal = ({
                 />
               </CyDView>
             </CyDView>
+            {tokenSymbol ? (
+              <CyDText className='text-[14px] font-bold mt-[8px]'>
+                {tokenSymbol}
+              </CyDText>
+            ) : null}
+          </CyDView>
+          <CyDView className='pb-[14px] flex flex-col items-center'>
+            <CyDText
+              className={`text-[26px] font-extrabold ${
+                risk.isUnlimited ? 'text-errorTextRed' : ''
+              }`}>
+              {amount.inTokensWithSymbol}
+            </CyDText>
+            {amount.inUSDWithSymbol && amount.inUSDWithSymbol !== '—' ? (
+              <CyDText className='text-[14px] text-subTextColor'>
+                {amount.inUSDWithSymbol}
+              </CyDText>
+            ) : null}
           </CyDView>
         </CyDView>
+        {risk.isOverBalance && tokenSymbol ? (
+          <CyDView className='mt-[10px] rounded-[8px] bg-warningYellow border-[1px] border-warningTextYellow px-[12px] py-[10px]'>
+            <CyDText className='text-warningTextYellow text-[13px] font-medium'>
+              {t<string>('APPROVE_AMOUNT_EXCEEDS_BALANCE', {
+                symbol: tokenSymbol,
+              })}
+            </CyDText>
+          </CyDView>
+        ) : null}
         <CyDView className='my-[10px]'>
           <CyDView className={'bg-n40 rounded-[8px] py-[20px] px-[10px]'}>
             <CyDView className='flex flex-row justify-between'>

@@ -116,6 +116,9 @@ export interface IApproveTokenData {
   };
   gasWithUSDAppx: string;
   availableBalance: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+  ownerAddress: string;
 }
 
 export interface IDAppInfo {

@@ -48,6 +48,9 @@ import {
   RenderTransactionSignModal,
   RenderTypedTransactionSignModal,
 } from './SigningModals/TxnModals';
+import { RiskAlertFooter } from './SigningModals/RiskAlertFooter';
+import { RenderPermitSignModal } from './SigningModals/PermitSignModal';
+import { parsePermitTypedData } from '../../../utils/permitParser';
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
 import Button from '../button';
 import { DecimalHelper } from '../../../utils/decimalHelper';
@@ -70,6 +73,9 @@ export default function SigningModal({
   const [acceptingRequest, setAcceptingRequest] = useState(false);
   const [rejectingRequest, setRejectingRequest] = useState(false);
   const [dataIsReady, setDataIsReady] = useState(false);
+  const [riskGateRequired, setRiskGateRequired] = useState(false);
+  const [riskIgnored, setRiskIgnored] = useState(false);
+  const canConfirm = !riskGateRequired || riskIgnored;
   const [nativeSendTxnData, setNativeSendTxnData] =
     useState<ISendTxnData | null>(null);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -92,7 +98,7 @@ export default function SigningModal({
     requestSession,
     dAppInfo: IDAppInfo | undefined,
     chain: Chain | undefined,
-    publicClient: PublicClient;
+    publicClient: PublicClient | undefined;
   const isMessageModalForSigningTypedData =
     modalPayload?.params && 'signMessageTitle' in modalPayload.params;
 
@@ -590,6 +596,8 @@ export default function SigningModal({
                     method={method}
                     data={decodedABIData}
                     nativeSendTxnData={nativeSendTxnData}
+                    publicClient={publicClient}
+                    onRiskAssessed={setRiskGateRequired}
                   />
                 ) : (
                   <Loader />
@@ -597,25 +605,48 @@ export default function SigningModal({
               {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA ||
                 method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 ||
                 method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) &&
-                (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT ? (
-                  <RenderTypedTransactionSignModal
-                    dAppInfo={dAppInfo}
-                    chain={chain}
-                    method={method}
-                    messageParams={requestParams}
-                  />
-                ) : (
-                  <RenderTypedTransactionSignModal
-                    dAppInfo={dAppInfo}
-                    chain={chain}
-                    method={method}
-                    messageParams={paramsFromPayload}
-                  />
-                ))}
+                (() => {
+                  const activeParams =
+                    payloadFrom === SigningModalPayloadFrom.WALLETCONNECT
+                      ? requestParams
+                      : paramsFromPayload;
+                  const typedDataJson = Array.isArray(activeParams)
+                    ? activeParams[1]
+                    : undefined;
+                  const ownerFromParams = Array.isArray(activeParams)
+                    ? typeof activeParams[0] === 'string'
+                      ? activeParams[0]
+                      : undefined
+                    : undefined;
+                  const permit =
+                    method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4
+                      ? parsePermitTypedData(typedDataJson)
+                      : null;
+                  if (permit) {
+                    return (
+                      <RenderPermitSignModal
+                        dAppInfo={dAppInfo}
+                        permit={permit}
+                        publicClient={publicClient}
+                        ownerAddress={ownerFromParams}
+                        onRiskAssessed={setRiskGateRequired}
+                      />
+                    );
+                  }
+                  return (
+                    <RenderTypedTransactionSignModal
+                      dAppInfo={dAppInfo}
+                      chain={chain}
+                      method={method}
+                      messageParams={activeParams}
+                    />
+                  );
+                })()}
             </CyDScrollView>
             <CyDView className={'w-full px-[25px] mt-[12px] mb-[24px]'}>
               <Button
                 loading={acceptingRequest}
+                disabled={!canConfirm}
                 style='p-[3%] mt-[12px]'
                 title={renderAcceptTitle(method)}
                 onPress={() => {
@@ -634,6 +665,9 @@ export default function SigningModal({
                 }}
               />
             </CyDView>
+            {riskGateRequired && !riskIgnored ? (
+              <RiskAlertFooter onIgnoreAll={() => setRiskIgnored(true)} />
+            ) : null}
           </CyDView>
         ) : (
           <Loader />
