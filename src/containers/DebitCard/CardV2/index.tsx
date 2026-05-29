@@ -12,7 +12,14 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { capitalize, get, isEmpty, trim } from 'lodash';
 import moment from 'moment';
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   StyleSheet,
@@ -87,6 +94,7 @@ import {
   getCardRevealReuseToken,
   getOverchargeDccInfoModalShown,
   setCardRevealReuseToken,
+  getCardContainerOrder,
 } from '../../../core/asyncStorage';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import {
@@ -133,6 +141,45 @@ import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import useConnectionManager from '../../../hooks/useConnectionManager';
 import CyDTokenValue from '../../../components/v2/tokenValue';
+import ArrangeCardsBottomSheet from './ArrangeCardsBottomSheet';
+import CustomizeContainersBottomSheet, {
+  CardContainer,
+  DEFAULT_CARD_CONTAINERS,
+} from './CustomizeContainersBottomSheet';
+import SpendAnalyticsWidget, { type SpendPeriod } from './SpendAnalyticsWidget';
+
+const INITIAL_CARD_SECRETS = {
+  cvv: 'xxx',
+  expiryMonth: 'xx',
+  expiryYear: 'xxxx',
+  cardNumber: 'xxxx xxxx xxxx xxxx',
+} as const;
+
+interface CardSecrets {
+  cvv: string;
+  expiryMonth: string;
+  expiryYear: string;
+  cardNumber: string;
+}
+
+interface CardDetailsModalState {
+  showCardDetailsModal: boolean;
+  card: Card | null;
+  cardDetails: CardSecrets;
+  webviewUrl: string;
+  userName: string;
+  loading: boolean;
+}
+
+const INITIAL_CARD_DETAILS_STATE: CardDetailsModalState = {
+  showCardDetailsModal: false,
+  card: null,
+  cardDetails: { ...INITIAL_CARD_SECRETS },
+  webviewUrl: '',
+  userName: '',
+  loading: false,
+};
+
 const STACK_COMPRESSION_PER_CARD = 340;
 
 const DECK_DOWN_SPRING: WithSpringConfig = {
@@ -354,6 +401,9 @@ const collapseStyles = StyleSheet.create({
     right: 0,
     zIndex: 50,
     overflow: 'visible',
+  },
+  overlayTop: {
+    top: 8,
   },
 });
 
@@ -642,6 +692,8 @@ const physicalCardShipmentStyles = StyleSheet.create({
 });
 
 const CARD_TRANSACTIONS_SHEET_ID = 'card-transactions-sheet';
+const ARRANGE_CARDS_SHEET_ID = 'arrange-cards-sheet';
+const CUSTOMIZE_CONTAINERS_SHEET_ID = 'customize-containers-sheet';
 
 export default function CypherCardScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -702,6 +754,7 @@ export default function CypherCardScreen() {
   const [hasCollapsedOnce, setHasCollapsedOnce] = useState(false);
   const deckProgress = useSharedValue(0);
   const isCollapsingRef = useRef(false);
+  const reorderedCardsRef = useRef<Card[] | null>(null);
   const balanceBottomY = useRef(0);
   const UNIFIED_SNAP_POINTS = useMemo(() => ['12%', '58%', '85%'], []);
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
@@ -741,6 +794,37 @@ export default function CypherCardScreen() {
 
   const [trackingDetailsMap, setTrackingDetailsMap] =
     useState<ITrackingDetailsResponse>({});
+
+  const [containerOrder, setContainerOrder] = useState<CardContainer[]>(
+    DEFAULT_CARD_CONTAINERS,
+  );
+
+  const [selectedSpendPeriod, setSelectedSpendPeriod] =
+    useState<SpendPeriod>('this_month');
+  const [spendChartData, setSpendChartData] = useState<number[]>([]);
+  const [totalMonthlySpend, setTotalMonthlySpend] = useState<number>(0);
+  const [spendAnalyticsFullData, setSpendAnalyticsFullData] = useState<
+    Record<string, unknown> | null
+  >(null);
+
+  // Restore saved container order from AsyncStorage on mount
+  useEffect(() => {
+    const loadContainerOrder = async (): Promise<void> => {
+      const savedOrder = await getCardContainerOrder();
+      if (savedOrder?.length) {
+        const ordered = savedOrder
+          .map(id => DEFAULT_CARD_CONTAINERS.find(c => c.id === id))
+          .filter(Boolean) as CardContainer[];
+        const missing = DEFAULT_CARD_CONTAINERS.filter(
+          c => !savedOrder.includes(c.id),
+        );
+        if (ordered.length > 0) {
+          setContainerOrder([...ordered, ...missing]);
+        }
+      }
+    };
+    void loadContainerOrder();
+  }, []);
 
   // Ref to track timeout IDs for cleanup on unmount
   const removalTimeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
@@ -983,6 +1067,8 @@ export default function CypherCardScreen() {
       });
     }
 
+    void fetchSpendAnalyticsSummary(selectedSpendPeriod);
+
     setCardBalance('0');
     if (cardId !== CARD_IDS.HIDDEN_CARD) {
       await fetchCardBalance();
@@ -1004,6 +1090,149 @@ export default function CypherCardScreen() {
 
     if (!isLayoutRendered) {
       setIsLayoutRendered(true);
+    }
+  };
+
+  const handleSpendPeriodChange = (period: SpendPeriod): void => {
+    void fetchSpendAnalyticsSummary(period);
+  };
+
+  const reorderCardsOnServer = async (cardIds: string[]): Promise<void> => {
+    try {
+      const response = await patchWithAuth('/v1/cards/reorder', { cardIds });
+      if (response.isError) {
+        const errorMessage =
+          typeof response.error === 'string'
+            ? response.error
+            : t('UNABLE_TO_REORDER_CARDS');
+        Sentry.captureException(
+          new Error(`Card reorder failed: ${errorMessage}`),
+        );
+        showModal('state', {
+          type: 'error',
+          title: t('UNABLE_TO_REORDER_CARDS'),
+          description: errorMessage,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+      await refreshProfile();
+    } catch (error) {
+      Sentry.captureException(error);
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_REORDER_CARDS'),
+        description: t('CONTACT_CYPHERD_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
+
+  const handleOpenArrangeCards = (): void => {
+    reorderedCardsRef.current = null;
+
+    const openSheet = (): void => {
+      showBottomSheet({
+        id: ARRANGE_CARDS_SHEET_ID,
+        snapPoints: ['50%', '85%'],
+        defaultPresentIndex: 0,
+        showCloseButton: false,
+        showHandle: true,
+        scrollable: true,
+        backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+        borderRadius: 24,
+        enablePanDownToClose: true,
+        fixedHeaderContent: (
+          <CyDView className='bg-n0'>
+            <CyDView className='px-[16px] pb-[16px] pt-[8px]'>
+              <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
+                {t('ARRANGE_CARDS')}
+              </CyDText>
+            </CyDView>
+            <CyDView className='h-[1px] bg-n30' />
+          </CyDView>
+        ),
+        onClose: () => {
+          if (reorderedCardsRef.current) {
+            const reorderedCardIds = reorderedCardsRef.current.map(
+              c => c.cardId,
+            );
+            reorderedCardsRef.current = null;
+            void reorderCardsOnServer(reorderedCardIds);
+          }
+        },
+        content: (
+          <ArrangeCardsBottomSheet
+            cards={allDisplayableCards}
+            onOrderChanged={(reorderedCards: Card[]) => {
+              reorderedCardsRef.current = reorderedCards;
+            }}
+            onClose={() => {
+              hideBottomSheet(ARRANGE_CARDS_SHEET_ID);
+            }}
+          />
+        ),
+      });
+      if (Platform.OS === 'android') {
+        setTimeout(() => {
+          snapBottomSheetToIndex(ARRANGE_CARDS_SHEET_ID, 0);
+        }, 350);
+      }
+    };
+    if (Platform.OS === 'ios') {
+      setTimeout(openSheet, 300);
+    } else {
+      openSheet();
+    }
+  };
+
+  const handleOpenCustomizeContainers = (): void => {
+    const openSheet = (): void => {
+      showBottomSheet({
+        id: CUSTOMIZE_CONTAINERS_SHEET_ID,
+        snapPoints: ['30%'],
+        defaultPresentIndex: 0,
+        showCloseButton: false,
+        showHandle: true,
+        scrollable: false,
+        backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+        borderRadius: 24,
+        enablePanDownToClose: true,
+        fixedHeaderContent: (
+          <CyDView className='bg-n0'>
+            <CyDView className='px-[16px] pb-[16px] pt-[8px]'>
+              <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
+                {t('CUSTOMIZE_CARD_CONTAINERS')}
+              </CyDText>
+            </CyDView>
+            <CyDView className='h-[1px] bg-n30' />
+          </CyDView>
+        ),
+        content: (
+          <CustomizeContainersBottomSheet
+            containers={containerOrder}
+            onOrderChanged={(reordered: CardContainer[]) => {
+              setContainerOrder(reordered);
+            }}
+            onClose={() => {
+              hideBottomSheet(CUSTOMIZE_CONTAINERS_SHEET_ID);
+            }}
+          />
+        ),
+      });
+      if (Platform.OS === 'android') {
+        setTimeout(() => {
+          snapBottomSheetToIndex(CUSTOMIZE_CONTAINERS_SHEET_ID, 0);
+        }, 350);
+      }
+    };
+
+    if (Platform.OS === 'ios') {
+      setTimeout(openSheet, 300);
+    } else {
+      openSheet();
     }
   };
 
@@ -1079,6 +1308,71 @@ export default function CypherCardScreen() {
       setCardBalance('NA');
     }
     setBalanceLoading(false);
+  };
+
+  /**
+   * Fetches the full spend analytics for the widget chart and detail screen.
+   * Uses the same /spend-analytics endpoint so the response can be forwarded
+   * to SpendAnalyticsScreen without a duplicate API call.
+   *
+   * Auto-fallback: when called with 'this_month' and the total spend is 0,
+   * automatically retries with 'last_90_days'. If that is also 0, retries
+   * with 'all_time'. The selected period in the dropdown is updated to
+   * reflect whichever period actually returned data.
+   */
+  const fetchSpendAnalyticsSummary = async (
+    period: SpendPeriod,
+  ): Promise<void> => {
+    const FALLBACK_CHAIN: SpendPeriod[] = [
+      'this_month',
+      'last_90_days',
+      'all_time',
+    ];
+
+    const fetchForPeriod = async (
+      p: SpendPeriod,
+    ): Promise<Record<string, unknown> | null> => {
+      try {
+        const response = await getWithAuth(
+          `/v1/cards/spend-analytics?period=${p}`,
+        );
+        if (!response.isError && response.data) {
+          return response.data as Record<string, unknown>;
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+      }
+      return null;
+    };
+
+    const startIndex = FALLBACK_CHAIN.indexOf(period);
+    const periodsToTry =
+      startIndex >= 0 ? FALLBACK_CHAIN.slice(startIndex) : [period];
+
+    for (const candidate of periodsToTry) {
+      const data = await fetchForPeriod(candidate);
+      if (data) {
+        const chartData = (data.chartData as number[]) ?? [];
+        const totalSpend = (data.totalSpend as number) ?? 0;
+        const hasNonZeroChart = chartData.some(v => v > 0);
+        if (
+          totalSpend > 0 ||
+          hasNonZeroChart ||
+          candidate === periodsToTry[periodsToTry.length - 1]
+        ) {
+          setSpendChartData(chartData);
+          setTotalMonthlySpend(totalSpend);
+          setSpendAnalyticsFullData(data);
+          setSelectedSpendPeriod(candidate);
+          return;
+        }
+      }
+    }
+
+    setSpendChartData([]);
+    setTotalMonthlySpend(0);
+    setSpendAnalyticsFullData(null);
+    setSelectedSpendPeriod(periodsToTry[periodsToTry.length - 1]);
   };
 
   const fetchRecentTransactions = async () => {
@@ -1312,28 +1606,15 @@ export default function CypherCardScreen() {
   };
 
   // ----- Card Reveal flow -----
-  const [isFetchingCardDetails, setIsFetchingCardDetails] = useState(false);
+  // Unified state avoids cascading re-renders from separate isFetchingCardDetails / cardDetailsModal updates.
+  const [cardDetailsModal, setCardDetailsModal] =
+    useState<CardDetailsModalState>(INITIAL_CARD_DETAILS_STATE);
 
-  const initialCardSecrets = {
-    cvv: 'xxx',
-    expiryMonth: 'xx',
-    expiryYear: 'xxxx',
-    cardNumber: 'xxxx xxxx xxxx xxxx',
-  };
-
-  const [cardDetailsModal, setCardDetailsModal] = useState<{
-    showCardDetailsModal: boolean;
-    card: Card | null;
-    cardDetails: typeof initialCardSecrets;
-    webviewUrl: string;
-    userName: string;
-  }>({
-    showCardDetailsModal: false,
-    card: null,
-    cardDetails: initialCardSecrets,
-    webviewUrl: '',
-    userName: '',
-  });
+  // Stable ref keeps the last-used Card so the modal doesn't unmount/remount when card goes null → non-null.
+  const lastRevealCardRef = useRef<Card | null>(null);
+  if (cardDetailsModal.card) {
+    lastRevealCardRef.current = cardDetailsModal.card;
+  }
 
   const decryptMessage = async (
     {
@@ -1351,7 +1632,7 @@ export default function CypherCardScreen() {
   ): Promise<void> => {
     try {
       await sleepFor(1000);
-      setIsFetchingCardDetails(true);
+      setCardDetailsModal(prev => ({ ...prev, loading: true }));
       if (reuseToken) {
         await setCardRevealReuseToken(card.cardId, reuseToken);
       }
@@ -1364,14 +1645,16 @@ export default function CypherCardScreen() {
       setCardDetailsModal({
         showCardDetailsModal: true,
         card,
-        cardDetails: initialCardSecrets,
+        cardDetails: { ...INITIAL_CARD_SECRETS },
         webviewUrl: trim(decryptedBuffer, '"'),
         userName: userNameValue ?? '',
+        loading: false,
       });
     } catch (error) {
       setCardDetailsModal(prev => ({
         ...prev,
         showCardDetailsModal: false,
+        loading: false,
       }));
       showModal('state', {
         type: 'error',
@@ -1381,8 +1664,6 @@ export default function CypherCardScreen() {
         onFailure: hideModal,
       });
       Sentry.captureException(error);
-    } finally {
-      setIsFetchingCardDetails(false);
     }
   };
 
@@ -1406,7 +1687,7 @@ export default function CypherCardScreen() {
     card: Card,
   ): Promise<void> => {
     try {
-      setIsFetchingCardDetails(true);
+      setCardDetailsModal(prev => ({ ...prev, loading: true }));
       const decryptedPan = decryptWithSecretKey(
         secretKey,
         encryptedPan.data,
@@ -1428,11 +1709,13 @@ export default function CypherCardScreen() {
         },
         webviewUrl: '',
         userName: userNameValue,
+        loading: false,
       });
     } catch (error) {
       setCardDetailsModal(prev => ({
         ...prev,
         showCardDetailsModal: false,
+        loading: false,
       }));
       showModal('state', {
         type: 'error',
@@ -1442,8 +1725,6 @@ export default function CypherCardScreen() {
         onFailure: hideModal,
       });
       Sentry.captureException(error);
-    } finally {
-      setIsFetchingCardDetails(false);
     }
   };
 
@@ -1462,7 +1743,7 @@ export default function CypherCardScreen() {
     card: Card,
   ): Promise<void> => {
     try {
-      setIsFetchingCardDetails(true);
+      setCardDetailsModal(prev => ({ ...prev, loading: true }));
       await sleepFor(1000);
       if (reuseToken) {
         await setCardRevealReuseToken(card.cardId, reuseToken);
@@ -1485,11 +1766,13 @@ export default function CypherCardScreen() {
           },
           webviewUrl: '',
           userName: '',
+          loading: false,
         });
       } else {
         setCardDetailsModal(prev => ({
           ...prev,
           showCardDetailsModal: false,
+          loading: false,
         }));
         showModal('state', {
           type: 'error',
@@ -1503,27 +1786,23 @@ export default function CypherCardScreen() {
       setCardDetailsModal(prev => ({
         ...prev,
         showCardDetailsModal: false,
+        loading: false,
       }));
       Sentry.captureException(error);
-    } finally {
-      setIsFetchingCardDetails(false);
     }
   };
 
   const validateReuseToken = async (card: Card): Promise<void> => {
     const resolvedProvider = card.cardProvider || cardProfile?.provider;
     const cardRevealReuseToken = await getCardRevealReuseToken(card.cardId);
-    if (
-      resolvedProvider === CardProviders.REAP_CARD &&
-      cardRevealReuseToken
-    ) {
-      setIsFetchingCardDetails(true);
+    if (resolvedProvider === CardProviders.REAP_CARD && cardRevealReuseToken) {
       setCardDetailsModal({
         showCardDetailsModal: true,
         card,
-        cardDetails: initialCardSecrets,
+        cardDetails: { ...INITIAL_CARD_SECRETS },
         webviewUrl: '',
         userName: '',
+        loading: true,
       });
 
       const verifyReuseTokenUrl = `/v1/cards/${resolvedProvider}/card/${String(
@@ -1544,11 +1823,11 @@ export default function CypherCardScreen() {
             setCardDetailsModal({
               showCardDetailsModal: true,
               card,
-              cardDetails: initialCardSecrets,
+              cardDetails: { ...INITIAL_CARD_SECRETS },
               webviewUrl: trim(response.data.token, '"'),
               userName: response.data.userName,
+              loading: false,
             });
-            setIsFetchingCardDetails(false);
           } else {
             void sendCardDetailsForPaycaddy(response.data, card);
           }
@@ -1557,21 +1836,21 @@ export default function CypherCardScreen() {
       } catch (error) {
         Sentry.captureException(error);
       }
-      setIsFetchingCardDetails(false);
-      setCardDetailsModal({
-        ...cardDetailsModal,
+      setCardDetailsModal(prev => ({
+        ...prev,
         showCardDetailsModal: false,
-      });
+        loading: false,
+      }));
     }
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
       onSuccess: (data: any, providerArg: CardProviders) => {
-        setIsFetchingCardDetails(true);
         setCardDetailsModal({
           showCardDetailsModal: true,
           card,
-          cardDetails: initialCardSecrets,
+          cardDetails: { ...INITIAL_CARD_SECRETS },
           webviewUrl: '',
           userName: '',
+          loading: true,
         });
         // Prefer the provider arg passed by the OTP screen (truth at OTP-screen
         // time), fall back to the captured `resolvedProvider`. Without an
@@ -1585,11 +1864,16 @@ export default function CypherCardScreen() {
         } else if (dispatchProvider === CardProviders.PAYCADDY) {
           void sendCardDetailsForPaycaddy(data, card);
         } else {
-          setIsFetchingCardDetails(false);
-          setCardDetailsModal(prev => ({ ...prev, showCardDetailsModal: false }));
+          setCardDetailsModal(prev => ({
+            ...prev,
+            showCardDetailsModal: false,
+            loading: false,
+          }));
           Sentry.captureException(
             new Error(
-              `Reveal onSuccess: unhandled cardProvider "${String(dispatchProvider)}" for cardId ${String(card?.cardId)}`,
+              `Reveal onSuccess: unhandled cardProvider "${String(
+                dispatchProvider,
+              )}" for cardId ${String(card?.cardId)}`,
             ),
           );
           showModal('state', {
@@ -1615,7 +1899,7 @@ export default function CypherCardScreen() {
     showBottomSheet({
       id: 'merchant-detail',
       snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
-      showCloseButton: true,
+      showCloseButton: false,
       // We render a custom handle indicator inside the blurred header for better visual cohesion.
       showHandle: false,
       scrollable: true,
@@ -1624,6 +1908,7 @@ export default function CypherCardScreen() {
         <MerchantRewardDetailContent
           merchantData={merchant}
           navigation={navigation}
+          onClose={() => hideBottomSheet('merchant-detail')}
         />
       ),
       onClose: () => {
@@ -2079,37 +2364,19 @@ export default function CypherCardScreen() {
           cardBalance={cardBalance}
         />
 
-        {/* Card Details Reveal Modal */}
-        {cardDetailsModal.card && (
-          <CardDetailsModal
-            isModalVisible={cardDetailsModal.showCardDetailsModal}
-            setShowModal={(isModalVisible: boolean) => {
-              setIsFetchingCardDetails(false);
-              setCardDetailsModal({
-                ...cardDetailsModal,
-                cardDetails: initialCardSecrets,
-                showCardDetailsModal: isModalVisible,
-              });
-            }}
-            card={cardDetailsModal.card}
-            cardDetails={cardDetailsModal.cardDetails}
-            webviewUrl={cardDetailsModal.webviewUrl}
-            manageLimits={() => {
-              setCardDetailsModal({
-                ...cardDetailsModal,
-                cardDetails: initialCardSecrets,
-                showCardDetailsModal: false,
-              });
-              setTimeout(() => {
-                navigation.navigate(screenTitle.CARD_CONTROLS, {
-                  currentCardProvider: cardProvider,
-                  cardId: cardDetailsModal.card?.cardId,
-                });
-              }, MODAL_HIDE_TIMEOUT_250);
-            }}
-            userName={cardDetailsModal.userName}
-            loading={isFetchingCardDetails}
-          />
+        {allDisplayableCards.length > 1 && (
+          <CyDTouchView
+            className='mt-[12px] self-center h-[36px] bg-n0 border-[1px] border-[#A6AEBB] rounded-[24px] py-[4px] px-[16px] flex-row items-center justify-center gap-[10px]'
+            onPress={handleOpenArrangeCards}>
+            <CyDMaterialDesignIcons
+              name='tune'
+              size={16}
+              className='text-base400'
+            />
+            <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
+              {t('ARRANGE_CARDS')}
+            </CyDText>
+          </CyDTouchView>
         )}
       </CyDView>
     ),
@@ -2118,8 +2385,7 @@ export default function CypherCardScreen() {
       cardProvider,
       cardDesignData,
       cardBalance,
-      cardDetailsModal,
-      isFetchingCardDetails,
+      allDisplayableCards,
     ],
   );
 
@@ -2222,7 +2488,7 @@ export default function CypherCardScreen() {
       content: showAllCards ? (
         <CyDView />
       ) : (
-        <CyDView className='pt-[8px] gap-y-[16px] px-[16px] pb-[120px]'>
+        <CyDView className='pt-[8px] gap-y-[16px] px-[16px] pb-[32px]'>
           {cardId === CARD_IDS.HIDDEN_CARD && (
             <CyDTouchView
               className='bg-base250 rounded-[12px] p-[16px]'
@@ -2251,59 +2517,93 @@ export default function CypherCardScreen() {
               </CyDView>
             </CyDTouchView>
           )}
-          {get(statusWiseRewards, ['kycPending', 'earned'], false) && (
-            <RewardProgressWidget />
-          )}
-          <MerchantSpendRewardWidget
-            onViewAllPress={handleViewAllMerchants}
-            onMerchantPress={handleDirectMerchantPress}
-            isPremium={planInfo?.planId === CypherPlanId.PRO_PLAN}
-          />
-          {cardId !== CARD_IDS.HIDDEN_CARD && (
-            <CyDView className='border-[1px] border-n40 rounded-[16px]'>
-              <CyDText className='font-manrope text-[16px] font-medium ml-[16px] mt-[16px] mb-[8px] leading-[140%] tracking-[-0.8px]'>
-                {t<string>('RECENT_TRANSACTIONS')}
-              </CyDText>
-              {recentTransactions.length ? (
-                <>
-                  {recentTransactions.map((transaction, index) => (
-                    <CardTransactionItem
-                      item={transaction}
-                      key={index}
-                      onPress={txn => {
-                        navigation.navigate(
-                          screenTitle.CARD_TRANSACTION_DETAILS_SCREEN,
-                          { transaction: txn },
-                        );
-                      }}
+
+          {/* Render sections in user-configured order */}
+          {containerOrder.map(container => {
+            switch (container.id) {
+              case 'spend_reward':
+                return (
+                  <React.Fragment key='spend_reward'>
+                    {get(
+                      statusWiseRewards,
+                      ['kycPending', 'earned'],
+                      false,
+                    ) && <RewardProgressWidget />}
+                    <MerchantSpendRewardWidget
+                      onViewAllPress={handleViewAllMerchants}
+                      onMerchantPress={handleDirectMerchantPress}
+                      isPremium={planInfo?.planId === CypherPlanId.PRO_PLAN}
                     />
-                  ))}
-                  <CyDView className='px-[12px] pb-[12px] pt-[16px]'>
-                    <CyDTouchView
-                      className='bg-n30 py-[14px] rounded-full justify-center items-center'
-                      onPress={() =>
-                        navigation.navigate(
-                          screenTitle.CARD_TRANSACTIONS_SCREEN,
-                          { navigation, cardProvider },
-                        )
-                      }>
-                      <CyDText className='text-base400 text-[14px] font-semibold'>
-                        {t<string>('VIEW_ALL_TRANSACTIONS')}
-                      </CyDText>
-                    </CyDTouchView>
+                  </React.Fragment>
+                );
+
+              case 'recent_transactions':
+                return cardId !== CARD_IDS.HIDDEN_CARD ? (
+                  <CyDView
+                    key='recent_transactions'
+                    className='border-[1px] border-n40 rounded-[16px]'>
+                    <CyDText className='font-manrope text-[16px] font-medium ml-[16px] mt-[16px] mb-[8px] leading-[140%] tracking-[-0.8px]'>
+                      {t<string>('RECENT_TRANSACTIONS')}
+                    </CyDText>
+                    {recentTransactions.length ? (
+                      <>
+                        {recentTransactions.map((transaction, index) => (
+                          <CardTransactionItem
+                            item={transaction}
+                            key={index}
+                            onPress={txn => {
+                              navigation.navigate(
+                                screenTitle.CARD_TRANSACTION_DETAILS_SCREEN,
+                                { transaction: txn },
+                              );
+                            }}
+                          />
+                        ))}
+                        <CyDView className='px-[12px] pb-[12px] pt-[16px]'>
+                          <CyDTouchView
+                            className='bg-n30 py-[14px] rounded-full justify-center items-center'
+                            onPress={() =>
+                              navigation.navigate(
+                                screenTitle.CARD_TRANSACTIONS_SCREEN,
+                                { navigation, cardProvider },
+                              )
+                            }>
+                            <CyDText className='text-base400 text-[14px] font-semibold'>
+                              {t<string>('VIEW_ALL_TRANSACTIONS')}
+                            </CyDText>
+                          </CyDTouchView>
+                        </CyDView>
+                      </>
+                    ) : (
+                      <CyDView className='py-[24px] justify-start items-center'>
+                        <CyDFastImage
+                          source={AppImages.NO_TRANSACTIONS_YET}
+                          className='h-[150px] w-[150px]'
+                          resizeMode='contain'
+                        />
+                      </CyDView>
+                    )}
                   </CyDView>
-                </>
-              ) : (
-                <CyDView className='py-[24px] justify-start items-center'>
-                  <CyDFastImage
-                    source={AppImages.NO_TRANSACTIONS_YET}
-                    className='h-[150px] w-[150px]'
-                    resizeMode='contain'
+                ) : null;
+
+              case 'spend_analytics':
+                return (
+                  <SpendAnalyticsWidget
+                    key='spend_analytics'
+                    spendData={spendChartData}
+                    totalSpend={totalMonthlySpend}
+                    selectedPeriod={selectedSpendPeriod}
+                    onPeriodChange={handleSpendPeriodChange}
+                    navigation={navigation}
+                    analyticsData={spendAnalyticsFullData}
                   />
-                </CyDView>
-              )}
-            </CyDView>
-          )}
+                );
+
+              default:
+                return null;
+            }
+          })}
+
           {cardProfile && isLegacyCardClosed(cardProfile) && (
             <CyDView>
               <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
@@ -2328,6 +2628,8 @@ export default function CypherCardScreen() {
               </CyDTouchView>
             </CyDView>
           )}
+
+          {/* Premium upsell — always last, not reorderable */}
           {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
             <CyDView className='bg-p10 p-6 rounded-xl'>
               <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
@@ -2417,6 +2719,19 @@ export default function CypherCardScreen() {
               />
             </CyDView>
           )}
+
+          <CyDTouchView
+            className='self-center h-[36px] bg-n0 border-[1px] border-[#A6AEBB] rounded-[24px] py-[4px] px-[16px] flex-row items-center justify-center gap-[10px]'
+            onPress={handleOpenCustomizeContainers}>
+            <CyDMaterialDesignIcons
+              name='tune'
+              size={16}
+              className='text-base400'
+            />
+            <CyDText className='font-manrope text-[14px] font-medium text-base400 leading-[145%] tracking-[-0.6px]'>
+              {t('CUSTOMIZE_CARD_CONTAINERS')}
+            </CyDText>
+          </CyDTouchView>
         </CyDView>
       ),
     });
@@ -2436,6 +2751,11 @@ export default function CypherCardScreen() {
     isDeckingUp,
     allDisplayableCards,
     showTooltip,
+    containerOrder,
+    spendChartData,
+    totalMonthlySpend,
+    selectedSpendPeriod,
+    handleSpendPeriodChange,
   ]);
 
   useEffect(() => {
@@ -2707,12 +3027,13 @@ export default function CypherCardScreen() {
               </CyDView>
             )}
 
+            {renderBalanceSection()}
+
             {showAllCards ? (
               <FlatList<Card>
                 data={allDisplayableCards}
                 keyExtractor={cardListKeyExtractor}
                 renderItem={renderCardItem}
-                ListHeaderComponent={renderBalanceSection}
                 ListFooterComponent={renderCardListFooter}
                 ItemSeparatorComponent={cardListItemSeparator}
                 showsVerticalScrollIndicator={false}
@@ -2721,7 +3042,11 @@ export default function CypherCardScreen() {
                 }}
                 contentContainerStyle={[
                   style.cardListContent,
-                  { paddingBottom: tabBarTotalHeight + 200 },
+                  {
+                    paddingBottom:
+                      tabBarTotalHeight +
+                      (Platform.OS === 'android' ? 100 : 40),
+                  },
                 ]}
                 style={style.cardListContainer}
                 initialNumToRender={5}
@@ -2731,7 +3056,6 @@ export default function CypherCardScreen() {
               />
             ) : (
               <CyDView className='mt-[2px]'>
-                {renderBalanceSection()}
                 {cardDesignData && !hasCollapsedOnce && !isDeckingUp && (
                   <Animated.View
                     key='stacked-cards'
@@ -2751,10 +3075,7 @@ export default function CypherCardScreen() {
 
                 {(isDeckingUp || hasCollapsedOnce) && (
                   <CyDView
-                    style={[
-                      collapseStyles.overlay,
-                      { top: balanceBottomY.current + 24 },
-                    ]}
+                    style={[collapseStyles.overlay, collapseStyles.overlayTop]}
                     pointerEvents={isDeckingUp ? 'none' : 'auto'}
                     className='bg-n40'>
                     <CyDTouchView
@@ -2770,7 +3091,7 @@ export default function CypherCardScreen() {
                       {allDisplayableCards.length > 3 && (
                         <CollapsingNeutralShade deckProgress={deckProgress} />
                       )}
-                      {allDisplayableCards.map((card, idx) => (
+                      {allDisplayableCards.slice(0, 3).map((card, idx) => (
                         <CollapsingCardImage
                           key={card.cardId || `collapse-${idx}`}
                           imageSource={getCardImage(card)}
@@ -2802,6 +3123,41 @@ export default function CypherCardScreen() {
             )}
           </CyDView>
         </CyDView>
+
+        {/* Card Details Reveal Modal — rendered at top level to avoid FlatList re-renders */}
+        {lastRevealCardRef.current && (
+          <CardDetailsModal
+            isModalVisible={cardDetailsModal.showCardDetailsModal}
+            setShowModal={(isModalVisible: boolean) => {
+              setCardDetailsModal(prev => ({
+                ...prev,
+                cardDetails: { ...INITIAL_CARD_SECRETS },
+                showCardDetailsModal: isModalVisible,
+                loading: false,
+              }));
+            }}
+            card={lastRevealCardRef.current}
+            cardDetails={cardDetailsModal.cardDetails}
+            webviewUrl={cardDetailsModal.webviewUrl}
+            manageLimits={() => {
+              const revealCardId = cardDetailsModal.card?.cardId;
+              setCardDetailsModal(prev => ({
+                ...prev,
+                cardDetails: { ...INITIAL_CARD_SECRETS },
+                showCardDetailsModal: false,
+                loading: false,
+              }));
+              setTimeout(() => {
+                navigation.navigate(screenTitle.CARD_CONTROLS, {
+                  currentCardProvider: cardProvider,
+                  cardId: revealCardId,
+                });
+              }, MODAL_HIDE_TIMEOUT_250);
+            }}
+            userName={cardDetailsModal.userName}
+            loading={cardDetailsModal.loading}
+          />
+        )}
 
         {/* Activity Bottom Bar - Fixed at bottom */}
         <ActivityBottomBar
@@ -2841,10 +3197,6 @@ const style = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  loadCardGradientContainer: {
-    borderRadius: 12,
-    padding: 16,
   },
   premiumPill: {
     width: 90,

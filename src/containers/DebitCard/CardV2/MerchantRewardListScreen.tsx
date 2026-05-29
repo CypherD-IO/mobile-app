@@ -190,7 +190,7 @@ const MerchantRow = memo(function MerchantRow({
 
 const MerchantRewardListScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { showBottomSheet } = useGlobalBottomSheet();
+  const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
   const { getWithAuth } = useAxios();
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
@@ -511,12 +511,13 @@ const MerchantRewardListScreen: React.FC = () => {
         // We render a custom handle indicator inside the blurred header for better visual cohesion.
         showHandle: false,
         snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
-        showCloseButton: true,
+        showCloseButton: false,
         scrollable: true,
         content: (
           <MerchantRewardDetailContent
             merchantData={merchant}
             navigation={navigation}
+            onClose={() => hideBottomSheet('merchant-reward-detail')}
           />
         ),
         onClose: () => {
@@ -524,7 +525,7 @@ const MerchantRewardListScreen: React.FC = () => {
         },
       });
     },
-    [isDarkMode, navigation, showBottomSheet],
+    [hideBottomSheet, isDarkMode, navigation, showBottomSheet],
   );
 
   const renderMerchantItem = useCallback(

@@ -2129,6 +2129,7 @@ const resources = {
       WE_WILL_USE_THIS_TO_SIGN_YOU_IN_OR_CREATE_AN_ACCOUNT:
         "We'll use this to sign you in or create an account for you if you don't have one yet",
       // MerchantRewardDetailContent translations
+      CLOSE_SHEET_A11Y: 'Close sheet',
       PROMOTIONAL_BONUS: 'Promotional Bonus',
       FAILED_TO_LOAD_MERCHANT_DETAILS: 'Failed to load merchant details',
       FAILED_TO_LOAD_MERCHANT_DATA: 'Failed to load merchant data',
@@ -2464,6 +2465,8 @@ const resources = {
         'You can tag each card with its purpose or a name you prefer, making it easier to find in the card stack!',
       LOAD_CARD: 'Load Card',
       VIEW_ALL_CARDS: 'View all cards',
+      ARRANGE_CARDS: 'Arrange Cards',
+      CUSTOMIZE_CARD_CONTAINERS: 'Customise',
       TAP_CARD_HINT: 'Just tap the card to see your card controls!',
       AVAILABLE_TO_SPEND: 'Available to spend',
       AVAILABLE_TO_SPEND_INFO:
