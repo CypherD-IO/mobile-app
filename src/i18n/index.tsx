@@ -912,6 +912,9 @@ const resources = {
       RISK_FOOTER_IGNORE_ALL: 'Ignore all',
       APPROVE_AMOUNT_EXCEEDS_BALANCE:
         'The approval amount is greater than your current {{symbol}} balance. Verify the amount before proceeding.',
+      SCAM_RECIPIENT_TITLE: 'Recipient flagged as scam',
+      SCAM_RECIPIENT_DESCRIPTION:
+        'This address is on our known-drainer list. Sending here usually means your funds are lost. Cancel and double-check the address, or tap continue to send anyway.',
       PERMIT_AMOUNT_EXCEEDS_BALANCE: 'Exceeds current balance',
       PERMIT_AMOUNT_UNLIMITED: 'Unlimited {{symbol}}',
       PERMIT_AMOUNT_RAW: '{{amount}} {{symbol}} (raw units)',

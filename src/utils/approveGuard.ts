@@ -79,6 +79,7 @@ export interface PermitItemAssessment {
 export function assessPermitRisk(
   permit: NormalizedPermit | null | undefined,
   balanceLookup: (tokenAddress: string) => bigint | null,
+  remoteScamSpender = false,
 ): PermitRiskAssessment {
   const empty: PermitRiskAssessment = {
     level: 'none',
@@ -94,7 +95,9 @@ export function assessPermitRisk(
   let isUnlimited = false;
   let isOverBalance = false;
   let isFarOverBalance = false;
-  const isScamSpender = isKnownDrainerAddress(permit.spender);
+  // Union of server-side check (ScamSniffer + manual list) and the in-app
+  // bundled floor so older arch versions still flag known drainers.
+  const isScamSpender = remoteScamSpender || isKnownDrainerAddress(permit.spender);
   const perItem: PermitItemAssessment[] = [];
 
   for (const item of permit.items) {
@@ -217,7 +220,18 @@ export function approveBannerCopy(risk: ApproveRiskAssessment): ApproveBannerCop
 export function sendBannerCopy(sendRisk: {
   isScam: boolean;
   isSuspicious: boolean;
+  isScamRecipient: boolean;
 }): ApproveBannerCopy {
+  // Recipient flag has the highest priority: sending to a known drainer
+  // typically means immediate fund loss.
+  if (sendRisk.isScamRecipient) {
+    return {
+      level: 'danger',
+      titleKey: 'SCAM_WARNING_TITLE',
+      message:
+        'Recipient address is on our known-drainer list. Funds sent here are usually lost.',
+    };
+  }
   if (sendRisk.isScam) {
     return {
       level: 'danger',
@@ -259,7 +273,11 @@ export function assessApproveRisk(
   const token: DeBankToken | undefined = approval.token;
   const isScamToken = Boolean(token?.is_scam);
   const isSuspiciousToken = Boolean(token?.is_suspicious);
-  const isScamSpender = isKnownDrainerAddress(approval.spender);
+  // Union of two signals so older backends that don't return the field still fall
+  // back to the bundled list. `is_scam_spender` comes from arch's SecurityService
+  // (ScamSniffer + manual list) — broader coverage than the in-app constants.
+  const isScamSpender =
+    Boolean(approval.is_scam_spender) || isKnownDrainerAddress(approval.spender);
 
   const amountRaw =
     safeParseAmount(token?.raw_amount_str) ??
@@ -341,10 +359,17 @@ export function assessSendRisk(
   level: ApproveRiskLevel;
   isScam: boolean;
   isSuspicious: boolean;
+  isScamRecipient: boolean;
   reasons: string[];
 } {
   if (!decoded) {
-    return { level: 'none', isScam: false, isSuspicious: false, reasons: [] };
+    return {
+      level: 'none',
+      isScam: false,
+      isSuspicious: false,
+      isScamRecipient: false,
+      reasons: [],
+    };
   }
   let isScam = false;
   let isSuspicious = false;
@@ -360,15 +385,25 @@ export function assessSendRisk(
   for (const token of decoded.balance_change?.receive_token_list ?? []) {
     visit(token);
   }
+  // Recipient blocklist hit comes from arch's SecurityService check on
+  // `type_send.to_addr`. Bundled drainer list is not consulted here because
+  // it is spender-focused; the server already unions ScamSniffer + manual.
+  const isScamRecipient = Boolean(decoded.type_send?.is_scam_recipient);
   const reasons: string[] = [];
+  if (isScamRecipient) {
+    reasons.push(
+      'Recipient address is on our known-drainer list.',
+    );
+  }
   if (isScam) reasons.push('A token in this transaction is flagged as scam.');
   if (isSuspicious && !isScam) {
     reasons.push('A token in this transaction is marked as suspicious.');
   }
   return {
-    level: isScam ? 'danger' : isSuspicious ? 'warn' : 'none',
+    level: isScamRecipient || isScam ? 'danger' : isSuspicious ? 'warn' : 'none',
     isScam,
     isSuspicious,
+    isScamRecipient,
     reasons,
   };
 }

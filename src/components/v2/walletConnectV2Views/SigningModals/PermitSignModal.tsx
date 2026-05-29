@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { t } from 'i18next';
 import type { PublicClient } from 'viem';
 import { formatUnits } from 'viem';
@@ -20,6 +20,7 @@ import {
 } from '../../../../utils/approveGuard';
 import { useTokenBalances } from '../../../../hooks/useTokenBalances';
 import { getMaskedAddress } from '../../../../core/util';
+import { isAddressScamRemote } from '../../../../core/securityCheck';
 
 const KIND_TITLE_KEY: Record<NormalizedPermit['kind'], string> = {
   eip2612: 'PERMIT_KIND_EIP2612',
@@ -54,10 +55,27 @@ export const RenderPermitSignModal = ({
     ownerAddress,
   );
 
+  // Server-side scam-spender lookup. Defaults to false; updates async if the
+  // arch endpoint reports a hit. Fails open on network error.
+  const [remoteScamSpender, setRemoteScamSpender] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void isAddressScamRemote(permit.spender).then(hit => {
+      if (!cancelled) setRemoteScamSpender(hit);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [permit.spender]);
+
   const risk = useMemo(
     () =>
-      assessPermitRisk(permit, token => balances.get(token.toLowerCase()) ?? null),
-    [permit, balances],
+      assessPermitRisk(
+        permit,
+        token => balances.get(token.toLowerCase()) ?? null,
+        remoteScamSpender,
+      ),
+    [permit, balances, remoteScamSpender],
   );
 
   const bannerCopy = useMemo(() => permitBannerCopy(risk), [risk]);

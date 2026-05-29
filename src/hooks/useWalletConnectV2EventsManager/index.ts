@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { SignClientTypes } from '@walletconnect/types';
+import { getSdkError } from '@walletconnect/utils';
 import { useCallback, useContext, useEffect, useRef } from 'react';
-import { deleteTopic, web3wallet } from '../../core/walletConnectV2Utils';
+import { web3wallet } from '../../core/walletConnectV2Utils';
+import { isHostScamRemote } from '../../core/securityCheck';
+import { isKnownScamHost } from '../../constants/knownDrainers';
 import {
   COSMOS_SIGNING_METHODS,
   EIP155_SIGNING_METHODS,
@@ -30,12 +32,45 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   const { showModal, hideModal } = globalModalContext || {};
 
   const onSessionProposal = useCallback(
-    (proposal: any) => {
+    async (proposal: any) => {
       if (!showModal || !ethereum?.wallets?.[ethereum?.currentIndex]?.address) {
         console.error(
           '[WalletConnect] Missing dependencies for session proposal',
         );
         return;
+      }
+
+      // Block scam dApp origins before the pairing modal renders. Bundled
+      // `isKnownScamHost` is the offline floor; arch's SecurityService extends
+      // coverage to the ScamSniffer corpus.
+      try {
+        const dappUrl: string | undefined =
+          proposal?.params?.proposer?.metadata?.url;
+        if (dappUrl) {
+          const host = new URL(dappUrl).hostname;
+          const isScam =
+            isKnownScamHost(host) || (await isHostScamRemote(host));
+          if (isScam) {
+            try {
+              await web3wallet?.rejectSession({
+                id: proposal.id,
+                reason: getSdkError('USER_REJECTED'),
+              });
+            } catch (rejectErr) {
+              Sentry.captureException(rejectErr);
+            }
+            showModal('state', {
+              type: 'error',
+              title: t('SCAM_DOMAIN_BLOCKED_TITLE'),
+              description: t('SCAM_DOMAIN_BLOCKED_DESCRIPTION', { url: dappUrl }),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+            return;
+          }
+        }
+      } catch {
+        // Malformed URL or network blip — fall through to pairing modal.
       }
 
       showModal(GlobalModalType.WALLET_CONNECT_V2_PAIRING, {
@@ -213,7 +248,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
   /******************************************************************************
    * Set up WalletConnect event listeners
-   * 
+   *
    * IMPORTANT: We use refs for callbacks to avoid the cleanup/re-register cycle
    * that was causing "No listener for session_proposal event" errors.
    * The listeners are registered once and use refs to always call the latest callback.
@@ -241,7 +276,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     if (initialized && web3wallet && !listenersRegistered.current) {
       // Store handler references for cleanup
       handlersRef.current.proposal = (proposal: any) => {
-        onSessionProposalRef.current?.(proposal);
+        void onSessionProposalRef.current?.(proposal);
       };
       handlersRef.current.request = (request: any) => {
         void onSessionRequestRef.current?.(request);

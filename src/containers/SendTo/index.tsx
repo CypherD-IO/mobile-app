@@ -36,6 +36,7 @@ import {
 import { Colors } from '../../constants/theme';
 import { GlobalContext } from '../../core/globalContext';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
+import { isAddressScamRemote } from '../../core/securityCheck';
 import { Holding } from '../../core/portfolio';
 import {
   ActivityContext,
@@ -124,6 +125,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const [addressText, setAddressText] = useState<string>(sendAddress);
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
+  // User-acknowledged scam-recipient flag; tapping "Send anyway" sets it so the
+  // re-entry into submitSendTransaction doesn't show the same warning again.
+  const scamRecipientAcknowledgedRef = useRef(false);
   const [isAddressValid, setIsAddressValid] = useState(true);
   const [addressError, setAddressError] = useState<string>('');
   const [memo, setMemo] = useState<string>(t('SEND_TOKENS_MEMO'));
@@ -637,6 +641,31 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
   const submitSendTransaction = async () => {
     setLoading(true);
+
+    // Server-side recipient blocklist check. Best-effort: failure / 5xx falls
+    // through. Bundled `knownDrainers` not consulted here because that list is
+    // spender-focused; recipient checks rely on the broader ScamSniffer corpus
+    // served by arch's SecurityService.
+    const recipientCandidate = addressText?.trim() ?? '';
+    if (recipientCandidate && !scamRecipientAcknowledgedRef.current) {
+      const isScamRecipient = await isAddressScamRemote(recipientCandidate);
+      if (isScamRecipient) {
+        setLoading(false);
+        showModal('state', {
+          type: 'warning',
+          title: t('SCAM_RECIPIENT_TITLE'),
+          description: t('SCAM_RECIPIENT_DESCRIPTION'),
+          onSuccess: () => {
+            scamRecipientAcknowledgedRef.current = true;
+            hideModal();
+            void submitSendTransaction();
+          },
+          onFailure: hideModal,
+        });
+        return;
+      }
+    }
+
     const id = genId();
     const activityData: SendTransactionActivity = {
       id,
