@@ -104,6 +104,13 @@ export default function useAxios() {
         return refreshed.token;
       }
       let integrityUsed: { isAssertion?: boolean } | null = null;
+      // Track whether signIn threw vs. returned a structured non-VALID response.
+      // Only the "threw" path indicates a possible backend integrity rejection
+      // (e.g., backend lost the attestation record). A structured INVALID /
+      // NEEDS_UPDATE means integrity verification passed and the signature
+      // check downstream of it failed — wiping the keyId in that case would
+      // force a fresh attestation, which Apple rate-limits.
+      let signInThrew = false;
       try {
         const integrity = await getIntegrityToken();
         integrityUsed = integrity;
@@ -118,13 +125,20 @@ export default function useAxios() {
           });
           return signInResponse.token;
         }
+        // signIn() swallows axios errors and returns undefined. Treat undefined
+        // as "threw" so an integrity rejection (401) still clears the keyId.
+        if (!signInResponse) {
+          signInThrew = true;
+        }
       } catch (e: any) {
+        signInThrew = true;
         Sentry.captureException(e?.message ?? e);
       }
-      // If signIn failed after we sent an assertion, the backend may have lost
-      // the attestation record (DB wipe, stale keyId). Clear the stored keyId
-      // so the next request attests fresh instead of retrying a dead assertion.
-      if (integrityUsed?.isAssertion) {
+      // Only clear the stored keyId if both:
+      //   - we sent an assertion (there was a stored keyId to begin with), and
+      //   - signIn actually threw (a structured non-VALID does not imply
+      //     the backend rejected integrity)
+      if (integrityUsed?.isAssertion && signInThrew) {
         await handleBackendIntegrityRejection();
       }
       return null;

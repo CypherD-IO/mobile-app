@@ -982,13 +982,14 @@ export async function signIn(
           signature = Array.from(signatureBytes);
         }
 
-        const result = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/integrity/${address}`,
-          {
-            signature,
-            integrity,
-          },
-        );
+        const integrityUrl =
+          ecosystem === EcosystemsEnum.SOLANA
+            ? `${ARCH_HOST}/v1/authentication/verify-message/integrity/${address}/solana`
+            : `${ARCH_HOST}/v1/authentication/verify-message/integrity/${address}`;
+        const result = await axios.post(integrityUrl, {
+          signature,
+          integrity,
+        });
         return {
           ...validationResponse,
           token: result.data.token,
