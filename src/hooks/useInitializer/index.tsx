@@ -45,6 +45,7 @@ import {
   migrateKeychainIfNeeded,
   signIn,
 } from '../../core/Keychain';
+import { getKeychainRefreshVersion } from '../../core/asyncStorage';
 import { initialHdWalletState } from '../../reducers';
 import {
   ActivityContext,
@@ -277,14 +278,43 @@ export default function useInitializer() {
     },
     state = initialHdWalletState,
   ) => {
+    const _loadStartedAt = Date.now();
+    console.log(
+      '[BIO-DEBUG] loadExistingWallet:enter',
+      JSON.stringify({ hasPinValue: !!state.pinValue }),
+    );
     const cyRootData = await loadCyRootData(state);
+    console.log(
+      '[BIO-DEBUG] loadExistingWallet:cyRootData-loaded',
+      JSON.stringify({
+        hasCyRootData: !!cyRootData,
+        msSinceStart: Date.now() - _loadStartedAt,
+      }),
+    );
 
     // Migrate keychain ACL if needed (e.g., fix Android USER_PRESENCE → BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE)
+    const storedVersion = await getKeychainRefreshVersion();
     const migrationNeeded = await isKeychainMigrationPending();
+    console.log(
+      '[BIO-DEBUG] loadExistingWallet:migration-check',
+      JSON.stringify({
+        storedVersion,
+        migrationNeeded,
+        msSinceStart: Date.now() - _loadStartedAt,
+      }),
+    );
     if (migrationNeeded) {
       setIsMigrating(true);
     }
     await migrateKeychainIfNeeded(state.pinValue);
+    const storedVersionAfter = await getKeychainRefreshVersion();
+    console.log(
+      '[BIO-DEBUG] loadExistingWallet:migration-done',
+      JSON.stringify({
+        storedVersionAfter,
+        msSinceStart: Date.now() - _loadStartedAt,
+      }),
+    );
     if (migrationNeeded) {
       setIsMigrating(false);
     }
@@ -569,12 +599,32 @@ export default function useInitializer() {
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
     setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
   ) => {
+    const _authCallId = Date.now();
+    console.log(
+      '[BIO-DEBUG] getAuthTokenData:enter',
+      JSON.stringify({ callId: _authCallId }),
+    );
     try {
       const isSessionTokenValid = await verifySessionToken();
+      console.log(
+        '[BIO-DEBUG] getAuthTokenData:verifySessionToken-result',
+        JSON.stringify({ callId: _authCallId, isSessionTokenValid }),
+      );
       if (!isSessionTokenValid) {
         const signInResponse = await signIn(
           hdWallet,
           setShowDefaultAuthRemoveModal,
+        );
+        console.log(
+          '[BIO-DEBUG] getAuthTokenData:signIn-returned',
+          JSON.stringify({
+            callId: _authCallId,
+            hasResponse: !!signInResponse,
+            message: (signInResponse as { message?: string } | undefined)
+              ?.message,
+            hasToken: !!(signInResponse as { token?: string } | undefined)
+              ?.token,
+          }),
         );
         if (signInResponse) {
           if (
@@ -637,9 +687,22 @@ export default function useInitializer() {
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
     setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
   ) => {
+    const _hostsCallId = Date.now();
+    console.log(
+      '[BIO-DEBUG] getHosts:enter',
+      JSON.stringify({
+        callId: _hostsCallId,
+        hasEthAddress: !!ethereum.address,
+        hasSolAddress: !!solana.address,
+      }),
+    );
     const hosts = await initializeHostsFromAsync();
     if (hosts) {
       if (ethereum.address || solana.address) {
+        console.log(
+          '[BIO-DEBUG] getHosts:invoking-getAuthTokenData',
+          JSON.stringify({ callId: _hostsCallId }),
+        );
         void getAuthTokenData(
           setForcedUpdate,
           setTamperedSignMessageModal,

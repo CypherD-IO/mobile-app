@@ -18,6 +18,8 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CUSTOMERIO_CDP_API_KEY</key>
+	<string>$(CUSTOMERIO_CDP_API_KEY)</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>
@@ -25,7 +27,7 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>NotificationService</string>
 	</dict>
-	<key>CUSTOMERIO_CDP_API_KEY</key>
-	<string>$(CUSTOMERIO_CDP_API_KEY)</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 </dict>
 </plist>

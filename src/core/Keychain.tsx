@@ -98,6 +98,27 @@ export const isKeychainMigrationPending = async (): Promise<boolean> => {
 let biometricAuthInProgress: Promise<boolean> | null = null;
 let biometricAuthResolver: ((success: boolean) => void) | null = null;
 
+// CYQ-XXXX TEMP DIAGNOSTIC: instrument keychain biometric activity to confirm the
+// double-prompt race hypothesis on Android (Xiaomi reports "Authentication Cancelled"
+// after social login). Remove once the root cause is confirmed and a fix lands.
+let lastKeychainSaveCompletedAt: number | null = null;
+function bioBreadcrumb(
+  message: string,
+  data?: Record<string, unknown>,
+  level: 'info' | 'warning' | 'error' = 'info',
+) {
+  Sentry.addBreadcrumb({
+    category: 'keychain.biometric',
+    message,
+    level,
+    data,
+  });
+  console.log(
+    `[BIO-DEBUG] ${message}`,
+    data ? JSON.stringify(data) : '',
+  );
+}
+
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
   wallet: {
@@ -183,15 +204,93 @@ export async function _setInternetCredentialsOptions(
   value: string,
   acl: boolean,
 ) {
+  const startedAt = Date.now();
+  bioBreadcrumb('save:start', { key, acl });
   try {
+    let result;
+    let requestedStorage: string | null = null;
+    let nativeCallStartedAt: number;
     if (acl) {
       const options = await getPrivateACLOptions();
-      await setInternetCredentials(key, key, value, options);
+      requestedStorage = (options.storage as string | undefined) ?? null;
+      bioBreadcrumb('save:invoking', {
+        key,
+        requestedAccessControl: options.accessControl ?? null,
+        requestedStorage,
+        msSinceStart: Date.now() - startedAt,
+      });
+      nativeCallStartedAt = Date.now();
+      try {
+        result = await setInternetCredentials(key, key, value, options);
+      } catch (biometryErr: any) {
+        // KC-UPTEST: BIOMETRY (auth-bound) save failed. Log the full error, clear
+        // any half-made alias (avoids the AES auth/non-auth alias collision), then
+        // fall back to USER_PRESENCE (non-auth). If the logs show this fallback path
+        // being taken, the auth-bound ACL is the point of failure on this device.
+        bioBreadcrumb(
+          'save:biometry-failed',
+          {
+            key,
+            errorMessage: String(biometryErr?.message ?? biometryErr),
+            errorCode: biometryErr?.code,
+            errorName: biometryErr?.name,
+          },
+          'error',
+        );
+        await resetInternetCredentials({ server: key });
+        const fallbackOptions: SetOptions = {
+          accessControl: ACCESS_CONTROL.USER_PRESENCE,
+          accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+        };
+        result = await setInternetCredentials(key, key, value, fallbackOptions);
+        bioBreadcrumb(
+          'save:fellback-userpresence',
+          {
+            key,
+            actualStorage:
+              result && typeof result === 'object'
+                ? ((result as { storage?: string }).storage ?? null)
+                : null,
+          },
+          'warning',
+        );
+      }
     } else {
       // For storing wallet address, which is public and to access without faceID or passcode
-      await setInternetCredentials(key, key, value);
+      bioBreadcrumb('save:invoking', {
+        key,
+        requestedStorage: null,
+        msSinceStart: Date.now() - startedAt,
+      });
+      nativeCallStartedAt = Date.now();
+      result = await setInternetCredentials(key, key, value);
     }
-  } catch (e) {
+    const nativeDurationMs = Date.now() - nativeCallStartedAt;
+    lastKeychainSaveCompletedAt = Date.now();
+    bioBreadcrumb('save:success', {
+      key,
+      acl,
+      durationMs: lastKeychainSaveCompletedAt - startedAt,
+      nativeDurationMs,
+      requestedStorage,
+      actualStorage:
+        result && typeof result === 'object'
+          ? ((result as { storage?: string }).storage ?? null)
+          : null,
+    });
+  } catch (e: any) {
+    bioBreadcrumb(
+      'save:error',
+      {
+        key,
+        acl,
+        durationMs: Date.now() - startedAt,
+        errorMessage: String(e?.message ?? e),
+        errorCode: e?.code,
+        errorName: e?.name,
+      },
+      'error',
+    );
     // TODO (user feedback): Give feedback to user.
     Sentry.captureException(e);
     Alert.alert(
@@ -235,10 +334,34 @@ export async function loadFromKeyChain(
     // Default empty function - no action needed
   },
 ) {
+  const callStartedAt = Date.now();
+  const msSinceLastSave =
+    lastKeychainSaveCompletedAt !== null
+      ? callStartedAt - lastKeychainSaveCompletedAt
+      : null;
+  // Capture the JS stack so we can identify which caller chain is reaching for
+  // this key. Useful for triaging post-signIn loads that re-prompt biometrics.
+  const callerStack = (() => {
+    const stack = new Error().stack ?? '';
+    return stack
+      .split('\n')
+      .slice(2, 8)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  })();
+  bioBreadcrumb('load:enter', {
+    key,
+    forceCloseOnFailure,
+    msSinceLastSave,
+    biometricAuthInProgress: biometricAuthInProgress !== null,
+    callerStack,
+  });
   // If biometric auth is already in progress, wait for it to complete
   // This prevents multiple Face ID prompts from appearing simultaneously
   if (biometricAuthInProgress) {
+    bioBreadcrumb('load:awaiting-prior-auth', { key });
     const authSucceeded = await biometricAuthInProgress;
+    bioBreadcrumb('load:prior-auth-resolved', { key, authSucceeded });
     if (!authSucceeded) {
       return undefined;
     }
@@ -280,13 +403,51 @@ export async function loadFromKeyChain(
         accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
       }),
     };
-    const credentials = await getInternetCredentials(key, options);
+    let credentials;
+    try {
+      credentials = await getInternetCredentials(key, options);
+    } catch (biometryLoadErr: any) {
+      // KC-UPTEST: retrieval with BIOMETRY accessControl failed. This is either a
+      // genuinely auth-bound failure OR an item saved via the USER_PRESENCE
+      // fallback (non-auth). Retry WITHOUT accessControl so non-auth items load.
+      // If this fallback path appears in the logs, the item was non-auth.
+      bioBreadcrumb(
+        'load:biometry-failed',
+        {
+          key,
+          errorMessage: String(biometryLoadErr?.message ?? biometryLoadErr),
+          errorCode: biometryLoadErr?.code,
+          errorName: biometryLoadErr?.name,
+        },
+        'error',
+      );
+      credentials = await getInternetCredentials(key, {
+        authenticationPrompt: options.authenticationPrompt,
+      });
+      bioBreadcrumb('load:fellback-userpresence', {
+        key,
+        hasCredentials: !!credentials,
+        storedCipher:
+          credentials && typeof credentials === 'object'
+            ? ((credentials as { storage?: string }).storage ?? null)
+            : null,
+      });
+    }
     // Auth succeeded - notify any waiting callers and clear the lock
     if (biometricAuthResolver) {
       biometricAuthResolver(true);
     }
     biometricAuthInProgress = null;
     biometricAuthResolver = null;
+    bioBreadcrumb('load:success', {
+      key,
+      hasCredentials: !!credentials,
+      durationMs: Date.now() - callStartedAt,
+      storedCipher:
+        credentials && typeof credentials === 'object'
+          ? ((credentials as { storage?: string }).storage ?? null)
+          : null,
+    });
     if (credentials) {
       const value = credentials.password;
       return value;
@@ -301,19 +462,60 @@ export async function loadFromKeyChain(
     biometricAuthInProgress = null;
     biometricAuthResolver = null;
 
+    const errorMessage = String(error?.message ?? error);
+    const matchedCode_11 = errorMessage === KeychainErrors.CODE_11;
+    const matchedCode_8 = errorMessage === KeychainErrors.CODE_8;
+    const matchedCode_1 = errorMessage === KeychainErrors.CODE_1;
+    const matchedCode_10 = errorMessage === KeychainErrors.CODE_10;
+    const matchedCode_13 = errorMessage === KeychainErrors.CODE_13;
+    const branch =
+      matchedCode_11 || matchedCode_8
+        ? 'showModal'
+        : matchedCode_1
+        ? 'fingerprintHardwareAlert'
+        : 'showReAuthAlert';
+    bioBreadcrumb(
+      'load:error',
+      {
+        key,
+        forceCloseOnFailure,
+        durationMs: Date.now() - callStartedAt,
+        msSinceLastSave,
+        errorMessage,
+        errorCode: error?.code,
+        errorName: error?.name,
+        matchedCode_1,
+        matchedCode_8,
+        matchedCode_10,
+        matchedCode_11,
+        matchedCode_13,
+        branch,
+      },
+      'error',
+    );
     // in iOS we are flexible with authentication methods as only 1 biometric is allowed in iOS, but in Android we show the default auth modal if the user is tying to access the keychain with a new biometric / passcode that the ones present at the time of saving the credentials.
-    if (
-      error.message === KeychainErrors.CODE_11 ||
-      error.message === KeychainErrors.CODE_8
-    ) {
+    if (matchedCode_11 || matchedCode_8) {
       showModal();
-    } else if (error.message === KeychainErrors.CODE_1) {
+    } else if (matchedCode_1) {
       if (forceCloseOnFailure) {
         await fingerprintHardwareAlert();
       }
     } else {
       Sentry.captureException(error);
       if (forceCloseOnFailure) {
+        Sentry.captureMessage(
+          'BIO-DEBUG: showReAuthAlert about to fire after loadFromKeyChain failure',
+          {
+            level: 'error',
+            extra: {
+              key,
+              errorMessage,
+              errorCode: error?.code,
+              errorName: error?.name,
+              msSinceLastSave,
+            },
+          },
+        );
         await showReAuthAlert();
       }
     }
@@ -575,9 +777,16 @@ export async function getPrivateACLOptions(): Promise<SetOptions> {
     }
     if (canAuthenticate && !isSimulator) {
       // iOS: USER_PRESENCE triggers Face ID/Touch ID/passcode prompt natively
-      // Android: BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE is required to trigger
-      //          the system auth prompt (fingerprint/PIN/pattern/password)
-      //          USER_PRESENCE on Android does NOT trigger any auth prompt
+      // Android: BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE gates the private key on
+      //          biometric/passcode; combined with storage=RSA the save uses the
+      //          public key (silent), while load requires auth (5s validity window
+      //          satisfied by recent device unlock for both biometric and passcode
+      //          users). Restores v8.1.1 behaviour after v10 switched the default
+      //          cipher to AES-GCM, which made saves prompt and exposed lifecycle
+      //          races + Keystore-key-generation failures on a subset of devices.
+      // KC-UPTEST: forced RSA storage removed — it is not the root fix (the bug
+      // spans RSA and AES) and adds ~37s StrongBox keygen. Use the library default
+      // cipher for the chosen accessControl (AES-GCM for BIOMETRY on Android).
       res = {
         accessControl: isIOS()
           ? ACCESS_CONTROL.USER_PRESENCE
@@ -585,8 +794,19 @@ export async function getPrivateACLOptions(): Promise<SetOptions> {
         accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
       };
     }
+    bioBreadcrumb('acl:resolved', {
+      platform: isIOS() ? 'ios' : 'android',
+      canAuthenticate,
+      isSimulator,
+      accessControl: res.accessControl ?? null,
+      storage: res.storage ?? null,
+    });
   } catch (e) {
-    // TODO (user feedback): Give feedback to user.
+    bioBreadcrumb(
+      'acl:error',
+      { errorMessage: String((e as Error)?.message ?? e) },
+      'error',
+    );
     Sentry.captureException(e);
   }
   return res;
@@ -917,11 +1137,39 @@ export function decryptMnemonic(encryptedMnemonic: string, pin: string) {
   return mnemonic;
 }
 
+// In-flight lock to dedupe concurrent signIn calls. Sequential post-signIn calls
+// should be eliminated at the call sites by passing the fresh token directly and
+// by removing proactive signIn from the HttpRequest interceptors — see
+// HttpRequest.ts. This lock remains as defense-in-depth for genuinely concurrent
+// callers (e.g., multiple parallel HTTP requests racing through the 401 retry path).
+let inFlightSignIn: ReturnType<typeof signInImpl> | null = null;
+
 export async function signIn(
   hdWallet: HdWalletContextDef,
   setShowDefaultAuthRemoveModal?: Dispatch<SetStateAction<boolean>>,
 ) {
+  if (inFlightSignIn) {
+    bioBreadcrumb('signIn:deduped', { reason: 'in-flight' });
+    return await inFlightSignIn;
+  }
+  const work = signInImpl(hdWallet, setShowDefaultAuthRemoveModal);
+  inFlightSignIn = work;
+  void work.finally(() => {
+    if (inFlightSignIn === work) {
+      inFlightSignIn = null;
+    }
+  });
+  return await work;
+}
+
+async function signInImpl(
+  hdWallet: HdWalletContextDef,
+  setShowDefaultAuthRemoveModal?: Dispatch<SetStateAction<boolean>>,
+) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  bioBreadcrumb('signIn:enter', {
+    archHost: ARCH_HOST,
+  });
   try {
     const ethereumAddress = get(
       hdWallet,
@@ -940,22 +1188,38 @@ export async function signIn(
     if (!ethereumAddress && solanaAddress) {
       ecosystem = EcosystemsEnum.SOLANA;
     }
+    bioBreadcrumb('signIn:requesting-sign-message', {
+      addressPrefix: String(address).slice(0, 10),
+      ecosystem,
+    });
 
     const { data } = await axios.get(
       `${ARCH_HOST}/v1/authentication/sign-message/${address}/${ecosystem}`,
     );
+    bioBreadcrumb('signIn:sign-message-received', {
+      hasData: !!data,
+      hasMessage: !!data?.message,
+      messageLength: data?.message ? String(data.message).length : 0,
+    });
     const verifyMessage = data.message;
     const validationResponse = isValidMessage(
       address,
       verifyMessage,
       ecosystem,
     );
+    bioBreadcrumb('signIn:validation-result', {
+      message: validationResponse?.message,
+    });
     if (validationResponse.message === SignMessageValidationType.VALID) {
       const privateKey = await loadPrivateKeyFromKeyChain(
         true,
         hdWallet.state.pinValue,
         () => setShowDefaultAuthRemoveModal?.(true),
       );
+      bioBreadcrumb('signIn:pk-loaded', {
+        hasPrivateKey: !!privateKey,
+        isPlaceholder: privateKey === _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+      });
       if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
         let signature;
         if (ecosystem === EcosystemsEnum.EVM) {
@@ -979,6 +1243,10 @@ export async function signIn(
           );
           signature = Array.from(signatureBytes);
         }
+        bioBreadcrumb('signIn:posting-verify-message', {
+          ecosystem,
+          hasSignature: !!signature,
+        });
 
         const result = await axios.post(
           `${ARCH_HOST}/v1/authentication/verify-message/${address}/${ecosystem}`,
@@ -986,6 +1254,10 @@ export async function signIn(
             signature,
           },
         );
+        bioBreadcrumb('signIn:verify-message-success', {
+          hasToken: !!result?.data?.token,
+          hasRefreshToken: !!result?.data?.refreshToken,
+        });
         return {
           ...validationResponse,
           token: result.data.token,
@@ -994,7 +1266,19 @@ export async function signIn(
       }
       return validationResponse;
     }
-  } catch (error) {
+  } catch (error: any) {
+    bioBreadcrumb(
+      'signIn:error',
+      {
+        errorMessage: String(error?.message ?? error),
+        errorName: error?.name,
+        responseStatus: error?.response?.status,
+        responseData: error?.response?.data
+          ? JSON.stringify(error.response.data).slice(0, 200)
+          : null,
+      },
+      'error',
+    );
     Sentry.captureException(error);
   }
 }
