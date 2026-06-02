@@ -918,7 +918,32 @@ export function decryptMnemonic(encryptedMnemonic: string, pin: string) {
   return mnemonic;
 }
 
+// In-flight lock to dedupe concurrent signIn calls. The HttpRequest interceptor
+// single-flights its own auth path via pendingTokenAcquire, but signIn is also
+// called directly (e.g. from useInitializer's getAuthTokenData). Without this
+// lock, those two paths racing on first wallet load each trigger a biometric
+// prompt — the "dual auth" bug. Concurrent callers now share one in-flight auth.
+let inFlightSignIn: ReturnType<typeof signInImpl> | null = null;
+
 export async function signIn(
+  hdWallet: HdWalletContextDef,
+  integrity: IIntegrity,
+  setShowDefaultAuthRemoveModal?: Dispatch<SetStateAction<boolean>>,
+) {
+  if (inFlightSignIn) {
+    return await inFlightSignIn;
+  }
+  const work = signInImpl(hdWallet, integrity, setShowDefaultAuthRemoveModal);
+  inFlightSignIn = work;
+  void work.finally(() => {
+    if (inFlightSignIn === work) {
+      inFlightSignIn = null;
+    }
+  });
+  return await work;
+}
+
+async function signInImpl(
   hdWallet: HdWalletContextDef,
   integrity: IIntegrity,
   setShowDefaultAuthRemoveModal?: Dispatch<SetStateAction<boolean>>,
