@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboard } from '../hooks/useKeyboard';
 import OnBoardingGetStarted from '../containers/OnBoarding/getStarted';
 import OnBoardingOptions from '../containers/OnBoarding/onBoardingOptions';
+import HostsAndRPCScreen from '../containers/Options/hostsAndRPC';
 
 const Stack = createNativeStackNavigator();
 
@@ -183,6 +184,14 @@ function OnBoardingStack({
         name={screenTitle.TRACK_WALLET_SCREEN}
         component={TrackWallet}
         options={getHeaderOptions('Track Any Wallet')}
+      />
+      {/* Reachable pre-import via the hidden long-press on the Get Started
+          "Continue" button — lets us point the app at a different backend host
+          before a wallet exists. Same component the post-import Options stack uses. */}
+      <Stack.Screen
+        name={screenTitle.HOSTS_AND_RPC_SCREEN}
+        component={HostsAndRPCScreen}
+        options={getHeaderOptions('Hosts & RPC')}
       />
     </Stack.Navigator>
   );
