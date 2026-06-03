@@ -49,10 +49,11 @@ interface IHttpResponse {
 // attestation quota. All concurrent callers await the same in-flight promise.
 let pendingTokenAcquire: Promise<string | null> | null = null;
 
-// TODO(CYP-3000): confirm backend refresh endpoint contract — current assumption
-// is POST /v1/authentication/refresh with { refreshToken } body returning
-// { token, refreshToken }. If backend expects the refresh token via header/cookie
-// or a different response shape, adjust here.
+// POST /v1/authentication/refresh returning { token, refreshToken }. The backend's
+// JwtRefreshGuard (refresh-token-strategy.ts) extracts the refresh token from the
+// Authorization: Bearer header via ExtractJwt.fromAuthHeaderAsBearerToken() — NOT
+// from the body. Sending it in the body (the original assumption) made every
+// refresh 401, forcing a full biometric signIn on every request.
 async function refreshSession(): Promise<{
   token: string;
   refreshToken: string;
@@ -62,9 +63,11 @@ async function refreshSession(): Promise<{
   try {
     const refreshToken = JSON.parse(String(stored));
     const host = hostWorker.getHost('ARCH_HOST');
-    const { data } = await axios.post(`${host}/v1/authentication/refresh`, {
-      refreshToken,
-    });
+    const { data } = await axios.post(
+      `${host}/v1/authentication/refresh`,
+      {},
+      { headers: { Authorization: `Bearer ${String(refreshToken)}` } },
+    );
     if (data?.token) {
       await setAuthToken(data.token);
       if (data.refreshToken) {
@@ -119,6 +122,13 @@ export default function useAxios() {
           signInResponse?.message === SignMessageValidationType.VALID &&
           has(signInResponse, 'token')
         ) {
+          // Persist to storage (not just in-memory dispatch) so the next
+          // refreshSession/verifySessionToken can reuse this session instead of
+          // re-triggering a full biometric signIn.
+          await setAuthToken(signInResponse.token);
+          if (has(signInResponse, 'refreshToken')) {
+            await setRefreshToken(signInResponse.refreshToken);
+          }
           globalContext.globalDispatch({
             type: GlobalContextType.SIGN_IN,
             sessionToken: signInResponse.token,
