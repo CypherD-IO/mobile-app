@@ -84,7 +84,6 @@ export type BlindPayRequestLimitIncreaseInput = z.infer<typeof blindPayRequestLi
 export const blindPayCreateVirtualAccountSchema = z.object({
   bankingPartner: z.nativeEnum(BlindpayBankingPartner),
   token: z.nativeEnum(BlindpayToken),
-  blockchainWalletId: z.string().trim().min(1, 'Wallet address is required'),
   signedAgreementId: z.string().uuid().optional(),
   soleProprietorDocType: z.nativeEnum(BlindpaySoleProprietorDocType).optional(),
   soleProprietorDocFile: z.string().trim().min(1).optional(),

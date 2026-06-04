@@ -400,7 +400,6 @@ export default function useBlindPayApi() {
   async function createVirtualAccount(body: {
     bankingPartner: string;
     token: string;
-    blockchainWalletId: string;
     signedAgreementId?: string;
   }): Promise<{
     isError: boolean;

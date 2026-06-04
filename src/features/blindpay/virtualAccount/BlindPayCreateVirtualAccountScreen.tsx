@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, Modal } from 'react-native';
 import {
   NavigationProp,
@@ -24,7 +24,6 @@ import useBlindPayApi from '../api';
 import type { BlindPayUploadFilePart } from '../api';
 import ReviewCard from '../components/ReviewCard';
 import { BlindpayUploadBucket } from '../types';
-import { HdWalletContext } from '../../../core/util';
 import BlindPayIdCaptureModal, {
   type CapturedFile,
 } from '../onboarding/BlindPayIdCaptureModal';
@@ -178,12 +177,6 @@ export default function BlindPayCreateVirtualAccountScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
   const { getProfile, updateReceiver, createVirtualAccount, uploadDocument } = useBlindPayApi();
-  const hdWallet = useContext(HdWalletContext) as any;
-
-  const walletAddress =
-    hdWallet?.state?.wallet?.ethereum?.address ??
-    hdWallet?.state?.wallet?.solana?.address ?? '';
-
   // 5 steps: 0=intro, 1=purpose+revenue, 2=occupation+source, 3=doc upload, 4=review
   const [step, setStep] = useState(0);
   const totalSteps = 5;
@@ -333,20 +326,27 @@ export default function BlindPayCreateVirtualAccountScreen() {
       return;
     }
 
-    // 2. Create virtual account
+    // 2. Create virtual account — backend resolves the blockchain wallet server-side
     const vaBody: Record<string, any> = {
       bankingPartner: 'citi',
       token: 'USDC',
-      blockchainWalletId: walletAddress,
     };
     if (solePropDocType) vaBody.soleProprietorDocType = solePropDocType;
     if (solePropDocUrl) vaBody.soleProprietorDocFile = solePropDocUrl;
 
-    const vaRes = await createVirtualAccount(vaBody as { bankingPartner: string; token: string; blockchainWalletId: string });
+    const vaRes = await createVirtualAccount(vaBody as { bankingPartner: string; token: string });
     setSubmitting(false);
 
     if (vaRes.isError) {
-      showToast(vaRes.errorMessage ?? 'Failed to create virtual account', 'error');
+      const msg = vaRes.errorMessage ?? '';
+      if (msg.toLowerCase().includes('no evm address on file')) {
+        showToast(
+          "We couldn't set up your deposit account because your wallet has no EVM address. Please contact support.",
+          'error',
+        );
+      } else {
+        showToast(msg || 'Failed to create virtual account', 'error');
+      }
       return;
     }
 
@@ -356,7 +356,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
     validateStep, step, profileEmail, profileCountry,
     accountPurpose, estimatedRevenue, occupation, sourceOfFunds,
     sourceOfFundsDocUrl, solePropDocType, solePropDocUrl,
-    walletAddress, updateReceiver, createVirtualAccount, navigation,
+    updateReceiver, createVirtualAccount, navigation,
   ]);
 
   const handleBack = useCallback(() => {
@@ -715,12 +715,6 @@ export default function BlindPayCreateVirtualAccountScreen() {
             <ReviewCard
               title='Virtual Account'
               rows={[
-                {
-                  label: 'Wallet',
-                  value: walletAddress
-                    ? `${walletAddress.slice(0, 12)}...${walletAddress.slice(-8)}`
-                    : '—',
-                },
                 { label: 'Document Type', value: spDocLabel ?? '—' },
                 { label: 'Document', value: solePropDocUrl ? 'Uploaded' : '—' },
               ]}
