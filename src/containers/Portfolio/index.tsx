@@ -60,6 +60,10 @@ import {
   CHAIN_ARBITRUM,
   CHAIN_BSC,
   CHAIN_COSMOS,
+  CHAIN_BASE,
+  CHAIN_OPTIMISM,
+  CHAIN_OSMOSIS,
+  CHAIN_SOLANA,
   FundWalletAddressType,
 } from '../../constants/server';
 import {
@@ -244,9 +248,14 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       logo: AppImages.COINBASE,
       supportedChains: [
         CHAIN_ETH,
-        CHAIN_COSMOS,
-        CHAIN_AVALANCHE,
         CHAIN_POLYGON,
+        CHAIN_BASE,
+        CHAIN_ARBITRUM,
+        CHAIN_OPTIMISM,
+        CHAIN_AVALANCHE,
+        CHAIN_COSMOS,
+        CHAIN_OSMOSIS,
+        CHAIN_SOLANA,
       ],
       currencyType: CurrencyTypes.USD,
       screenTitle: C.screenTitle.CB_PAY,
