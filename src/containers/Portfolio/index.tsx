@@ -60,6 +60,10 @@ import {
   CHAIN_ARBITRUM,
   CHAIN_BSC,
   CHAIN_COSMOS,
+  CHAIN_BASE,
+  CHAIN_OPTIMISM,
+  CHAIN_OSMOSIS,
+  CHAIN_SOLANA,
   FundWalletAddressType,
 } from '../../constants/server';
 import {
@@ -244,9 +248,14 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       logo: AppImages.COINBASE,
       supportedChains: [
         CHAIN_ETH,
-        CHAIN_COSMOS,
-        CHAIN_AVALANCHE,
         CHAIN_POLYGON,
+        CHAIN_BASE,
+        CHAIN_ARBITRUM,
+        CHAIN_OPTIMISM,
+        CHAIN_AVALANCHE,
+        CHAIN_COSMOS,
+        CHAIN_OSMOSIS,
+        CHAIN_SOLANA,
       ],
       currencyType: CurrencyTypes.USD,
       screenTitle: C.screenTitle.CB_PAY,
@@ -280,7 +289,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     showBottomSheet({
       id: 'getTokenOptions',
       snapPoints: ['40%'],
-      showCloseButton: true,
+      showCloseButton: false,
       scrollable: false,
       topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
       content: (
@@ -1396,8 +1405,15 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             animationOut={'slideOutDown'}
             onModalHide={() => {
               if (pendingBuyAction) {
-                setBuyChooseChainModalVisible(true);
                 setPendingBuyAction(false);
+                // Coinbase no longer needs a chain choice: the launcher mints a
+                // session token for all the wallet's addresses and Coinbase's own
+                // asset picker handles network selection. OnMeta still picks a chain.
+                if (buyType?.title === BuyOptions.COINBASE) {
+                  navigation.navigate(buyType.screenTitle, { operation: 'buy' });
+                } else {
+                  setBuyChooseChainModalVisible(true);
+                }
               }
             }}
             style={styles.bottomModalNoPadding}>

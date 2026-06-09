@@ -1,8 +1,6 @@
-/* eslint-disable react-native/no-inline-styles */
 import { HdWalletContext } from '../../core/util';
-import React, { useContext, useEffect, useState } from 'react';
-import WebView from 'react-native-webview';
-import { ChainBackendNames } from '../../constants/server';
+import React, { useContext, useEffect } from 'react';
+import * as WebBrowser from '@toruslabs/react-native-web-browser';
 import * as Sentry from '@sentry/react-native';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import useAxios from '../../core/HttpRequest';
@@ -12,12 +10,6 @@ import Loading from '../../components/v2/loading';
 import { CyDView } from '../../styles/tailwindComponents';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
-
-export type SupportedBlockchains =
-  | 'avalanche-c-chain'
-  | 'cosmos'
-  | 'ethereum'
-  | 'polygon';
 
 export interface GenerateOnRampURLOptions {
   /** One-time session token minted by our backend. */
@@ -31,86 +23,85 @@ export interface GenerateOnRampURLOptions {
   fiatCurrency?: string;
 }
 
+/** One destination wallet + the Coinbase network slugs it can receive on. */
+interface CoinbaseAddress {
+  address: string;
+  blockchains: string[];
+}
+
+/**
+ * EVM networks Coinbase Onramp supports that share the wallet's single
+ * `ethereum` address. Coinbase requires one address per network, so each
+ * slug appears exactly once across the addresses array.
+ */
+const EVM_ONRAMP_BLOCKCHAINS = [
+  'ethereum',
+  'polygon',
+  'base',
+  'arbitrum',
+  'optimism',
+  'avacchain', // Coinbase's slug for Avalanche C-Chain (NOT 'avalanche-c-chain')
+];
+
 export const generateOnRampURL = ({
   host = 'https://pay.coinbase.com',
   sessionToken,
   ...otherParams
 }: GenerateOnRampURLOptions): string => {
-  const url = new URL(host);
-  url.pathname = '/buy/select-asset';
+  const url = new URL('/buy/select-asset', host);
   url.searchParams.append('sessionToken', sessionToken);
 
-  (Object.keys(otherParams) as Array<keyof typeof otherParams>).forEach(key => {
-    const value = otherParams[key];
+  Object.entries(otherParams).forEach(([key, value]) => {
     if (value !== undefined) {
-      url.searchParams.append(String(key), value.toString());
+      url.searchParams.append(key, String(value));
     }
   });
   return url.toString();
 };
 
-// previous types and interfaces from https://github.com/coinbase/cbpay-js
+interface CoinbasePayProps {
+  navigation: { goBack: () => void };
+}
 
-export default function CoinbasePay({ route, navigation }) {
+export default function CoinbasePay({ navigation }: CoinbasePayProps) {
   const hdWallet = useContext<any>(HdWalletContext);
-  const ethereum = hdWallet.state.wallet.ethereum;
-  const cosmos = hdWallet.state.wallet.cosmos;
-  const chain = route.params.url;
-  const addr =
-    chain === ChainBackendNames.COSMOS
-      ? cosmos.wallets[cosmos.currentIndex].address
-      : ethereum.address;
+  const { ethereum, cosmos, osmosis, solana } = hdWallet.state.wallet;
   const { showModal, hideModal } = useGlobalModalContext();
-  const [onRampURL, setOnRampURL] = useState<string>('');
   const { postWithAuth } = useAxios();
 
   useEffect(() => {
     void logAnalyticsToFirebase(AnalyticEvent.INSIDE_COINBASE_PAY);
   }, []);
 
-  let blockchain: string[];
-  switch (chain) {
-    case ChainBackendNames.AVALANCHE: {
-      blockchain = ['avalanche-c-chain'];
-      break;
-    }
-    case ChainBackendNames.COSMOS: {
-      blockchain = ['cosmos'];
-      break;
-    }
-    case ChainBackendNames.ETH: {
-      blockchain = ['ethereum'];
-      break;
-    }
-    case ChainBackendNames.POLYGON: {
-      blockchain = ['polygon'];
-      break;
-    }
-    case 'ALL': {
-      blockchain = ['polygon', 'ethereum', 'avalanche-c-chain'];
-      showModal('state', {
-        type: 'info',
-        title: "'polygon', 'ethereum', 'avalanche' only supported.",
-        description: 'For COSMOS change the chain to COMSOS and try',
-        onSuccess: hideModal,
-        onFailure: hideModal,
+  /**
+   * Build Coinbase's `addresses` array from whatever addresses this wallet
+   * holds. EVM chains share `ethereum.address`; cosmos, osmosis and solana
+   * each get their own entry. A solana-only account (email/social or solana private-key
+   * import) naturally produces a single `solana` entry — so Coinbase's own
+   * asset picker handles network selection and we no longer ask the user to
+   * choose a chain up front.
+   */
+  const buildAddresses = (): CoinbaseAddress[] => {
+    const addresses: CoinbaseAddress[] = [];
+    if (ethereum?.address) {
+      addresses.push({
+        address: ethereum.address,
+        blockchains: EVM_ONRAMP_BLOCKCHAINS,
       });
-      break;
     }
-    default: {
-      blockchain = chain;
-      showModal('state', {
-        type: 'error',
-        title: "'polygon', 'ethereum', 'avalanche', 'cosmos' only supported.",
-        description: 'Support for other chains coming up!',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-      break;
+    if (cosmos?.address) {
+      addresses.push({ address: cosmos.address, blockchains: ['cosmos'] });
     }
-  }
+    if (osmosis?.address) {
+      addresses.push({ address: osmosis.address, blockchains: ['osmosis'] });
+    }
+    if (solana?.address) {
+      addresses.push({ address: solana.address, blockchains: ['solana'] });
+    }
+    return addresses;
+  };
 
-  function onModalHide(type = '') {
+  function onModalHide() {
     hideModal();
     setTimeout(() => {
       navigation.goBack();
@@ -123,26 +114,36 @@ export default function CoinbasePay({ route, navigation }) {
       title: t('COINBASE_LINK_ERROR'),
       description: t('CONTACT_CYPHERD_SUPPORT'),
       onSuccess: onModalHide,
-      onFailure: hideModal,
+      onFailure: onModalHide,
     });
   };
 
-  const getCbCreds = async () => {
+  /**
+   * Mint a one-time session token for all the wallet's addresses, then open the
+   * Onramp URL in the system browser. Coinbase mandates a popup / new tab —
+   * Onramp URLs do not authenticate correctly inside an in-app WebView
+   * (Passkey/U2F is unavailable), so we use SafariVC / Chrome Custom Tabs via
+   * `@toruslabs/react-native-web-browser`. The screen is a thin launcher: once
+   * the external browser closes we pop back.
+   */
+  const launchOnramp = async () => {
+    const addresses = buildAddresses();
+    if (!addresses.length) {
+      showCbError();
+      return;
+    }
     try {
       const resp = await postWithAuth(
         '/v1/authentication/creds/cb/session-token',
-        {
-          address: addr,
-          blockchains: blockchain,
-          // assets: ['ETH', 'USDC'], // optional — omit to allow all assets for the network
-        },
+        { addresses },
       );
       if (!resp.error && resp.data?.token) {
         const rampURL = generateOnRampURL({
           host: resp.data.host, // falls back to default inside generateOnRampURL if undefined
           sessionToken: resp.data.token,
         });
-        setOnRampURL(rampURL);
+        await WebBrowser.openBrowserAsync(rampURL);
+        navigation.goBack();
       } else {
         showCbError();
       }
@@ -153,29 +154,14 @@ export default function CoinbasePay({ route, navigation }) {
   };
 
   useEffect(() => {
-    // Only mint a token once we have a resolved address + supported chain.
-    // addr is stable for a given screen open; keep deps minimal so we don't
-    // re-mint a single-use token. The screen remounts on re-navigation.
-    if (addr && Array.isArray(blockchain)) {
-      void getCbCreds();
-    }
-  }, [addr]);
+    // Session tokens are single-use and expire in ~5 min; mint once per screen
+    // open. The screen remounts on re-navigation, which re-runs this effect.
+    void launchOnramp();
+  }, []);
 
   return (
     <CyDView className={'h-full w-full'}>
-      {onRampURL === '' && <Loading />}
-      {onRampURL !== '' && (
-        <WebView
-          webviewDebuggingEnabled={__DEV__}
-          startInLoadingState={true}
-          renderLoading={() => {
-            return <Loading />;
-          }}
-          source={{ uri: onRampURL }}
-          style={{ marginTop: 0 }}
-          allowsBackForwardNavigationGestures
-        />
-      )}
+      <Loading />
     </CyDView>
   );
 }
