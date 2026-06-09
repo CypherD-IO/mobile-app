@@ -257,6 +257,12 @@ export interface IDecodedTransactionResponse {
     token_symbol: string
     token_amount: number
     token: DeBankToken
+    /**
+     * Server-side scam flag for the recipient `to_addr`, populated by arch's
+     * SecurityService against ScamSniffer + manual blocklist.
+     * Optional so older backends that don't send it behave identically (undefined ≈ false).
+     */
+    is_scam_recipient?: boolean
   }
   // Contract call - swap
   type_call?: {
@@ -276,6 +282,7 @@ export interface IDecodedTransactionResponse {
     is_nft: boolean
     nft: null | DeBankNft
     token: DeBankToken
+    is_scam_spender?: boolean
   }
   // Revoke
   type_cancel_token_approval?: {

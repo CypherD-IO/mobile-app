@@ -36,6 +36,7 @@ import {
 import { Colors } from '../../constants/theme';
 import { GlobalContext } from '../../core/globalContext';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
+import { isAddressScamRemote } from '../../core/securityCheck';
 import { Holding } from '../../core/portfolio';
 import {
   ActivityContext,
@@ -124,6 +125,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const [addressText, setAddressText] = useState<string>(sendAddress);
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
+  // User-acknowledged scam recipient (lowercased). Tapping "Send anyway" stores
+  // the resolved address here so re-entry skips the warning, but changing the
+  // recipient mid-flow re-prompts because the new address won't match.
+  const scamRecipientAcknowledgedRef = useRef<string | null>(null);
   const [isAddressValid, setIsAddressValid] = useState(true);
   const [addressError, setAddressError] = useState<string>('');
   const [memo, setMemo] = useState<string>(t('SEND_TOKENS_MEMO'));
@@ -637,6 +642,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
   const submitSendTransaction = async () => {
     setLoading(true);
+
     const id = genId();
     const activityData: SendTransactionActivity = {
       id,
@@ -679,6 +685,33 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           title: t('NOT_VALID_ENS'),
           description: `This ens domain is not mapped for ${tokenData.chainDetails.name.toLowerCase()} in ens.domains`,
           onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+    }
+
+    // Server-side recipient blocklist check on the RESOLVED address so an ENS
+    // that resolves to a known drainer is still caught. Best-effort: any 5xx /
+    // network failure falls through. Acknowledged-recipient ref is keyed on the
+    // resolved address so switching recipients re-prompts.
+    const resolvedRecipient = addressRef.current?.trim().toLowerCase() ?? '';
+    if (
+      resolvedRecipient &&
+      scamRecipientAcknowledgedRef.current !== resolvedRecipient
+    ) {
+      const isScamRecipient = await isAddressScamRemote(resolvedRecipient);
+      if (isScamRecipient) {
+        setLoading(false);
+        showModal('state', {
+          type: 'warning',
+          title: t('SCAM_RECIPIENT_TITLE'),
+          description: t('SCAM_RECIPIENT_DESCRIPTION'),
+          onSuccess: () => {
+            scamRecipientAcknowledgedRef.current = resolvedRecipient;
+            hideModal();
+            void submitSendTransaction();
+          },
           onFailure: hideModal,
         });
         return;

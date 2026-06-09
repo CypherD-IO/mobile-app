@@ -213,7 +213,7 @@ export const GlobalBottomSheetProvider: React.FC<
           backgroundColor={config.backgroundColor}
           showHandle={config.showHandle ?? true}
           borderRadius={config.borderRadius ?? 16}
-          showCloseButton={config.showCloseButton ?? true}
+          showCloseButton={config.showCloseButton ?? false}
           scrollable={config.scrollable ?? true}
           enableContentPanningGesture={
             config.enableContentPanningGesture ?? true

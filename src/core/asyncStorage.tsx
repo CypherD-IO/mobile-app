@@ -814,3 +814,38 @@ export const clearMfaModalSnooze = async (): Promise<void> => {
     Sentry.captureException(error);
   }
 };
+
+const CARD_CONTAINER_ORDER_KEY = 'CARD_CONTAINER_ORDER';
+
+/**
+ * Persists the user's preferred ordering of card home containers
+ * (e.g. Spend analytics, Recent Transactions, Spend Reward).
+ * Stored as a JSON-serialised string array of container IDs.
+ */
+export const setCardContainerOrder = async (
+  order: string[],
+): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(
+      CARD_CONTAINER_ORDER_KEY,
+      JSON.stringify(order),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+/**
+ * Retrieves the previously saved card container order.
+ * Returns null when no order has been persisted yet.
+ */
+export const getCardContainerOrder = async (): Promise<string[] | null> => {
+  try {
+    const value = await AsyncStorage.getItem(CARD_CONTAINER_ORDER_KEY);
+    if (!value) return null;
+    return JSON.parse(value) as string[];
+  } catch (error) {
+    Sentry.captureException(error);
+    return null;
+  }
+};

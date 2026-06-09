@@ -905,6 +905,27 @@ const resources = {
       APPROVAL_TOKEN: 'Approval Token',
       SPENDER: 'Spender',
       APPROVE_TO: 'Approve to',
+      SCAM_WARNING_TITLE: 'Scam detected',
+      SUSPICIOUS_WARNING_TITLE: 'Proceed with caution',
+      ACKNOWLEDGE_RISK_TITLE: 'Acknowledge risk',
+      RISK_FOOTER_MESSAGE: 'Please review the alert above before signing.',
+      RISK_FOOTER_IGNORE_ALL: 'Ignore all',
+      APPROVE_AMOUNT_EXCEEDS_BALANCE:
+        'The approval amount is greater than your current {{symbol}} balance. Verify the amount before proceeding.',
+      SCAM_RECIPIENT_TITLE: 'Recipient flagged as scam',
+      SCAM_RECIPIENT_DESCRIPTION:
+        'This address is on our known-drainer list. Sending here usually means your funds are lost. Cancel and double-check the address, or tap continue to send anyway.',
+      PERMIT_AMOUNT_EXCEEDS_BALANCE: 'Exceeds current balance',
+      PERMIT_AMOUNT_UNLIMITED: 'Unlimited {{symbol}}',
+      PERMIT_AMOUNT_RAW: '{{amount}} {{symbol}} (raw units)',
+      PERMIT_EXPIRES_AT: 'Expires {{when}}',
+      PERMIT_KIND_EIP2612: 'Off-chain approval (EIP-2612)',
+      PERMIT_KIND_PERMIT2_SINGLE: 'Off-chain approval (Permit2)',
+      PERMIT_KIND_PERMIT2_BATCH: 'Off-chain batch approval (Permit2)',
+      DEADLINE: 'Deadline',
+      SCAM_DOMAIN_BLOCKED_TITLE: 'Scam site blocked',
+      SCAM_DOMAIN_BLOCKED_DESCRIPTION:
+        '{{url}} is on our known-scam list. Reported by support and confirmed to drain wallets. Returning to home page.',
       METHOD: 'Method',
       WALLET_CONNECT_PROPOSAL_EXPIRED: 'Connection request expired',
       WC_PROPOSAL_EXPIRED_DESCRIPTION:
@@ -2129,6 +2150,7 @@ const resources = {
       WE_WILL_USE_THIS_TO_SIGN_YOU_IN_OR_CREATE_AN_ACCOUNT:
         "We'll use this to sign you in or create an account for you if you don't have one yet",
       // MerchantRewardDetailContent translations
+      CLOSE_SHEET_A11Y: 'Close sheet',
       PROMOTIONAL_BONUS: 'Promotional Bonus',
       FAILED_TO_LOAD_MERCHANT_DETAILS: 'Failed to load merchant details',
       FAILED_TO_LOAD_MERCHANT_DATA: 'Failed to load merchant data',
@@ -2464,6 +2486,8 @@ const resources = {
         'You can tag each card with its purpose or a name you prefer, making it easier to find in the card stack!',
       LOAD_CARD: 'Load Card',
       VIEW_ALL_CARDS: 'View all cards',
+      ARRANGE_CARDS: 'Arrange Cards',
+      CUSTOMIZE_CARD_CONTAINERS: 'Customise',
       TAP_CARD_HINT: 'Just tap the card to see your card controls!',
       AVAILABLE_TO_SPEND: 'Available to spend',
       AVAILABLE_TO_SPEND_INFO:
