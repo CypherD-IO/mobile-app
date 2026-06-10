@@ -14,6 +14,7 @@ import {
   useFocusEffect,
 } from '@react-navigation/native';
 import { screenTitle } from '../../constants';
+import { setDeveloperMode } from '../../core/asyncStorage';
 import { Platform, StyleSheet, BackHandler, PanResponder } from 'react-native';
 import Video from 'react-native-video';
 import CypherTokenBottomSheetContent from '../../components/v2/cypherTokenBottomSheetContent';
@@ -60,11 +61,13 @@ function BottomNavigation({
   totalSections,
   onBack,
   onContinue,
+  onContinueLongPress,
 }: {
   currentIndex: number;
   totalSections: number;
   onBack: () => void;
   onContinue: () => void;
+  onContinueLongPress?: () => void;
 }) {
   const showBackButton = currentIndex > 0;
 
@@ -99,7 +102,11 @@ function BottomNavigation({
           className={`bg-white py-[14px] px-6 rounded-[30px] ${
             showBackButton ? 'ml-3' : 'flex-1'
           }`}
-          onPress={onContinue}>
+          onPress={onContinue}
+          // Hidden access: long-press enables developer mode and opens the
+          // Hosts & RPC screen so the backend host can be changed before any
+          // wallet is imported.
+          onLongPress={onContinueLongPress}>
           <CyDText className='text-[16px] font-bold text-center text-black'>
             {'Continue'}
           </CyDText>
@@ -274,6 +281,18 @@ const OnBoardingGetStarted = () => {
    * Handles showing the Cypher token details bottom sheet
    * Displays comprehensive token information in a modal
    */
+  /**
+   * Hidden developer access: long-pressing the Continue button enables developer
+   * mode and opens the Hosts & RPC screen, letting us point the app at a different
+   * backend host before importing a wallet (Options isn't reachable pre-import).
+   */
+  const handleSecretHostAccess = () => {
+    void (async () => {
+      await setDeveloperMode(true);
+      navigation.navigate(screenTitle.HOSTS_AND_RPC_SCREEN);
+    })();
+  };
+
   const handleShowTokenDetails = () => {
     showBottomSheet({
       id: 'cypher-token-details',
@@ -358,6 +377,7 @@ const OnBoardingGetStarted = () => {
         totalSections={totalSections}
         onBack={handleBack}
         onContinue={handleContinue}
+        onContinueLongPress={handleSecretHostAccess}
       />
     </CyDView>
   );

@@ -2498,6 +2498,13 @@ const resources = {
       CONFIRM_ACTION: 'Confirm',
       ACTIVATE_PHYSICAL_CARD_DESC:
         'Activate Physical card and enjoy the convenience of making purchases worldwide',
+      INTEGRITY_FAILED_TITLE: 'App Verification Failed',
+      INTEGRITY_FAILED_DESCRIPTION:
+        "We couldn't verify this app's integrity.\n\nBefore contacting support, please try:\n  • Check your internet connection\n  • Make sure you installed Cypher from the App Store or Play Store\n  • Close and reopen the app\n\nIf the issue persists, reach out to support@cypherhq.io and we'll help sort it out.",
+      INTEGRITY_UNSUPPORTED_DEVICE:
+        'This device does not support integrity verification. Cypher requires a supported device to continue.',
+      INTEGRITY_RETRY: 'Retry',
+      INTEGRITY_EXIT: 'Exit App',
     },
   },
 };
