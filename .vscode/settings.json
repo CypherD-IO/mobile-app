@@ -159,5 +159,6 @@
   "editor.smoothScrolling": true,
   "editor.cursorBlinking": "smooth",
   "editor.cursorSmoothCaretAnimation": "on",
-  "workbench.list.smoothScrolling": true
+  "workbench.list.smoothScrolling": true,
+  "specstory.cloudSync.enabled": "always"
 }

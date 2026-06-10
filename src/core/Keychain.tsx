@@ -58,6 +58,7 @@ import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
 import { KeychainErrors } from '../constants/KeychainErrors';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
+import { IIntegrity } from '../models/integrity.interface';
 import {
   ConnectionTypes,
   EcosystemsEnum,
@@ -917,8 +918,34 @@ export function decryptMnemonic(encryptedMnemonic: string, pin: string) {
   return mnemonic;
 }
 
+// In-flight lock to dedupe concurrent signIn calls. The HttpRequest interceptor
+// single-flights its own auth path via pendingTokenAcquire, but signIn is also
+// called directly (e.g. from useInitializer's getAuthTokenData). Without this
+// lock, those two paths racing on first wallet load each trigger a biometric
+// prompt — the "dual auth" bug. Concurrent callers now share one in-flight auth.
+let inFlightSignIn: ReturnType<typeof signInImpl> | null = null;
+
 export async function signIn(
   hdWallet: HdWalletContextDef,
+  integrity: IIntegrity,
+  setShowDefaultAuthRemoveModal?: Dispatch<SetStateAction<boolean>>,
+) {
+  if (inFlightSignIn) {
+    return await inFlightSignIn;
+  }
+  const work = signInImpl(hdWallet, integrity, setShowDefaultAuthRemoveModal);
+  inFlightSignIn = work;
+  void work.finally(() => {
+    if (inFlightSignIn === work) {
+      inFlightSignIn = null;
+    }
+  });
+  return await work;
+}
+
+async function signInImpl(
+  hdWallet: HdWalletContextDef,
+  integrity: IIntegrity,
   setShowDefaultAuthRemoveModal?: Dispatch<SetStateAction<boolean>>,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -980,12 +1007,14 @@ export async function signIn(
           signature = Array.from(signatureBytes);
         }
 
-        const result = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${address}/${ecosystem}`,
-          {
-            signature,
-          },
-        );
+        const integrityUrl =
+          ecosystem === EcosystemsEnum.SOLANA
+            ? `${ARCH_HOST}/v1/authentication/verify-message/integrity/${address}/solana`
+            : `${ARCH_HOST}/v1/authentication/verify-message/integrity/${address}`;
+        const result = await axios.post(integrityUrl, {
+          signature,
+          integrity,
+        });
         return {
           ...validationResponse,
           token: result.data.token,

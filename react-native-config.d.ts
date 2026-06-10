@@ -17,6 +17,7 @@ declare module 'react-native-config' {
     IS_TESTING: string;
     CUSTOMERIO_CDP_API_KEY: string;
     CUSTOMERIO_SITE_ID: string;
+    MOCK_INTEGRITY_TOKEN: string;
   }
 
   export const Config: NativeConfig;

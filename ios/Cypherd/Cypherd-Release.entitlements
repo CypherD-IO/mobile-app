@@ -3,11 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>aps-environment</key>
-	<string>development</string>
-	<key>com.apple.security.application-groups</key>
-	<array>
-		<string>group.com.cypherd.ioswalletv1.cio</string>
-	</array>
+	<string>production</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>webcredentials:cypherwallet.com</string>
@@ -15,6 +11,6 @@
 		<string>applinks:do1u9fw2zie02.cloudfront.net</string>
 	</array>
 	<key>com.apple.developer.devicecheck.appattest-environment</key>
-	<string>development</string>
+	<string>production</string>
 </dict>
 </plist>

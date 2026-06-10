@@ -1976,6 +1976,12 @@ export default function CypherCardScreen() {
     return [...pendingActivation, ...rest];
   }, [cardProfile, cardProvider]);
 
+  // Users with a hidden card should not be offered the "add new card" affordance.
+  const hasHiddenCard = useMemo((): boolean => {
+    const cards = get(cardProfile, [cardProvider, 'cards'], []) as Card[];
+    return cards.some((card: Card) => card.status === CardStatus.HIDDEN);
+  }, [cardProfile, cardProvider]);
+
   useEffect(() => {
     if (allDisplayableCards.length > 0) {
       const imagesToPreload = allDisplayableCards
@@ -2405,11 +2411,7 @@ export default function CypherCardScreen() {
           testID='card-load-btn'
           className='flex-1 flex-row items-center justify-between bg-p50 py-[10px] px-[16px] rounded-[24px]'
           onPress={onPressFundCard}
-          disabled={
-            shouldBlockAction() ||
-            shouldShowLocked() ||
-            shouldShowContactSupport()
-          }>
+          disabled={shouldBlockAction()}>
           <CyDText className='font-manrope font-semibold text-[14px] text-black leading-[145%] tracking-[-0.6px]'>
             {t('LOAD_CARD')}
           </CyDText>
@@ -2925,16 +2927,18 @@ export default function CypherCardScreen() {
                       />
                     </CyDView>
                   )}
-                  <CyDTouchView
-                    className='bg-white border border-[#EEEEEE] items-center justify-center'
-                    style={style.plusPill}
-                    onPress={onGetAdditionalCard}>
-                    <CyDMaterialDesignIcons
-                      name='plus-circle'
-                      size={16}
-                      className='text-black'
-                    />
-                  </CyDTouchView>
+                  {!hasHiddenCard && (
+                    <CyDTouchView
+                      className='bg-white border border-[#EEEEEE] items-center justify-center'
+                      style={style.plusPill}
+                      onPress={onGetAdditionalCard}>
+                      <CyDMaterialDesignIcons
+                        name='plus-circle'
+                        size={16}
+                        className='text-black'
+                      />
+                    </CyDTouchView>
+                  )}
                 </CyDView>
               </CyDView>
             )}

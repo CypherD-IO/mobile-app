@@ -32,6 +32,10 @@ import { get } from 'lodash';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { retryOnNetworkError } from '../../utils/walletConnectModalUtils';
+import { getIntegrityToken } from '../../hooks/useIntegrityService';
+import { useGlobalModalContext } from '../v2/GlobalModal';
+import { t } from 'i18next';
+import * as Sentry from '@sentry/react-native';
 /**
  * AsyncStorage key to check if we're in onboarding WalletConnect flow
  * If this key is set, we should NOT automatically load the wallet on connection
@@ -50,6 +54,7 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
   );
   const { isConnected, address, connector } = useAccount();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  const { showModal, hideModal } = useGlobalModalContext();
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
   const { connectionType, deleteWalletConfig } = useConnectionManager();
@@ -78,12 +83,31 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
         if (!address) {
           return;
         }
+        let integrity;
+        try {
+          integrity = await getIntegrityToken();
+        } catch (err) {
+          // Without a valid integrity token the backend will reject auth. Abort
+          // the WC sign-in attempt, drop the loading screen, and surface a
+          // modal so the user knows to retry instead of staring at a spinner.
+          Sentry.captureException(err);
+          setLoading(false);
+          showModal('state', {
+            type: 'error',
+            title: t('INTEGRITY_FAILED_TITLE'),
+            description: t('INTEGRITY_FAILED_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          return;
+        }
         const verifyMessageResponse = await retryOnNetworkError(
           async () =>
             await axios.post(
-              `${ARCH_HOST}/v1/authentication/verify-message/${address.toLowerCase()}?format=ERC-4361`,
+              `${ARCH_HOST}/v1/authentication/verify-message/integrity/${address.toLowerCase()}?format=ERC-4361`,
               {
                 signature: data,
+                integrity,
               },
             ),
         );
