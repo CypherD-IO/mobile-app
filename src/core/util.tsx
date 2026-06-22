@@ -93,6 +93,7 @@ import { CardDesign } from '../models/cardDesign.interface';
 import { CYPHER_CARD_IMAGES } from '../../assets/images/appImages';
 import { Card, ICardTransaction } from '../models/card.model';
 import { getCardColorByHex } from '../constants/cardColours';
+import { DeviceMetadata } from '../models/deviceMetaData.interface';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1578,4 +1579,18 @@ export const getBestErrorMessage = (
  */
 export const isTimeoutError = (errorMessage: string): boolean => {
   return errorMessage.includes('timed out') || errorMessage.includes('timeout');
+};
+
+export const getDeviceMetadata = async (): Promise<DeviceMetadata> => {
+  return {
+    brand: DeviceInfo.getBrand(),
+    manufacturer: await DeviceInfo.getManufacturer(),
+    model: DeviceInfo.getModel(),
+    deviceId: DeviceInfo.getDeviceId(),
+    systemVersion: DeviceInfo.getSystemVersion(),
+    appVersion: DeviceInfo.getVersion(),
+    buildNumber: DeviceInfo.getBuildNumber(),
+    bundleId: DeviceInfo.getBundleId(),
+    platform: Platform.OS === 'ios' ? 'ios' : 'android',
+  };
 };

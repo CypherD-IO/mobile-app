@@ -43,6 +43,7 @@ class MainApplication : Application(), MainApplicationContracts {
           // Packages that cannot be autolinked yet can be added manually here.
           add(CustomPreventScreenshotPackage())
           add(InstallReferrerPackage())
+          add(IntegrityPackage())
         }
 
       override fun getJSMainModuleName(): String = "index"

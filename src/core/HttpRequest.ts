@@ -14,6 +14,16 @@ import { signIn } from './Keychain';
 import { useGlobalModalContext } from '../components/v2/GlobalModal';
 import { AxiosRequestConfig } from 'axios';
 import RNExitApp from 'react-native-exit-app';
+import {
+  getIntegrityToken,
+  handleBackendIntegrityRejection,
+} from '../hooks/useIntegrityService';
+import {
+  clearAuthTokens,
+  getRefreshToken,
+  setAuthToken,
+  setRefreshToken,
+} from './asyncStorage';
 type RequestMethod =
   | 'GET'
   | 'GET_WITHOUT_AUTH'
@@ -32,12 +42,123 @@ interface IHttpResponse {
   status?: number;
   error?: any;
 }
+
+// Module-level single-flight guard for acquireValidToken. Multiple authed
+// requests racing 401s would otherwise each fire their own /refresh +
+// getIntegrityToken + signIn, hammering the backend and burning App Attest
+// attestation quota. All concurrent callers await the same in-flight promise.
+let pendingTokenAcquire: Promise<string | null> | null = null;
+
+// POST /v1/authentication/refresh returning { token, refreshToken }. The backend's
+// JwtRefreshGuard (refresh-token-strategy.ts) extracts the refresh token from the
+// Authorization: Bearer header via ExtractJwt.fromAuthHeaderAsBearerToken() — NOT
+// from the body. Sending it in the body (the original assumption) made every
+// refresh 401, forcing a full biometric signIn on every request.
+async function refreshSession(): Promise<{
+  token: string;
+  refreshToken: string;
+} | null> {
+  const stored = await getRefreshToken();
+  if (!stored) return null;
+  try {
+    const refreshToken = JSON.parse(String(stored));
+    const host = hostWorker.getHost('ARCH_HOST');
+    const { data } = await axios.post(
+      `${host}/v1/authentication/refresh`,
+      {},
+      { headers: { Authorization: `Bearer ${String(refreshToken)}` } },
+    );
+    if (data?.token) {
+      await setAuthToken(data.token);
+      if (data.refreshToken) {
+        await setRefreshToken(data.refreshToken);
+      }
+      return data;
+    }
+    return null;
+  } catch (e) {
+    // Refresh token dead or endpoint returned 401 — clear tokens so caller falls
+    // through to the full login flow (Case 5).
+    await clearAuthTokens();
+    return null;
+  }
+}
+
 export default function useAxios() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { showModal, hideModal } = useGlobalModalContext();
 
   let token = globalContext.globalState.token;
+
+  // Refresh-first, then re-login with integrity (Cases 4 & 5 in the auth flow).
+  // Returns a new access token string on success, or null if both paths failed.
+  // Single-flighted via pendingTokenAcquire (module-level) so concurrent 401s
+  // share one in-flight refresh/login instead of each running their own.
+  const acquireValidToken = async (): Promise<string | null> => {
+    if (pendingTokenAcquire) return pendingTokenAcquire;
+    pendingTokenAcquire = (async () => {
+      const refreshed = await refreshSession();
+      if (refreshed?.token) {
+        globalContext.globalDispatch({
+          type: GlobalContextType.SIGN_IN,
+          sessionToken: refreshed.token,
+        });
+        return refreshed.token;
+      }
+      let integrityUsed: { isAssertion?: boolean } | null = null;
+      // Track whether signIn threw vs. returned a structured non-VALID response.
+      // Only the "threw" path indicates a possible backend integrity rejection
+      // (e.g., backend lost the attestation record). A structured INVALID /
+      // NEEDS_UPDATE means integrity verification passed and the signature
+      // check downstream of it failed — wiping the keyId in that case would
+      // force a fresh attestation, which Apple rate-limits.
+      let signInThrew = false;
+      try {
+        const integrity = await getIntegrityToken();
+        integrityUsed = integrity;
+        const signInResponse = await signIn(hdWalletContext, integrity);
+        if (
+          signInResponse?.message === SignMessageValidationType.VALID &&
+          has(signInResponse, 'token')
+        ) {
+          // Persist to storage (not just in-memory dispatch) so the next
+          // refreshSession/verifySessionToken can reuse this session instead of
+          // re-triggering a full biometric signIn.
+          await setAuthToken(signInResponse.token);
+          if (has(signInResponse, 'refreshToken')) {
+            await setRefreshToken(signInResponse.refreshToken);
+          }
+          globalContext.globalDispatch({
+            type: GlobalContextType.SIGN_IN,
+            sessionToken: signInResponse.token,
+          });
+          return signInResponse.token;
+        }
+        // signIn() swallows axios errors and returns undefined. Treat undefined
+        // as "threw" so an integrity rejection (401) still clears the keyId.
+        if (!signInResponse) {
+          signInThrew = true;
+        }
+      } catch (e: any) {
+        signInThrew = true;
+        Sentry.captureException(e?.message ?? e);
+      }
+      // Only clear the stored keyId if both:
+      //   - we sent an assertion (there was a stored keyId to begin with), and
+      //   - signIn actually threw (a structured non-VALID does not imply
+      //     the backend rejected integrity)
+      if (integrityUsed?.isAssertion && signInThrew) {
+        await handleBackendIntegrityRejection();
+      }
+      return null;
+    })();
+    try {
+      return await pendingTokenAcquire;
+    } finally {
+      pendingTokenAcquire = null;
+    }
+  };
 
   // Create a fresh response object per request to avoid cross-call mutations
 
@@ -66,27 +187,21 @@ export default function useAxios() {
   axiosInstance.interceptors.request.use(
     async (req: any) => {
       if (!isTokenValid(token)) {
-        try {
-          const signInResponse = await signIn(hdWalletContext);
-          if (
-            signInResponse?.message === SignMessageValidationType.VALID &&
-            has(signInResponse, 'token')
-          ) {
-            token = signInResponse?.token;
-            globalContext.globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: token,
-            });
-            req.headers.Authorization = `Bearer ${String(token)}`;
-            return req;
-          }
-        } catch (e: any) {
-          Sentry.captureException(e.message);
+        const newToken = await acquireValidToken();
+        if (newToken) {
+          token = newToken;
+          req.headers.Authorization = `Bearer ${String(token)}`;
+          return req;
         }
-      } else {
-        req.headers.Authorization = `Bearer ${String(token)}`;
-        return req;
+        // Refresh + re-login both failed. Reject so axios surfaces the failure
+        // to the caller instead of dispatching the request with a stale/empty
+        // bearer (which would 401 again and loop).
+        return await Promise.reject(
+          new Error('Unable to acquire auth token'),
+        );
       }
+      req.headers.Authorization = `Bearer ${String(token)}`;
+      return req;
     },
     async function (error) {
       return await Promise.reject(error);
@@ -97,27 +212,18 @@ export default function useAxios() {
   axiosFormInstance.interceptors.request.use(
     async (req: any) => {
       if (!isTokenValid(token)) {
-        try {
-          const signInResponse = await signIn(hdWalletContext);
-          if (
-            signInResponse?.message === SignMessageValidationType.VALID &&
-            has(signInResponse, 'token')
-          ) {
-            token = signInResponse?.token;
-            globalContext.globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: token,
-            });
-            req.headers.Authorization = `Bearer ${String(token)}`;
-            return req;
-          }
-        } catch (e: any) {
-          Sentry.captureException(e.message);
+        const newToken = await acquireValidToken();
+        if (newToken) {
+          token = newToken;
+          req.headers.Authorization = `Bearer ${String(token)}`;
+          return req;
         }
-      } else {
-        req.headers.Authorization = `Bearer ${String(token)}`;
-        return req;
+        return await Promise.reject(
+          new Error('Unable to acquire auth token'),
+        );
       }
+      req.headers.Authorization = `Bearer ${String(token)}`;
+      return req;
     },
     async function (error) {
       return await Promise.reject(error);
@@ -208,20 +314,9 @@ export default function useAxios() {
       } catch (error: any) {
         const errorCode = error?.response?.status;
         if (errorCode === 401) {
-          try {
-            const signInResponse = await signIn(hdWalletContext);
-            if (
-              signInResponse?.message === SignMessageValidationType.VALID &&
-              has(signInResponse, 'token')
-            ) {
-              token = signInResponse?.token;
-              globalContext.globalDispatch({
-                type: GlobalContextType.SIGN_IN,
-                sessionToken: token,
-              });
-            }
-          } catch (e: any) {
-            Sentry.captureException(e.message);
+          const newToken = await acquireValidToken();
+          if (newToken) {
+            token = newToken;
           }
           shouldRetry += 1;
         } else if (errorCode === 444 || errorCode === 403) {

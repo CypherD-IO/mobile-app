@@ -578,3 +578,9 @@ export enum ReferralOnboardingStatus {
   FIRST_LOAD = 'FIRST_LOAD',
   FIRST_SPEND = 'FIRST_SPEND',
 }
+
+// Case-sensitive: backend integrity endpoint rejects 'ios' (lowercase).
+export enum DeviceType {
+  IOS = 'iOS',
+  ANDROID = 'android',
+}

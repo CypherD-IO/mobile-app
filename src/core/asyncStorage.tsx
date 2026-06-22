@@ -849,3 +849,30 @@ export const getCardContainerOrder = async (): Promise<string[] | null> => {
     return null;
   }
 };
+
+// Opaque Secure Enclave key handle. Not a secret — the private key lives in
+// the Enclave and cannot be exported. Plain AsyncStorage is sufficient.
+export const setAppAttestKeyId = async (keyId: string): Promise<void> => {
+  try {
+    await AsyncStorage.setItem('APP_ATTEST_KEY_ID', keyId);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getAppAttestKeyId = async (): Promise<string | null> => {
+  try {
+    return await AsyncStorage.getItem('APP_ATTEST_KEY_ID');
+  } catch (error) {
+    Sentry.captureException(error);
+    return null;
+  }
+};
+
+export const clearAppAttestKeyId = async (): Promise<void> => {
+  try {
+    await AsyncStorage.removeItem('APP_ATTEST_KEY_ID');
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
