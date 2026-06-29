@@ -1,7 +1,7 @@
 import { hostWorker } from '../global';
 import axios, { DEFAULT_AXIOS_TIMEOUT } from './Http';
 import { useContext } from 'react';
-import { GlobalContext, isTokenValid } from '../core/globalContext';
+import { GlobalContext } from '../core/globalContext';
 import * as Sentry from '@sentry/react-native';
 import { HdWalletContext } from './util';
 import {
@@ -9,7 +9,6 @@ import {
   SignMessageValidationType,
 } from '../constants/enum';
 import { get, has } from 'lodash';
-import { t } from 'i18next';
 import { signIn } from './Keychain';
 import { useGlobalModalContext } from '../components/v2/GlobalModal';
 import { AxiosRequestConfig } from 'axios';
@@ -49,7 +48,6 @@ export default function useAxios() {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${String(token)}`,
     },
   });
 
@@ -59,70 +57,30 @@ export default function useAxios() {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'multipart/form-data',
-      Authorization: `Bearer ${String(token)}`,
     },
   });
 
-  axiosInstance.interceptors.request.use(
-    async (req: any) => {
-      if (!isTokenValid(token)) {
-        try {
-          const signInResponse = await signIn(hdWalletContext);
-          if (
-            signInResponse?.message === SignMessageValidationType.VALID &&
-            has(signInResponse, 'token')
-          ) {
-            token = signInResponse?.token;
-            globalContext.globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: token,
-            });
-            req.headers.Authorization = `Bearer ${String(token)}`;
-            return req;
-          }
-        } catch (e: any) {
-          Sentry.captureException(e.message);
-        }
-      } else {
-        req.headers.Authorization = `Bearer ${String(token)}`;
-        return req;
-      }
-    },
-    async function (error) {
-      return await Promise.reject(error);
-    },
-  );
+  // Attach Authorization from the closure-captured token, but only if the caller
+  // didn't pass one in the per-request config. Auth recovery on token failure is
+  // handled by the 401 response retry below — not here — so a single render's
+  // stale closure can't trigger an unintended signIn.
+  const attachAuth = (req: any) => {
+    if (!req.headers) {
+      req.headers = {};
+    }
+    if (!req.headers.Authorization && token) {
+      req.headers.Authorization = `Bearer ${String(token)}`;
+    }
+    return req;
+  };
 
-  // Add the same interceptor to the form instance
-  axiosFormInstance.interceptors.request.use(
-    async (req: any) => {
-      if (!isTokenValid(token)) {
-        try {
-          const signInResponse = await signIn(hdWalletContext);
-          if (
-            signInResponse?.message === SignMessageValidationType.VALID &&
-            has(signInResponse, 'token')
-          ) {
-            token = signInResponse?.token;
-            globalContext.globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: token,
-            });
-            req.headers.Authorization = `Bearer ${String(token)}`;
-            return req;
-          }
-        } catch (e: any) {
-          Sentry.captureException(e.message);
-        }
-      } else {
-        req.headers.Authorization = `Bearer ${String(token)}`;
-        return req;
-      }
-    },
-    async function (error) {
-      return await Promise.reject(error);
-    },
-  );
+  axiosInstance.interceptors.request.use(attachAuth, async function (error) {
+    return await Promise.reject(error);
+  });
+
+  axiosFormInstance.interceptors.request.use(attachAuth, async function (error) {
+    return await Promise.reject(error);
+  });
 
   async function request(
     method: RequestMethod,
@@ -361,22 +319,46 @@ export default function useAxios() {
     timeout = DEFAULT_AXIOS_TIMEOUT,
     config?: AxiosRequestConfig<object> | undefined,
   ) => {
-    try {
-      const { data, status } = await axiosFormInstance.post(url, formData, {
-        ...config,
-        timeout,
-      });
-      return { isError: false, data, status };
-    } catch (error: any) {
-      return {
-        isError: true,
-        error:
-          error?.response?.data?.errors?.[0] ??
-          error?.response?.data?.message ??
-          null,
-        status: error?.response?.status,
-      };
-    }
+    let shouldRetry = 0;
+    do {
+      try {
+        const { data, status } = await axiosFormInstance.post(url, formData, {
+          ...config,
+          timeout,
+        });
+        return { isError: false, data, status };
+      } catch (error: any) {
+        const errorCode = error?.response?.status;
+        if (errorCode === 401 && shouldRetry < 1) {
+          try {
+            const signInResponse = await signIn(hdWalletContext);
+            if (
+              signInResponse?.message === SignMessageValidationType.VALID &&
+              has(signInResponse, 'token')
+            ) {
+              token = signInResponse?.token;
+              globalContext.globalDispatch({
+                type: GlobalContextType.SIGN_IN,
+                sessionToken: token,
+              });
+            }
+          } catch (e: any) {
+            Sentry.captureException(e.message);
+          }
+          shouldRetry += 1;
+          continue;
+        }
+        return {
+          isError: true,
+          error:
+            error?.response?.data?.errors?.[0] ??
+            error?.response?.data?.message ??
+            null,
+          status: error?.response?.status,
+        };
+      }
+    } while (shouldRetry < 2);
+    return { isError: true };
   };
 
   return {

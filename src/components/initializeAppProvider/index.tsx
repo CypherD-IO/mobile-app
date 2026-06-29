@@ -299,7 +299,15 @@ export const InitializeAppProvider = ({
   }, [referrerData]);
 
   useEffect(() => {
+    console.log(
+      '[BIO-DEBUG] address-effect:fired',
+      JSON.stringify({
+        hasAddress: !!address,
+        addressPrefix: address ? String(address).slice(0, 10) : null,
+      }),
+    );
     if (address) {
+      console.log('[BIO-DEBUG] address-effect:invoking-getHosts');
       void getHosts(
         setForcedUpdate,
         setTamperedSignMessageModal,
