@@ -9,6 +9,8 @@ import { CYPHERD_ROOT_DATA } from './util';
 import { WalletHoldings } from './portfolio';
 import { ConnectionTypes } from '../constants/enum';
 import { ASYNC_STORAGE_KEYS_TO_PRESERVE } from '../constants/data';
+import { WinddownStepId } from '../constants/winddown';
+import type { WindDownConfig } from '../store/sunsetStore';
 
 export const storePortfolioData = async (
   value: WalletHoldings,
@@ -703,6 +705,85 @@ export const getOverchargeDccInfoModalShown = async () => {
     return id;
   } catch (error) {
     Sentry.captureException(error);
+  }
+};
+
+// Sunset wind-down config cache (see sunsetStore). Caches the whole config
+// (flag + dates) so both are available instantly on launch, from the last
+// backend response — the frontend never hardcodes them.
+export const getSunsetConfigCache =
+  async (): Promise<WindDownConfig | null> => {
+    try {
+      const stored = await AsyncStorage.getItem('SUNSET_CONFIG_CACHE');
+      return stored != null ? JSON.parse(stored) : null;
+    } catch (error) {
+      Sentry.captureException(error);
+      return null;
+    }
+  };
+
+export const setSunsetConfigCache = async (
+  config: WindDownConfig,
+): Promise<void> => {
+  try {
+    await AsyncStorage.setItem('SUNSET_CONFIG_CACHE', JSON.stringify(config));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+// Winddown ("sunset") step-completion cache. A single key holds a JSON boolean
+// map keyed by WinddownStepId. Once a step reads complete its flag is set here
+// so the per-step check is skipped on subsequent landings (see useWinddownSteps).
+export const getWinddownStepsCompleted = async (): Promise<
+  Partial<Record<WinddownStepId, boolean>>
+> => {
+  try {
+    const stored = await AsyncStorage.getItem('WINDDOWN_STEPS_COMPLETED');
+    return stored != null ? JSON.parse(stored) : {};
+  } catch (error) {
+    Sentry.captureException(error);
+    return {};
+  }
+};
+
+export const setWinddownStepCompleted = async (
+  id: WinddownStepId,
+): Promise<void> => {
+  try {
+    const current = await getWinddownStepsCompleted();
+    current[id] = true;
+    await AsyncStorage.setItem(
+      'WINDDOWN_STEPS_COMPLETED',
+      JSON.stringify(current),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+// Timestamp (ms) of the last successful Secure Wallet backup verification.
+// Drives the "Last verification" row on the Secure Wallet screen.
+export const setSecureWalletLastVerifiedAt = async (
+  value: number,
+): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(
+      'SECURE_WALLET_LAST_VERIFIED_AT',
+      JSON.stringify(value),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getSecureWalletLastVerifiedAt = async (): Promise<number | null> => {
+  try {
+    const stored = await AsyncStorage.getItem('SECURE_WALLET_LAST_VERIFIED_AT');
+    return stored != null ? JSON.parse(stored) : null;
+  } catch (error) {
+    Sentry.captureException(error);
+    return null;
   }
 };
 

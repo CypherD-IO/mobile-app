@@ -31,43 +31,51 @@ export interface IEpochRange {
 }
 
 /**
- * Individual candidate bribe data
+ * Per-token bribe detail for display (matches the dApp /bribes/claim shape).
+ */
+export interface IBribeTokenDetail {
+  tokenAddress: string;
+  tokenSymbol: string;
+  decimals: number;
+  /** Raw on-chain amount. */
+  amount: string;
+  /** Human-readable amount provided by the API. */
+  amountFormatted: string;
+  valueUSD?: string;
+  logo?: string;
+  claimStatus: {
+    isClaimed: boolean;
+    claimableAmount?: string;
+    claimTxHash?: string;
+  };
+  bribeId?: string;
+  epochRange?: IEpochRange;
+}
+
+/**
+ * Bribes grouped per veNFT for a candidate/merchant.
+ */
+export interface IVeNFTBribeGroup {
+  veNFTId: string;
+  epochNumber?: number;
+  epochStartTime?: number;
+  epochEndTime?: number;
+  votingPower?: string;
+  bribes: IBribeTokenDetail[];
+}
+
+/**
+ * Individual candidate/merchant bribe data (display shape).
  */
 export interface ICandidateBribe {
-  /**
-   * The veNFT token ID associated with this bribe
-   */
-  veNFTId: string;
-  
-  /**
-   * Candidate/Merchant ID (bytes32 format)
-   */
+  /** Candidate/Merchant ID (bytes32 format) */
   candidateId: string;
-  
-  /**
-   * Human-readable candidate/merchant name
-   */
-  candidateName: string;
-  
-  /**
-   * Array of bribe token contract addresses
-   */
-  bribeTokens: string[];
-  
-  /**
-   * Array of amounts for each bribe token (in wei/native units)
-   */
-  bribeAmounts: string[];
-  
-  /**
-   * Epoch range for this bribe claim
-   */
-  epochRange: IEpochRange;
-  
-  /**
-   * Status of this bribe claim
-   */
-  claimStatus: BribeClaimStatus;
+  /** Human-readable merchant name */
+  merchantName: string;
+  parentMerchantId?: string;
+  logoUrl?: string;
+  /** Bribes grouped per veNFT. */
+  veNFTBribes: IVeNFTBribeGroup[];
 }
 
 /**

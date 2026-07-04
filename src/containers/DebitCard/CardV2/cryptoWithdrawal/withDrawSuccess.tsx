@@ -13,6 +13,7 @@ import {
   ParamListBase,
   useRoute,
   RouteProp,
+  StackActions,
 } from '@react-navigation/native';
 import { screenTitle } from '../../../../constants';
 import { Card } from '../../../../models/card.model';
@@ -54,7 +55,15 @@ export default function WithDrawSuccess() {
         <Button
           title={t('DONE')}
           onPress={() => {
-            navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
+            // The withdraw flow lives in OptionsStack, so DEBIT_CARD_SCREEN
+            // (Card tab's stack) isn't reachable directly — navigate cross-tab.
+            navigation.navigate(screenTitle.CARD, {
+              screen: screenTitle.DEBIT_CARD_SCREEN,
+            });
+            // Switching tabs leaves the Options stack sitting on this success
+            // screen; reset it to its root so the Options tab doesn't reopen
+            // here later.
+            navigation.dispatch(StackActions.popToTop());
           }}
         />
       </CyDView>

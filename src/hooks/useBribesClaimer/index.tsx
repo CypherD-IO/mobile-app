@@ -125,7 +125,11 @@ export default function useBribesClaimer() {
         );
       }
 
-      // Encode the claimBribes function call
+      // Encode the claimBribes function call.
+      // NOTE: the claim window is inclusive of `from` and exclusive of `until`,
+      // so we send `until - 1` (matches the dApp hook, which subtracts 1
+      // internally). Without this the window is off-by-one and the claim can
+      // revert / return nothing.
       const contractData = encodeFunctionData({
         abi: ELECTION_ABI,
         functionName: 'claimBribes',
@@ -134,7 +138,7 @@ export default function useBribesClaimer() {
           params.bribeTokens as Array<`0x${string}`>,
           params.candidates as Array<`0x${string}`>,
           BigInt(params.fromTimestamp),
-          BigInt(params.untilTimestamp),
+          BigInt(params.untilTimestamp - 1),
         ],
       });
 

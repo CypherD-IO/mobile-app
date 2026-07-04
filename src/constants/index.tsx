@@ -138,6 +138,7 @@ export const screenTitle = {
   REWARDS_SCREEN: 'RewardsScreen',
   REWARDS_LOCK_WEB_VIEW: 'RewardsLockWebView',
   CLAIM_REWARD: 'ClaimReward',
+  CLAIM_INCENTIVES: 'ClaimIncentives',
   REFERRALS_VIEW_ALL: 'ReferralsViewAll',
   ALL_REFERRAL_CODES: 'AllReferralCodes',
   MIGRATE_FUNDS: 'migrateFunds',
@@ -164,6 +165,13 @@ export const screenTitle = {
   CYPHER_AGENT: 'CypherAgent',
   CYPHER_AGENT_SCREEN: 'CypherAgentScreen',
   SPEND_ANALYTICS_SCREEN: 'SpendAnalyticsScreen',
+  // Winddown / sunset "Home" landing
+  HOME: 'Home',
+  HOME_SCREEN: 'HomeScreen',
+  WINDDOWN_LEARN_MORE: 'WinddownLearnMore',
+  SECURE_WALLET: 'SecureWallet',
+  SECURE_WALLET_REVEAL: 'SecureWalletReveal',
+  SECURE_WALLET_VERIFY: 'SecureWalletVerify',
 };
 
 export const fontsName = {

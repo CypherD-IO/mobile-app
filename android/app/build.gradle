@@ -100,8 +100,8 @@ android {
         applicationId "com.cypherd.androidwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 773
-        versionName System.getenv('VERSION_NAME') ?: "4.87"
+        versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 1045
+        versionName System.getenv('VERSION_NAME') ?: "5.17"
         missingDimensionStrategy 'react-native-camera', 'general'
         // Used by AndroidManifest.xml: android:usesCleartextTraffic="${usesCleartextTraffic}"
         manifestPlaceholders = [usesCleartextTraffic: "false"]
@@ -147,7 +147,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp-urlconnection:4.9.1")
     implementation('com.facebook.fresco:fresco:3.6.0')
     // For animated GIF support
-    implementation('com.facebook.fresco:animated-gif:3.6.0')
+  implementation('com.facebook.fresco:animated-gif:3.6.0')
     // For WebP support, including animated WebP
     implementation('com.facebook.fresco:animated-webp:3.6.0')
     implementation('com.facebook.fresco:webpsupport:3.6.0')

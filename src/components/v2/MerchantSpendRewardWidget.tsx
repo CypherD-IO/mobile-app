@@ -276,6 +276,11 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
     );
   };
 
+  // Hide the whole widget once the merchants response is empty (0 merchants).
+  if (!loading && (merchantRewardsData?.items?.length ?? 0) === 0) {
+    return null;
+  }
+
   return (
     <CyDView className='border-[1px] border-n40 rounded-[16px] py-4'>
       {/* Header Section */}

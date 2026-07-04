@@ -9,6 +9,12 @@ export interface CardProfile {
   email: string;
   provider?: CardProviders;
   isAutoloadConfigured: boolean;
+  /**
+   * Backend override (arch): when true, this user may keep loading their card
+   * even while the sunset is active — the load-disabled sheet and other sunset
+   * load restrictions are bypassed for them.
+   */
+  loadingEnabled?: boolean;
   [CardProviders.PAYCADDY]?: {
     personId?: string;
     applicationStatus: CardApplicationStatus;

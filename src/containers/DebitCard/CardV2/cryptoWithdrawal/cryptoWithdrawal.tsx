@@ -4,7 +4,6 @@ import {
   CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
   CyDText,
-  CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../../styles/tailwindComponents';
@@ -55,6 +54,9 @@ export default function CryptoWithdrawal() {
   const insets = useSafeAreaInsets();
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
   const ethereumAddress = hdWallet?.state?.wallet?.ethereum?.address ?? '';
+  const solanaAddress = hdWallet?.state?.wallet?.solana?.address ?? '';
+  // A Solana-only account (no EVM address) withdraws to Solana; otherwise Base.
+  const isSolanaAccount = !ethereumAddress && Boolean(solanaAddress);
   const { showModal, hideModal } = useGlobalModalContext();
 
   const [amount, setAmount] = useState('');
@@ -74,6 +76,8 @@ export default function CryptoWithdrawal() {
         response.data.withdrawableAmount
       ) {
         setAvailableAmount(String(response.data.withdrawableAmount));
+        // Full withdrawal only: prefill the amount to the max available.
+        setAmount(String(response.data.withdrawableAmount));
         setReason(response.data.reasons);
       } else {
         setAvailableAmount('');
@@ -90,8 +94,10 @@ export default function CryptoWithdrawal() {
     const postBody: WithdrawPost = {
       idempotencyKey: uuidv4(),
       amount: ceil(parseFloat(amount || '0'), 2),
-      chain: ChainBackendNames.BASE,
-      toAddress: ethereumAddress,
+      chain: isSolanaAccount
+        ? ChainBackendNames.SOLANA
+        : ChainBackendNames.BASE,
+      toAddress: isSolanaAccount ? solanaAddress : ethereumAddress,
       isCharged: true,
       initiateOnConfirmation: true,
     };
@@ -175,13 +181,12 @@ export default function CryptoWithdrawal() {
               {t('AMOUNT_TO_BE_WITHDRAWN')}
             </CyDText>
             <CyDView className='mt-[8px] rounded-[16px] p-[24px] bg-n0'>
-              <CyDTextInput
-                className='text-[44px] p-[12px] text-base400 font-bold bg-n10 border-n40 border-[1px] rounded-[8px]'
-                value={`$${amount}`}
-                onChangeText={text => setAmount(text.replace(/^\$/, ''))}
-                placeholder='$0'
-                returnKeyType='done'
-              />
+              {/* Full withdrawal only — amount is fixed to the max available. */}
+              <CyDView className='p-[12px] bg-n10 border-n40 border-[1px] rounded-[8px]'>
+                <CyDText className='text-[44px] text-base400 font-bold'>
+                  {`$${amount}`}
+                </CyDText>
+              </CyDView>
               {!isEmpty(availableAmount) && (
                 <CyDText className='text-[12px] text-n200 font-medium mt-[8px]'>
                   {' You have '}
@@ -201,27 +206,11 @@ export default function CryptoWithdrawal() {
                   )}
                 </CyDText>
               )}
-              <CyDView className='mt-[16px] flex flex-row justify-evenly'>
-                {[0.05, 0.1, 0.2, 0.3, 0.5].map(percentage => (
-                  <CyDTouchView
-                    key={percentage}
-                    className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
-                    onPress={() => {
-                      setAmount(
-                        DecimalHelper.toString(
-                          DecimalHelper.ceil(
-                            DecimalHelper.multiply(availableAmount, percentage),
-                            2,
-                          ),
-                        ),
-                      );
-                    }}>
-                    <CyDText className='text-[14px] font-bold text-base400'>
-                      {`${percentage * 100}%`}
-                    </CyDText>
-                  </CyDTouchView>
-                ))}
-              </CyDView>
+              {!isEmpty(availableAmount) && (
+                <CyDText className='text-[12px] text-n200 font-medium mt-[4px]'>
+                  {'The maximum amount is set as default for a full withdrawal.'}
+                </CyDText>
+              )}
             </CyDView>
           </CyDView>
         </CyDKeyboardAwareScrollView>

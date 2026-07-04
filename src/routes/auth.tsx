@@ -81,6 +81,7 @@ import HostsAndRPCScreen from '../containers/Options/hostsAndRPC';
 import Referrals from '../containers/Referrals';
 import Rewards from '../containers/Rewards';
 import ClaimReward from '../containers/Rewards/claimReward';
+import ClaimBribesScreen from '../containers/Rewards/claimBribes';
 import AppearanceSelector from '../containers/Options/theme';
 import ChangePin from '../containers/PinAuthetication/changePin';
 import ConfirmPin from '../containers/PinAuthetication/confirmPin';
@@ -130,7 +131,12 @@ import MerchantRewardListScreen from '../containers/DebitCard/CardV2/MerchantRew
 import PremiumScreen from '../containers/Premium';
 import CypherAgentScreen from '../containers/CypherAgent';
 import SpendAnalyticsScreen from '../containers/DebitCard/CardV2/SpendAnalyticsScreen';
+import HomeScreen from '../containers/Home/HomeScreen';
+import WinddownLearnMoreScreen from '../containers/Home/LearnMoreScreen';
+import SecureWalletScreen from '../containers/Home/secureWallet/SecureWalletScreen';
+import SecureWalletRevealScreen from '../containers/Home/secureWallet/SecureWalletRevealScreen';
 
+const HomeStack = createNativeStackNavigator();
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
 const FundCardStack = createNativeStackNavigator();
@@ -207,6 +213,68 @@ const CustomHeaderWithoutBack = ({
     </CyDView>
   );
 };
+
+export function HomeStackScreen() {
+  return (
+    <HomeStack.Navigator initialRouteName={screenTitle.HOME_SCREEN}>
+      <HomeStack.Screen
+        name={screenTitle.HOME_SCREEN}
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name={screenTitle.WINDDOWN_LEARN_MORE}
+        component={WinddownLearnMoreScreen}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name={screenTitle.SECURE_WALLET}
+        component={SecureWalletScreen}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name={screenTitle.SECURE_WALLET_REVEAL}
+        component={SecureWalletRevealScreen}
+        options={{ headerShown: false }}
+      />
+      {/* Reached from the Home/sunset cards — kept in this stack so back returns
+          to Home (not the Rewards tab's history). */}
+      <HomeStack.Screen
+        name={screenTitle.CLAIM_REWARD}
+        component={ClaimReward}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name={screenTitle.CLAIM_INCENTIVES}
+        component={ClaimBribesScreen}
+        options={{ headerShown: false }}
+      />
+      {/* Crypto-withdrawal flow — also registered here (not just OptionsStack)
+          so the sunset "Withdraw card balance" step stays in the Home tab and
+          the Options tab is never left sitting on the withdraw screen. */}
+      <HomeStack.Screen
+        name={screenTitle.CRYPTO_WITHDRAWAL}
+        component={CryptoWithdrawal}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name={screenTitle.WITHDRAW_CONFIRMATION}
+        component={WithdrawConfirmation}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name={screenTitle.WITHDRAW_SUCCESS}
+        component={WithDrawSuccess}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name={screenTitle.WITHDRAW_HISTORY}
+        component={WithdrawHistory}
+        options={{ headerShown: false }}
+      />
+    </HomeStack.Navigator>
+  );
+}
 
 export function PortfolioStackScreen() {
   const { keyboardHeight } = useKeyboard();

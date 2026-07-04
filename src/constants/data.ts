@@ -1261,7 +1261,3 @@ export const TargetRouterABI = [
     type: 'function',
   },
 ] as const;
-
-// Free SafePal Claim URL
-export const FREE_SAFEPAL_CLAIM_URL =
-  'https://www.safepal.com/en/claimX1/v2/#/v/party100912/pa3ln2';

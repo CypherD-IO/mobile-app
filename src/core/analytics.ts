@@ -131,9 +131,6 @@ export const AnalyticEvent = {
   EXCLUSIVE_OFFER_GOT_IT_CLICKED: 'exclusive_offer_got_it_clicked',
   CARD_COLOUR_UPDATED: 'card_colour_updated',
   CARD_TAG_UPDATED: 'card_tag_updated',
-  FREE_SAFEPAL_CLAIM_CLICKED: 'free_safepal_claim_clicked',
-  FREE_SAFEPAL_DONT_SHOW_CLICKED: 'free_safepal_dont_show_clicked',
-  FREE_SAFEPAL_UPGRADE_CLICKED: 'free_safepal_upgrade_clicked',
 };
 
 export const logAnalyticsToFirebase = (

@@ -35,6 +35,7 @@ import useAxios from '../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import { useGlobalModalContext } from './v2/GlobalModal';
 import { screenTitle } from '../constants';
+import { blockPremiumIfSunset } from '../store/sunsetStore';
 import {
   ParamListBase,
   NavigationProp,
@@ -748,6 +749,7 @@ export default function SelectPlanModal({
                   <Button
                     title={`Get Premium for $${proPlanData?.cost}`}
                     onPress={() => {
+                      if (blockPremiumIfSunset()) return;
                       setConsentModalVisible(true);
                     }}
                     loading={loading}
