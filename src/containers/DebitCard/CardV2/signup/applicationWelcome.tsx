@@ -29,7 +29,7 @@ import AppImages, {
 import OfferTagComponent from '../../../../components/v2/OfferTagComponent';
 import ExclusiveOfferModal from '../../../../components/v2/exclusiveOfferModal';
 import { useOnboardingReward } from '../../../../contexts/OnboardingRewardContext';
-import { getIsSunsetEnabled } from '../../../../store/sunsetStore';
+import { useSunset } from '../../../../store/sunsetStore';
 import {
   useTheme as useAppTheme,
   Theme,
@@ -108,7 +108,21 @@ const styles = StyleSheet.create({
 const ApplicationWelcome = (): JSX.Element => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const { isSunsetEnabled } = useSunset();
   const insets = useSafeAreaInsets();
+
+  // During the sunset there are no new card applications. If the app briefly
+  // routes here before the wind-down flag has resolved (a fresh launch with an
+  // empty config cache), bounce to the card screen the moment it turns on — so
+  // this onboarding screen is never left showing during wind-down.
+  React.useEffect(() => {
+    if (isSunsetEnabled) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: screenTitle.CARD_SCREEN }],
+      });
+    }
+  }, [isSunsetEnabled]);
   const [isVideoPaused, setIsVideoPaused] = useState(true);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [showExclusiveOfferModal, setShowExclusiveOfferModal] = useState(false);
@@ -144,12 +158,12 @@ const ApplicationWelcome = (): JSX.Element => {
   // Show modal once when reward slot is available — but never during the
   // sunset, when we don't promote card onboarding.
   React.useEffect(() => {
-    if (isRewardSlotAvailable && !deadline && !getIsSunsetEnabled()) {
+    if (isRewardSlotAvailable && !deadline && !isSunsetEnabled) {
       setTimeout(() => {
         setShowExclusiveOfferModal(true);
       }, 500);
     }
-  }, [isRewardSlotAvailable, deadline]);
+  }, [isRewardSlotAvailable, deadline, isSunsetEnabled]);
 
   // Handle app state changes (for notification panel, etc.)
   React.useEffect(() => {
