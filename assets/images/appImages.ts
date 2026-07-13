@@ -109,6 +109,8 @@ const MONEY_BAG = require('./money-bag.png');
 const CYPHER_WARNING_RED = require('./CypherWarningRed.png');
 const CYPHER_ENJOYING = require('./cypher-enjoying.png');
 const CYPHER_LOVE = require('./cypher-love.png');
+const LOVE_CYPHER = { uri: `${S3_BUCKET_URL_ICONS}/loveCypher.png` };
+const GREEN_CHECK_3D = { uri: `${S3_BUCKET_URL_ICONS}/3dGreencheck.png` };
 const REFER = require('./refer.png');
 const CARD_KYC_BACKGROUND = require('./cardKYCBackground.png');
 const DEBIT_CARD_BACKGROUND = require('./debit-card-background.png');
@@ -799,14 +801,6 @@ const CARD_COLOUR_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/cardColorIcon.png`,
 };
 
-const SAFEPAL_CLAIM_MODAL = {
-  uri: `${S3_BUCKET_URL_ICONS}/safepalClaimModal.png`,
-};
-
-const SAFEPAL_CLAIM_MODAL_NON_PREMIUM = {
-  uri: `${S3_BUCKET_URL_ICONS}/safepalClaimModalNonPremium.png`,
-};
-
 export const AppImagesMap = {
   common: {
     EMPTY_PERSON,
@@ -948,6 +942,8 @@ export const AppImagesMap = {
     MONEY_BAG,
     CYPHER_ENJOYING,
     CYPHER_LOVE,
+    LOVE_CYPHER,
+    GREEN_CHECK_3D,
     REFER,
     CARD_KYC_BACKGROUND,
     DEBIT_CARD_BACKGROUND,
@@ -1137,8 +1133,6 @@ export const AppImagesMap = {
     CARD_ELECTRIC_LIME,
     CARD_JET_BLACK,
     CARD_COLOUR_ICON,
-    SAFEPAL_CLAIM_MODAL,
-    SAFEPAL_CLAIM_MODAL_NON_PREMIUM,
     TX_LOGO,
   },
   [Theme.LIGHT]: {
@@ -1295,6 +1289,8 @@ enum AppImages {
   INFO_CIRCLE = 'INFO_CIRCLE',
   CYPHER_ENJOYING = 'CYPHER_ENJOYING',
   CYPHER_LOVE = 'CYPHER_LOVE',
+  LOVE_CYPHER = 'LOVE_CYPHER',
+  GREEN_CHECK_3D = 'GREEN_CHECK_3D',
   REFER = 'REFER',
   CARD_KYC_BACKGROUND = 'CARD_KYC_BACKGROUND',
   DEBIT_CARD_BACKGROUND = 'DEBIT_CARD_BACKGROUND',
@@ -1480,8 +1476,6 @@ enum AppImages {
   CARD_ELECTRIC_LIME = 'CARD_ELECTRIC_LIME',
   CARD_JET_BLACK = 'CARD_JET_BLACK',
   CARD_COLOUR_ICON = 'CARD_COLOUR_ICON',
-  SAFEPAL_CLAIM_MODAL = 'SAFEPAL_CLAIM_MODAL',
-  SAFEPAL_CLAIM_MODAL_NON_PREMIUM = 'SAFEPAL_CLAIM_MODAL_NON_PREMIUM',
   TX_LOGO = 'TX_LOGO',
 }
 

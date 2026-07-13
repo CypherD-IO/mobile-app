@@ -29,6 +29,7 @@ import AppImages, {
 import OfferTagComponent from '../../../../components/v2/OfferTagComponent';
 import ExclusiveOfferModal from '../../../../components/v2/exclusiveOfferModal';
 import { useOnboardingReward } from '../../../../contexts/OnboardingRewardContext';
+import { getIsSunsetEnabled } from '../../../../store/sunsetStore';
 import {
   useTheme as useAppTheme,
   Theme,
@@ -140,9 +141,10 @@ const ApplicationWelcome = (): JSX.Element => {
   // Dynamic background colour for video placeholder to avoid black flash.
   const videoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
 
-  // Show modal once when reward slot is available
+  // Show modal once when reward slot is available — but never during the
+  // sunset, when we don't promote card onboarding.
   React.useEffect(() => {
-    if (isRewardSlotAvailable && !deadline) {
+    if (isRewardSlotAvailable && !deadline && !getIsSunsetEnabled()) {
       setTimeout(() => {
         setShowExclusiveOfferModal(true);
       }, 500);

@@ -39,6 +39,7 @@ import { ClaimRewardResponse } from '../../models/rewardsClaim.interface';
 import { IBribeClaimResponse } from '../../models/bribesClaim.interface';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import { useSunset } from '../../store/sunsetStore';
 
 interface EarningBreakdown {
   id: string;
@@ -301,6 +302,7 @@ const ClaimRewardsBottomSheetContent = ({
   navigation: any;
 }) => {
   const { t } = useTranslation();
+  const { isSunsetEnabled } = useSunset();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { showModal, hideModal } = useGlobalModalContext();
   const [claimingToWallet, setClaimingToWallet] = useState(false);
@@ -432,23 +434,26 @@ const ClaimRewardsBottomSheetContent = ({
     <CyDView className='flex-1 bg-n0 px-6'>
       {/* Options */}
       <CyDView className='gap-y-6 my-8'>
-        {/* Deposit and boost Reward */}
-        <CyDTouchView
-          onPress={onPressDepositAndBoost}
-          disabled={claimingAndLock || claimingToWallet}
-          className={`bg-p50 rounded-[16px] pb-4 pt-2 px-6 ${
-            claimingAndLock || claimingToWallet ? 'opacity-50' : ''
-          }`}>
-          <CyDView className='items-center'>
-            <CyDIcons name='card-filled' className='text-black text-[40px]' />
-            <CyDText className='text-black font-semibold text-center mb-1'>
-              {t('CLAIM_AND_LOCK_REWARD')}
-            </CyDText>
-            <CyDText className='text-black text-[14px] text-center opacity-80'>
-              {t('USE_CLAIMABLE_CYPHER_TOKENS_AS_COLLATERAL')}
-            </CyDText>
-          </CyDView>
-        </CyDTouchView>
+        {/* Deposit and boost Reward — hidden during the sunset (locking/boosting
+            no longer makes sense; only claim-to-wallet remains). */}
+        {!isSunsetEnabled && (
+          <CyDTouchView
+            onPress={onPressDepositAndBoost}
+            disabled={claimingAndLock || claimingToWallet}
+            className={`bg-p50 rounded-[16px] pb-4 pt-2 px-6 ${
+              claimingAndLock || claimingToWallet ? 'opacity-50' : ''
+            }`}>
+            <CyDView className='items-center'>
+              <CyDIcons name='card-filled' className='text-black text-[40px]' />
+              <CyDText className='text-black font-semibold text-center mb-1'>
+                {t('CLAIM_AND_LOCK_REWARD')}
+              </CyDText>
+              <CyDText className='text-black text-[14px] text-center opacity-80'>
+                {t('USE_CLAIMABLE_CYPHER_TOKENS_AS_COLLATERAL')}
+              </CyDText>
+            </CyDView>
+          </CyDTouchView>
+        )}
 
         {/* Claim to wallet */}
         <CyDTouchView

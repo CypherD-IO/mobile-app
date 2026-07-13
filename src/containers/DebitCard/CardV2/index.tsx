@@ -63,6 +63,11 @@ import Button from '../../../components/v2/button';
 import Loading from '../../../components/v2/loading';
 import TermsAndConditionsModal from '../../../components/v2/termsAndConditionsModal';
 import { screenTitle } from '../../../constants';
+import { useSunset } from '../../../store/sunsetStore';
+import SunsetLoadBlockedSheet from '../../Home/components/SunsetLoadBlockedSheet';
+import SunsetCardsCancelledBanner from './components/SunsetCardsCancelledBanner';
+import SunsetCardsEmptyState from './components/SunsetCardsEmptyState';
+import { shouldShowCancelledCards } from './cardsCancelled';
 import {
   CARD_IMAGE_ASPECT_RATIO,
   DateRange,
@@ -703,11 +708,15 @@ export default function CypherCardScreen() {
   };
   const isFocused = useIsFocused();
   const { t } = useTranslation();
+  const { isSunsetEnabled } = useSunset();
   const { getWithAuth, postWithAuth, patchWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile: CardProfile | undefined =
     globalContext?.globalState?.cardProfile;
+  // Sunset blocks card loading — unless the backend opted this user in via
+  // `loadingEnabled`, in which case loading stays fully available for them.
+  const sunsetLoadBlocked = isSunsetEnabled && !cardProfile?.loadingEnabled;
   const [cardBalance, setCardBalance] = useState('0');
   const [currentCardIndex] = useState(0);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -1494,7 +1503,7 @@ export default function CypherCardScreen() {
     return false;
   };
 
-  const isAccountLocked =
+  const isAccountLockedBase =
     shouldBlockAction() || shouldShowLocked() || shouldShowContactSupport();
 
   const onCardStatusChange = async (card: Card): Promise<void> => {
@@ -1926,6 +1935,29 @@ export default function CypherCardScreen() {
   };
 
   const onPressFundCard = () => {
+    // Sunset: card loading is disabled — show the blocked sheet instead
+    // (unless this user is opted in via `loadingEnabled`).
+    if (sunsetLoadBlocked) {
+      showBottomSheet({
+        id: 'sunset-load-blocked',
+        snapPoints: ['52%'],
+        showCloseButton: false,
+        scrollable: true,
+        backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+        content: (
+          <SunsetLoadBlockedSheet
+            close={() => hideBottomSheet('sunset-load-blocked')}
+            onLearnMore={() => {
+              hideBottomSheet('sunset-load-blocked');
+              navigation.navigate(screenTitle.HOME, {
+                screen: screenTitle.WINDDOWN_LEARN_MORE,
+              });
+            }}
+          />
+        ),
+      });
+      return;
+    }
     navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
       currentCardProvider: cardProvider,
       currentCardIndex: 0,
@@ -1975,6 +2007,19 @@ export default function CypherCardScreen() {
     );
     return [...pendingActivation, ...rest];
   }, [cardProfile, cardProvider]);
+
+  // Sunset: once cards are cancelled the active-cards array is empty — show the
+  // disabled "winding down" state. Folded into isAccountLocked so the balance +
+  // action buttons render disabled just like lockdown.
+  const isSunsetCardsCancelled = shouldShowCancelledCards(
+    isSunsetEnabled,
+    isLayoutRendered,
+    allDisplayableCards.length,
+  );
+  const isAccountLocked = isAccountLockedBase || isSunsetCardsCancelled;
+  // Copy variant: had a card (cancelled) vs never had one (no new cards).
+  const everHadCard =
+    rcApplicationStatus === CardApplicationStatus.COMPLETED;
 
   // Users with a hidden card should not be offered the "add new card" affordance.
   const hasHiddenCard = useMemo((): boolean => {
@@ -2632,7 +2677,7 @@ export default function CypherCardScreen() {
           )}
 
           {/* Premium upsell — always last, not reorderable */}
-          {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
+          {planInfo?.planId !== CypherPlanId.PRO_PLAN && !isSunsetEnabled && (
             <CyDView className='bg-p10 p-6 rounded-xl'>
               <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
                 <CyDText className='font-extrabold text-[20px]'>
@@ -2927,7 +2972,7 @@ export default function CypherCardScreen() {
                       />
                     </CyDView>
                   )}
-                  {!hasHiddenCard && (
+                  {!hasHiddenCard && !isSunsetEnabled && (
                     <CyDTouchView
                       className='bg-white border border-[#EEEEEE] items-center justify-center'
                       style={style.plusPill}
@@ -3031,9 +3076,15 @@ export default function CypherCardScreen() {
               </CyDView>
             )}
 
+            {isSunsetCardsCancelled && (
+              <SunsetCardsCancelledBanner everHadCard={everHadCard} />
+            )}
+
             {renderBalanceSection()}
 
-            {showAllCards ? (
+            {isSunsetCardsCancelled ? (
+              <SunsetCardsEmptyState everHadCard={everHadCard} />
+            ) : showAllCards ? (
               <FlatList<Card>
                 data={allDisplayableCards}
                 keyExtractor={cardListKeyExtractor}

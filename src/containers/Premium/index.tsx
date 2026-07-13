@@ -27,6 +27,7 @@ import useAxios from '../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { screenTitle } from '../../constants';
+import { blockPremiumIfSunset } from '../../store/sunsetStore';
 import {
   ParamListBase,
   NavigationProp,
@@ -255,6 +256,7 @@ export default function PremiumScreen() {
   };
 
   const handleGetPremiumPress = () => {
+    if (blockPremiumIfSunset()) return;
     if (!hasCards) {
       // User doesn't have a card, show modal to redirect to card page
       setNoCardModalVisible(true);

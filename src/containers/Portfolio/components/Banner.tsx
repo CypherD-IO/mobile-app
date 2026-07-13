@@ -13,6 +13,7 @@ import { capitalize } from 'lodash';
 import { IconNames } from '../../../customFonts';
 import { HdWalletContext } from '../../../core/util';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
+import { useSunset } from '../../../store/sunsetStore';
 
 /**
  * Action button configuration
@@ -46,6 +47,7 @@ export const Banner = ({
   onMorePress,
 }: BannerProps): JSX.Element => {
   const { t } = useTranslation();
+  const { isSunsetEnabled } = useSunset();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { hideBalance } = hdWalletContext.state;
 
@@ -80,13 +82,19 @@ export const Banner = ({
       icon: 'swap-horizontal',
       onPress: onSwapPress,
     },
-    {
-      id: 'more',
-      label: t('MORE', 'More'),
-      icon: 'dots-horizontal',
-      isMaterialIcon: true,
-      onPress: onMorePress,
-    },
+    // Sunset: "More" (the Buy/Sell sheet) is hidden only while the sunset flag
+    // is on; off → shown as before.
+    ...(isSunsetEnabled
+      ? []
+      : [
+          {
+            id: 'more',
+            label: t('MORE', 'More'),
+            icon: 'dots-horizontal' as const,
+            isMaterialIcon: true,
+            onPress: onMorePress,
+          },
+        ]),
   ];
 
   return (

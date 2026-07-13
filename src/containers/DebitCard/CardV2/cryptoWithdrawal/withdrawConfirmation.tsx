@@ -56,6 +56,10 @@ export default function WithdrawConfirmation() {
     withdrawableAmount,
   } = route.params ?? {};
   const ethereumAddress = hdWallet?.state?.wallet?.ethereum?.address ?? '';
+  const solanaAddress = hdWallet?.state?.wallet?.solana?.address ?? '';
+  // Solana-only accounts (no EVM address) receive on their Solana address.
+  const toAddress =
+    !ethereumAddress && solanaAddress ? solanaAddress : ethereumAddress;
 
   const [loading, setLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -105,7 +109,7 @@ export default function WithdrawConfirmation() {
                 {'To'}
               </CyDText>
               <CyDText className='font-medium text-[12px] text-n200'>
-                {ethereumAddress}
+                {toAddress}
               </CyDText>
             </CyDView>
             <CyDView className='flex flex-col gap-1'>

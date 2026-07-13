@@ -36,6 +36,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
 import ChooseChainModalV2 from '../../components/v2/chooseChainModal';
 import Button from '../../components/v2/button';
+import { getIsSunsetEnabled } from '../../store/sunsetStore';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
 import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContext';
@@ -619,8 +620,15 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   useEffect(() => {
     const checkRedirectToCard = async () => {
-      // Suppress redirect if user explicitly came from Card Welcome (skip flow)
-      if (isFocused && !hasRedirectedToCard.current && !fromCardWelcome) {
+      // Suppress redirect if the user came from Card Welcome (skip flow), or
+      // while the sunset is active — during wind-down we don't push users into
+      // the card flow; the Home tab is their landing and card is opt-in.
+      if (
+        isFocused &&
+        !hasRedirectedToCard.current &&
+        !fromCardWelcome &&
+        !getIsSunsetEnabled()
+      ) {
         const cardProfile = globalStateContext?.globalState?.cardProfile;
         const isFirstLaunch = await getFirstLaunchAfterWalletCreation();
         if (

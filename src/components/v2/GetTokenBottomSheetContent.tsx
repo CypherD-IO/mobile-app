@@ -7,6 +7,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
+import { useSunset } from '../../store/sunsetStore';
 
 // Configuration for each option in the bottom sheet
 interface OptionConfig {
@@ -45,6 +46,7 @@ const GetTokenBottomSheetContent: React.FC<GetTokenBottomSheetContentProps> = ({
   mode = 'getToken',
 }) => {
   const { t } = useTranslation();
+  const { isSunsetEnabled } = useSunset();
 
   /**
    * Handle option press - closes the sheet and triggers the callback
@@ -57,21 +59,24 @@ const GetTokenBottomSheetContent: React.FC<GetTokenBottomSheetContentProps> = ({
     [close],
   );
 
-  // Define options based on mode
+  // Define options based on mode. Sunset: Buy/Sell on-ramp is hidden only while
+  // the sunset flag is on (functionality retained); off → shown as before.
   const getOptions = (): OptionConfig[] => {
+    const buyOption: OptionConfig = {
+      id: 'buy',
+      icon: 'card-filled',
+      iconType: 'cypher',
+      title: t('BUY_CRYPTO', 'Buy Crypto'),
+      description: t(
+        'BUY_CRYPTO_DESCRIPTION',
+        'Purchase with a debit card or bank account',
+      ),
+      onPress: () => handleOptionPress(onBuyPress),
+    };
+
     if (mode === 'getToken') {
       return [
-        {
-          id: 'buy',
-          icon: 'card-filled',
-          iconType: 'cypher',
-          title: t('BUY_CRYPTO', 'Buy Crypto'),
-          description: t(
-            'BUY_CRYPTO_DESCRIPTION',
-            'Purchase with a debit card or bank account',
-          ),
-          onPress: () => handleOptionPress(onBuyPress),
-        },
+        ...(isSunsetEnabled ? [] : [buyOption]),
         {
           id: 'receive',
           icon: 'wallet',
@@ -81,24 +86,15 @@ const GetTokenBottomSheetContent: React.FC<GetTokenBottomSheetContentProps> = ({
             'RECEIVE_CRYPTO_DESCRIPTION',
             'Receive crypto by scanning a QR code or sharing your address',
           ),
-          onPress: () => handleOptionPress(onReceivePress ?? (() => {})),
+          onPress: () => handleOptionPress(onReceivePress ?? (() => undefined)),
         },
       ];
     }
 
     // moreOptions mode - Buy and Sell
+    if (isSunsetEnabled) return [];
     return [
-      {
-        id: 'buy',
-        icon: 'card-filled',
-        iconType: 'cypher',
-        title: t('BUY_CRYPTO', 'Buy Crypto'),
-        description: t(
-          'BUY_CRYPTO_DESCRIPTION',
-          'Purchase with a debit card or bank account',
-        ),
-        onPress: () => handleOptionPress(onBuyPress),
-      },
+      buyOption,
       {
         id: 'sell',
         icon: 'bank-transfer-out',
@@ -108,7 +104,7 @@ const GetTokenBottomSheetContent: React.FC<GetTokenBottomSheetContentProps> = ({
           'SELL_CRYPTO_DESCRIPTION',
           'Convert crypto to fiat currency',
         ),
-        onPress: () => handleOptionPress(onSellPress ?? (() => {})),
+        onPress: () => handleOptionPress(onSellPress ?? (() => undefined)),
       },
     ];
   };

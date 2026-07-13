@@ -20,14 +20,20 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../constants';
 import { typography } from '../constants/typography';
-import { CyDIcons, CyDMaterialDesignIcons, CyDView } from '../styles/tailwindComponents';
+import {
+  CyDIcons,
+  CyDMaterialDesignIcons,
+  CyDView,
+} from '../styles/tailwindComponents';
 import {
   CypherAgentStackScreen,
   DebitCardStackScreen,
+  HomeStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen,
   RewardsStackScreen,
 } from './auth';
+import { useSunset } from '../store/sunsetStore';
 import { Theme, useTheme } from '../reducers/themeReducer';
 import clsx from 'clsx';
 import { useColorScheme } from 'nativewind';
@@ -76,11 +82,13 @@ const screensToHaveNavBar = [
   screenTitle.ON_META,
   screenTitle.SEND_INVITE_CODE_SCREEN,
   screenTitle.CYPHER_AGENT_SCREEN,
+  screenTitle.HOME_SCREEN,
 ];
 
 const TabStack = React.memo(
   function TabStack(props: TabStackProps) {
     const { theme, changeTheme } = useTheme();
+    const { isSunsetEnabled, initialized: sunsetInitialized } = useSunset();
     const { colorScheme } = useColorScheme();
     const savedThemeRef = useRef<Theme | null>(null);
     const { deepLinkData, setDeepLinkData } = props;
@@ -207,6 +215,21 @@ const TabStack = React.memo(
       },
       [],
     );
+
+    // When the wind-down fetch turns the sunset flag on *after* mount (e.g. a
+    // `false` cache that refreshes to `true`), the Home tab gets added but isn't
+    // focused — bring the user to it. Only fires on the off→on transition.
+    const prevSunsetEnabledRef = useRef(isSunsetEnabled);
+    useEffect(() => {
+      if (
+        isSunsetEnabled &&
+        !prevSunsetEnabledRef.current &&
+        navigationRef.current
+      ) {
+        navigationRef.current.navigate(screenTitle.HOME);
+      }
+      prevSunsetEnabledRef.current = isSunsetEnabled;
+    }, [isSunsetEnabled]);
 
     // Extract common deep link navigation logic into a reusable function
     const handleNavigation = useCallback(
@@ -455,7 +478,7 @@ const TabStack = React.memo(
       return theme === Theme.DARK ? '#FFFFFF' : '#000000';
     }, [theme, colorScheme]);
 
-    if (!initialTab) {
+    if (!initialTab || !sunsetInitialized) {
       return <CyDView />;
     }
 
@@ -514,7 +537,9 @@ const TabStack = React.memo(
             headerShown: false,
             tabBarIcon: ({ focused }) => {
               let iconSource = '';
-              if (route.name === screenTitle.PORTFOLIO) {
+              if (route.name === screenTitle.HOME) {
+                iconSource = 'sunset';
+              } else if (route.name === screenTitle.PORTFOLIO) {
                 iconSource = 'portfolio';
               } else if (route.name === screenTitle.CARD) {
                 iconSource = 'card-filled';
@@ -558,7 +583,23 @@ const TabStack = React.memo(
               <CyDView className='bg-n0 h-full border-t-[0.5px] border-n40' />
             ),
           })}
-          initialRouteName={initialTab}>
+          initialRouteName={
+            isSunsetEnabled ? screenTitle.HOME : initialTab
+          }>
+          {/* Sunset: Home is the default landing tab only while the sunset flag
+              is on; off → the original Card/Portfolio landing. */}
+          {isSunsetEnabled && (
+            <Tab.Screen
+              name={screenTitle.HOME}
+              component={HomeStackScreen}
+              options={{
+                lazy: true,
+                headerShown: false,
+                tabBarLabel: 'Home',
+                tabBarTestID: 'tab-home',
+              }}
+            />
+          )}
           <Tab.Screen
             name={screenTitle.PORTFOLIO}
             component={PortfolioStackScreen}
@@ -576,15 +617,19 @@ const TabStack = React.memo(
               tabBarTestID: 'tab-card',
             }}
           />
-          <Tab.Screen
-            name={screenTitle.CYPHER_AGENT}
-            component={CypherAgentStackScreen}
-            options={{
-              lazy: true,
-              headerShown: false,
-              tabBarLabel: 'Cypher AI',
-            }}
-          />
+          {/* Sunset: the Cypher AI tab is hidden only while the sunset flag is
+              on; off → it's back. */}
+          {!isSunsetEnabled && (
+            <Tab.Screen
+              name={screenTitle.CYPHER_AGENT}
+              component={CypherAgentStackScreen}
+              options={{
+                lazy: true,
+                headerShown: false,
+                tabBarLabel: 'Cypher AI',
+              }}
+            />
+          )}
           <Tab.Screen
             name={screenTitle.REWARDS}
             component={RewardsStackScreen}

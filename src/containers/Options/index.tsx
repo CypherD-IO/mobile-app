@@ -40,6 +40,7 @@ import {
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../../constants';
+import { blockPremiumIfSunset, useSunset } from '../../store/sunsetStore';
 import AutoLoadOptionsModal from '../DebitCard/bridgeCard/autoLoadOptions';
 import TelegramOptionsModal from '../../components/telegramOptionsModal';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
@@ -114,6 +115,7 @@ export default function OptionsHub() {
   const { globalState, globalDispatch } = useContext(
     GlobalContext,
   ) as GlobalContextDef;
+  const { isSunsetEnabled } = useSunset();
   const cardProfile = globalState.cardProfile;
   const currentCardProvider = cardProfile?.provider;
   const card = cardProfile?.rc?.cards?.[0];
@@ -176,16 +178,21 @@ export default function OptionsHub() {
           },
         ]
       : []),
-    {
-      icon: 'loop-object',
-      apiDependent: true,
-      title: t('AUTO_LOAD'),
-      onPress: () => {
-        isAutoloadConfigured
-          ? setIsAutoLoadOptionsVisible(true)
-          : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-      },
-    },
+    // Sunset: Auto Load is removed app-wide while the sunset flag is on.
+    ...(isSunsetEnabled
+      ? []
+      : [
+          {
+            icon: 'loop-object',
+            apiDependent: true,
+            title: t('AUTO_LOAD'),
+            onPress: () => {
+              isAutoloadConfigured
+                ? setIsAutoLoadOptionsVisible(true)
+                : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+            },
+          },
+        ]),
     {
       icon: 'connect-link',
       apiDependent: true,
@@ -290,15 +297,21 @@ export default function OptionsHub() {
   ];
 
   const supportAndOtherOptions = [
-    {
-      icon: 'web-filled',
-      title: t('BROWSER'),
-      apiDependent: false,
-      onPress: () => {
-        logAnalyticsToFirebase(AnalyticEvent.BROWSER_CLICK, {});
-        navigation.navigate(screenTitle.BROWSER);
-      },
-    },
+    // Sunset: the in-app browser is hidden only while the sunset flag is on;
+    // off → shown as before.
+    ...(isSunsetEnabled
+      ? []
+      : [
+          {
+            icon: 'web-filled',
+            title: t('BROWSER'),
+            apiDependent: false,
+            onPress: () => {
+              logAnalyticsToFirebase(AnalyticEvent.BROWSER_CLICK, {});
+              navigation.navigate(screenTitle.BROWSER);
+            },
+          },
+        ]),
     {
       icon: 'headphone',
       title: t('SUPPORT'),
@@ -690,7 +703,7 @@ export default function OptionsHub() {
             </CyDView>
           )}
 
-          {!isPremiumUser && (
+          {!isPremiumUser && !isSunsetEnabled && (
             <CyDView className='bg-base20 p-6 rounded-[8px] border border-base200'>
               <CyDView className='flex flex-row items-center gap-x-[4px] justify-start'>
                 <CyDText className='font-extrabold text-[20px]'>
@@ -741,6 +754,7 @@ export default function OptionsHub() {
                 title={'Explore Premium'}
                 type={ButtonType.DARK}
                 onPress={() => {
+                  if (blockPremiumIfSunset()) return;
                   navigation.navigate(screenTitle.PREMIUM_SCREEN);
                   void logAnalyticsToFirebase(
                     AnalyticEvent.EXPLORE_PREMIUM_CARD_PAGE_CTA,

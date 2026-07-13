@@ -149,9 +149,12 @@ export const CyDModal = Modal;
 
 export const CyDRefreshControl = RefreshControl;
 
-export const CyDScrollView = (props: ScrollViewProps) => (
-  <ScrollView showsVerticalScrollIndicator={false} {...props} />
+export const CyDScrollView = React.forwardRef<ScrollView, ScrollViewProps>(
+  (props, ref) => (
+    <ScrollView ref={ref} showsVerticalScrollIndicator={false} {...props} />
+  ),
 );
+CyDScrollView.displayName = 'CyDScrollView';
 
 export const CyDSwitch = Switch;
 

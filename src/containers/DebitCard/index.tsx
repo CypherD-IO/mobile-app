@@ -13,6 +13,7 @@ import {
 } from '../../constants/enum';
 import Loading from '../../components/v2/loading';
 import { screenTitle } from '../../constants';
+import { useSunset } from '../../store/sunsetStore';
 import { HdWalletContext } from '../../core/util';
 import {
   CyDImageBackground,
@@ -44,6 +45,7 @@ export interface RouteProps {
 
 export default function DebitCardScreen(props: RouteProps) {
   const { t } = useTranslation();
+  const { isSunsetEnabled, initialized: sunsetInitialized } = useSunset();
 
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -122,6 +124,13 @@ export default function DebitCardScreen(props: RouteProps) {
       const checkCardApplicationStatus = async () => {
         if (isLoading || !isMounted) return;
 
+        // Wait until the sunset flag has resolved before deciding the route.
+        // Otherwise the first focus (flag still defaulting to false) sends a new
+        // user to the card-application welcome, and hasRedirected then blocks the
+        // sunset short-circuit from correcting it — hence "welcome shows the
+        // first visit, not the second". Kept behind <Loading/> until resolved.
+        if (!sunsetInitialized) return;
+
         if (!isReadOnlyWallet) {
           try {
             isLoading = true;
@@ -139,6 +148,23 @@ export default function DebitCardScreen(props: RouteProps) {
                 setLoading(false);
                 setRedirectResolved(true);
               }
+              return;
+            }
+
+            // Sunset: no new card applications — route everyone (incl. pending /
+            // waitlist / new) straight to the card screen, which renders the
+            // "cards cancelled" state when there are no active cards.
+            if (isSunsetEnabled && !hasRedirected.current) {
+              hasRedirected.current = true;
+              props.navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: screenTitle.CARD_SCREEN,
+                    params: { cardProvider: provider },
+                  },
+                ],
+              });
               return;
             }
 
@@ -283,7 +309,12 @@ export default function DebitCardScreen(props: RouteProps) {
       return () => {
         isMounted = false;
       };
-    }, [isReadOnlyWallet, globalContext.globalState.cardProfile]),
+    }, [
+      isReadOnlyWallet,
+      globalContext.globalState.cardProfile,
+      isSunsetEnabled,
+      sunsetInitialized,
+    ]),
   );
 
   const shouldCheckApplication = (currentCardProfile: CardProfile) => {
