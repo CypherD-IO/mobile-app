@@ -5,7 +5,7 @@ import {
   useFocusEffect,
 } from '@react-navigation/native';
 import Web3Auth, {
-  LOGIN_PROVIDER,
+  AUTH_CONNECTION,
   MFA_LEVELS,
 } from '@web3auth/react-native-sdk';
 import { useTranslation } from 'react-i18next';
@@ -463,8 +463,10 @@ export default function OnBoardingOptions() {
               : 'apple',
         });
       } else if (providerType === ProviderType.SOLANA) {
+        // v9 dropped `solanaPrivateKey`; on a Solana-namespace instance the
+        // provider is keyed with the ed25519 secret, which v8 returned here.
         _privateKey = (await provider.provider.request({
-          method: 'solanaPrivateKey',
+          method: 'eth_private_key',
         })) as string;
         const base58privatekey = bs58.encode(Buffer.from(_privateKey, 'hex'));
         if (!_privateKey || _privateKey.length === 0) {
@@ -493,8 +495,8 @@ export default function OnBoardingOptions() {
   };
 
   const handleEmailLogin = async (provider: Web3Auth) => {
-    await provider.login({
-      loginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS,
+    await provider.connectTo({
+      authConnection: AUTH_CONNECTION.EMAIL_PASSWORDLESS,
       extraLoginOptions: {
         login_hint: email,
       },
@@ -515,8 +517,8 @@ export default function OnBoardingOptions() {
   };
 
   const googleLogin = async (provider: Web3Auth) => {
-    await provider.login({
-      loginProvider: LOGIN_PROVIDER.GOOGLE,
+    await provider.connectTo({
+      authConnection: AUTH_CONNECTION.GOOGLE,
       mfaLevel: MFA_LEVELS.NONE,
     });
 
@@ -534,8 +536,8 @@ export default function OnBoardingOptions() {
   };
 
   const appleLogin = async (provider: Web3Auth) => {
-    await provider.login({
-      loginProvider: LOGIN_PROVIDER.APPLE,
+    await provider.connectTo({
+      authConnection: AUTH_CONNECTION.APPLE,
       mfaLevel: MFA_LEVELS.NONE,
     });
 

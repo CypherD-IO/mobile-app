@@ -1,14 +1,12 @@
 import { useContext, useMemo } from 'react';
 import Web3Auth, {
+  CHAIN_NAMESPACES,
   WEB3AUTH_NETWORK,
   MFA_FACTOR,
+  type ProviderConfig,
 } from '@web3auth/react-native-sdk';
-import type { CustomChainConfig } from '@web3auth/base';
 import * as WebBrowser from '@toruslabs/react-native-web-browser';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
-import { SolanaPrivateKeyProvider } from '@web3auth/solana-provider';
-import { CHAIN_NAMESPACES } from '@web3auth/base';
 import Config from 'react-native-config';
 import { GlobalContext } from '../../core/globalContext';
 import { ChainBackendNames } from '../../constants/server';
@@ -40,7 +38,7 @@ export default function useWeb3Auth() {
 
   const getChainConfig = (
     chainName: ChainBackendNames,
-  ): CustomChainConfig | null => {
+  ): ProviderConfig | null => {
     // Return null for excluded chains
     if (
       chainName === ChainBackendNames.ALL ||
@@ -76,6 +74,7 @@ export default function useWeb3Auth() {
           blockExplorerUrl: getBlockExplorer(chainName),
           ticker: getTicker(chainName),
           tickerName: getTickerName(chainName),
+          logo: 'https://images.toruswallet.io/eth.svg',
         };
       case ChainBackendNames.SOLANA:
         return {
@@ -250,29 +249,26 @@ export default function useWeb3Auth() {
     },
   };
   const { web3AuthEvm, web3AuthSolana } = useMemo(() => {
-    const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
-      config: { chainConfig: baseChainConfig },
-    });
-    const solanaPrivateKeyProvider = new SolanaPrivateKeyProvider({
-      config: { chainConfig: solanaChainConfig },
-    });
+    // v9 picks the key curve from the active chain namespace, and has no
+    // cross-namespace switching, so EVM and Solana stay separate instances.
+    const baseOptions = {
+      clientId,
+      redirectUrl,
+      network: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
+      sessionTime: 30 * 24 * 60 * 60,
+      mfaSettings,
+    };
 
     return {
       web3AuthEvm: new Web3Auth(WebBrowser, EncryptedStorage, {
-        clientId,
-        redirectUrl,
-        network: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
-        privateKeyProvider: ethereumPrivateKeyProvider,
-        sessionTime: 30 * 24 * 60 * 60,
-        mfaSettings,
+        ...baseOptions,
+        chains: [baseChainConfig],
+        defaultChainId: baseChainConfig.chainId,
       }),
       web3AuthSolana: new Web3Auth(WebBrowser, EncryptedStorage, {
-        clientId,
-        redirectUrl,
-        network: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
-        privateKeyProvider: solanaPrivateKeyProvider,
-        sessionTime: 30 * 24 * 60 * 60,
-        mfaSettings,
+        ...baseOptions,
+        chains: [solanaChainConfig],
+        defaultChainId: solanaChainConfig.chainId,
       }),
     };
   }, [baseChainConfig, solanaChainConfig, clientId, redirectUrl]);

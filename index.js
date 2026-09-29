@@ -1,3 +1,4 @@
+import '@web3auth/react-native-sdk/setup';
 /**
  * @format
  */
