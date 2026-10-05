@@ -1,0 +1,137 @@
+diff --git a/node_modules/@web3auth/react-native-sdk/dist/lib.cjs/Web3Auth.js b/node_modules/@web3auth/react-native-sdk/dist/lib.cjs/Web3Auth.js
+index dd2bee4..8726570 100644
+--- a/node_modules/@web3auth/react-native-sdk/dist/lib.cjs/Web3Auth.js
++++ b/node_modules/@web3auth/react-native-sdk/dist/lib.cjs/Web3Auth.js
+@@ -753,23 +753,48 @@ class Web3Auth {
+   }
+   async getWallet(privateKey) {
+     var _this$projectConfig3;
+-    const eoaProvider = new ethereumProvider.EthereumPrivateKeyProvider({
+-      config: {
+-        keyExportEnabled: (_this$projectConfig3 = this.projectConfig) === null || _this$projectConfig3 === void 0 ? void 0 : _this$projectConfig3.enableKeyExport,
+-        chainConfig: this.currentChain
+-      }
+-    });
+-    await eoaProvider.setupProvider(privateKey);
++    const keyExportEnabled = (_this$projectConfig3 = this.projectConfig) === null || _this$projectConfig3 === void 0 ? void 0 : _this$projectConfig3.enableKeyExport;
+     if (this.currentChainNamespace === baseControllers.CHAIN_NAMESPACES.SOLANA) {
+-      const ed25519Key = auth.getED25519Key(privateKey).sk;
+-      const keyPair = await keys.createKeyPairFromBytes(new Uint8Array(ed25519Key));
+-      const signer = await signers.createSignerFromKeyPair(keyPair);
++      // PATCH(cypherd): EthereumPrivateKeyProvider rejects non-EIP155 chains ("Invalid chain namespace"),
++      // so expose the ed25519 key through a minimal key-only provider instead.
++      const exportKey = auth.createAsyncMiddleware(async (_req, res) => {
++        if (!keyExportEnabled) throw auth.providerErrors.custom({
++          message: "Private key export is disabled",
++          code: 4902
++        });
++        res.result = privateKey;
++      });
++      const keyEngine = new auth.JRPCEngine();
++      keyEngine.push(auth.createScaffoldMiddleware({
++        eth_private_key: exportKey,
++        solanaPrivateKey: exportKey,
++        private_key: exportKey
++      }));
++      const eoaProvider = auth.providerFromEngine(keyEngine);
++      // PATCH(cypherd): on Solana, privateKey is already the 64-byte ed25519 secret (seed + pubkey);
++      // re-deriving it yields 96 bytes, which createKeyPairFromBytes rejects.
++      const ed25519Key = privateKey.length === 128 ? new Uint8Array(privateKey.match(/../g).map(h => parseInt(h, 16))) : new Uint8Array(auth.getED25519Key(privateKey).sk);
++      let signer = null;
++      try {
++        const keyPair = await keys.createKeyPairFromBytes(ed25519Key);
++        signer = await signers.createSignerFromKeyPair(keyPair);
++      } catch (e) {
++        loglevel.log.warn("Solana signer unavailable", e);
++      }
+       return {
+         chainNamespace: baseControllers.CHAIN_NAMESPACES.SOLANA,
+         provider: eoaProvider,
+         signer: signer
+       };
+-    } else if (this.currentChainNamespace === baseControllers.CHAIN_NAMESPACES.EIP155) {
++    }
++    const eoaProvider = new ethereumProvider.EthereumPrivateKeyProvider({
++      config: {
++        keyExportEnabled,
++        chainConfig: this.currentChain
++      }
++    });
++    await eoaProvider.setupProvider(privateKey);
++    if (this.currentChainNamespace === baseControllers.CHAIN_NAMESPACES.EIP155) {
+       const ethersWallet = new ethers.Wallet(privateKey);
+       const signer = ethersWallet.connect(new ethers.JsonRpcProvider(this.currentChain.rpcTarget));
+       let aaProvider = null;
+diff --git a/node_modules/@web3auth/react-native-sdk/dist/lib.esm/Web3Auth.js b/node_modules/@web3auth/react-native-sdk/dist/lib.esm/Web3Auth.js
+index de4c9c9..a3564d3 100644
+--- a/node_modules/@web3auth/react-native-sdk/dist/lib.esm/Web3Auth.js
++++ b/node_modules/@web3auth/react-native-sdk/dist/lib.esm/Web3Auth.js
+@@ -5,7 +5,7 @@ import { createSignerFromKeyPair } from '@solana/signers';
+ import { NodeDetailManager } from '@toruslabs/fetch-node-details';
+ import { SessionManager } from '@toruslabs/session-manager';
+ import { Torus, keccak256 } from '@toruslabs/torus.js';
+-import { WEB3AUTH_NETWORK, BUILD_ENV, serializeError, AUTH_ACTIONS, jsonToBase64, MFA_LEVELS, AUTH_CONNECTION, getED25519Key } from '@web3auth/auth';
++import { WEB3AUTH_NETWORK, BUILD_ENV, serializeError, AUTH_ACTIONS, jsonToBase64, MFA_LEVELS, AUTH_CONNECTION, getED25519Key, createAsyncMiddleware, providerErrors, JRPCEngine, createScaffoldMiddleware, providerFromEngine } from '@web3auth/auth';
+ import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
+ import { accountAbstractionProvider } from '@web3auth/no-modal/dist/lib.esm/providers/account-abstraction-provider/index.js';
+ import { CommonJRPCProvider } from '@web3auth/no-modal/dist/lib.esm/providers/base-provider/CommonJRPCProvider.js';
+@@ -758,23 +758,48 @@ class Web3Auth {
+   }
+   async getWallet(privateKey) {
+     var _this$projectConfig3;
+-    const eoaProvider = new EthereumPrivateKeyProvider({
+-      config: {
+-        keyExportEnabled: (_this$projectConfig3 = this.projectConfig) === null || _this$projectConfig3 === void 0 ? void 0 : _this$projectConfig3.enableKeyExport,
+-        chainConfig: this.currentChain
+-      }
+-    });
+-    await eoaProvider.setupProvider(privateKey);
++    const keyExportEnabled = (_this$projectConfig3 = this.projectConfig) === null || _this$projectConfig3 === void 0 ? void 0 : _this$projectConfig3.enableKeyExport;
+     if (this.currentChainNamespace === CHAIN_NAMESPACES.SOLANA) {
+-      const ed25519Key = getED25519Key(privateKey).sk;
+-      const keyPair = await createKeyPairFromBytes(new Uint8Array(ed25519Key));
+-      const signer = await createSignerFromKeyPair(keyPair);
++      // PATCH(cypherd): EthereumPrivateKeyProvider rejects non-EIP155 chains ("Invalid chain namespace"),
++      // so expose the ed25519 key through a minimal key-only provider instead.
++      const exportKey = createAsyncMiddleware(async (_req, res) => {
++        if (!keyExportEnabled) throw providerErrors.custom({
++          message: "Private key export is disabled",
++          code: 4902
++        });
++        res.result = privateKey;
++      });
++      const keyEngine = new JRPCEngine();
++      keyEngine.push(createScaffoldMiddleware({
++        eth_private_key: exportKey,
++        solanaPrivateKey: exportKey,
++        private_key: exportKey
++      }));
++      const eoaProvider = providerFromEngine(keyEngine);
++      // PATCH(cypherd): on Solana, privateKey is already the 64-byte ed25519 secret (seed + pubkey);
++      // re-deriving it yields 96 bytes, which createKeyPairFromBytes rejects.
++      const ed25519Key = privateKey.length === 128 ? new Uint8Array(privateKey.match(/../g).map(h => parseInt(h, 16))) : new Uint8Array(getED25519Key(privateKey).sk);
++      let signer = null;
++      try {
++        const keyPair = await createKeyPairFromBytes(ed25519Key);
++        signer = await createSignerFromKeyPair(keyPair);
++      } catch (e) {
++        log.warn("Solana signer unavailable", e);
++      }
+       return {
+         chainNamespace: CHAIN_NAMESPACES.SOLANA,
+         provider: eoaProvider,
+         signer: signer
+       };
+-    } else if (this.currentChainNamespace === CHAIN_NAMESPACES.EIP155) {
++    }
++    const eoaProvider = new EthereumPrivateKeyProvider({
++      config: {
++        keyExportEnabled,
++        chainConfig: this.currentChain
++      }
++    });
++    await eoaProvider.setupProvider(privateKey);
++    if (this.currentChainNamespace === CHAIN_NAMESPACES.EIP155) {
+       var _ref5;
+       const ethersWallet = new Wallet(privateKey);
+       const signer = ethersWallet.connect(new JsonRpcProvider(this.currentChain.rpcTarget));
