@@ -33,7 +33,7 @@ import { useTranslation } from 'react-i18next';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import useWalletConnectMobile from '../useWalletConnectMobile';
 // import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
-import Web3Auth from '@web3auth/react-native-sdk/dist/types/Web3Auth';
+import type Web3Auth from '@web3auth/react-native-sdk';
 import useWeb3Auth from '../useWeb3Auth';
 import useCustomerIO from '../useCustomerIO';
 

@@ -1,5 +1,6 @@
 const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
 const { withNativeWind } = require("nativewind/metro");
+const { withWeb3Auth } = require('@web3auth/react-native-sdk/metro-config');
 const { resolve } = require('metro-resolver');
 const path = require('path');
 
@@ -28,7 +29,6 @@ const config = {
       http: require.resolve('empty-module'), // stream-http can be polyfilled here if needed
       https: require.resolve('empty-module'), // https-browserify can be polyfilled here if needed
       os: require.resolve('empty-module'), // os-browserify can be polyfilled here if needed
-      url: require.resolve('empty-module'), // url can be polyfilled here if needed
       zlib: require.resolve('empty-module'), // browserify-zlib can be polyfilled here if needed
       crypto: require.resolve('react-native-quick-crypto'),
       stream: require.resolve('readable-stream'),
@@ -84,6 +84,23 @@ const config = {
        * compiled spec files), we force Metro to use the package's *source* entrypoints under `src/`,
        * where the codegen parser can read the spec types.
        */
+
+      // Web3Auth v9 deps call `require('url').pathToFileURL`, which the root
+      // `url@0.10.3` package lacks. extraNodeModules is only a fallback, so
+      // point just those importers at the SDK's url shim.
+      if (
+        moduleName === 'url' &&
+        /node_modules\/@(toruslabs|web3auth)\//.test(
+          context?.originModulePath ?? '',
+        )
+      ) {
+        return {
+          type: 'sourceFile',
+          filePath: require.resolve(
+            '@web3auth/react-native-sdk/src/metro/shims/url-shim.js',
+          ),
+        };
+      }
 
       // safe-area-context: prefer source entrypoint
       if (moduleName === 'react-native-safe-area-context') {
@@ -390,8 +407,9 @@ const config = {
   },
 };
 
+// withWeb3Auth keeps our extraNodeModules and chains to our resolveRequest.
 module.exports = withNativeWind(
-  mergeConfig(defaultConfig, config),
+  withWeb3Auth(mergeConfig(defaultConfig, config)),
   {
     input: './global.css',
   },
