@@ -30,6 +30,11 @@ static void InitializeFlipper(UIApplication *application) {
 }
 #endif
 
+@interface AppDelegate ()
+@property (nonatomic, copy) NSDictionary *appLaunchOptions;
+- (void)startReactNativeInScene:(UIWindowScene *)scene connectionOptions:(UISceneConnectionOptions *)connectionOptions;
+@end
+
 @implementation AppDelegate
 
 // Customer.io push notification handler (Swift bridge)
@@ -51,6 +56,12 @@ CioAppPushNotificationsHandler *cioPnHandlerObj = [[CioAppPushNotificationsHandl
   self.dependencyProvider = [RCTAppDependencyProvider new];
   self.initialProps = @{};
 
+  // iOS 27 asserts at launch when an app built with the iOS 27 SDK hasn't
+  // adopted the UIScene lifecycle. The window now needs a scene, so React
+  // Native starts from SceneDelegate instead of here.
+  self.automaticallyLoadReactNativeWindow = NO;
+  self.appLaunchOptions = launchOptions;
+
   BOOL didFinish = [super application:application didFinishLaunchingWithOptions:launchOptions];
 
   // Intercom initialization.
@@ -62,6 +73,46 @@ CioAppPushNotificationsHandler *cioPnHandlerObj = [[CioAppPushNotificationsHandl
   } else {
     NSLog(@"[Intercom] Skipping initialization: missing INTERCOM_IOS_SDK_KEY and/or INTERCOM_APP_KEY");
   }
+
+  // Initialize Customer.io push click handling
+  [cioPnHandlerObj setupCustomerIOClickHandling];
+
+  [application registerForRemoteNotifications];
+
+  // Define UNUserNotificationCenter
+  UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+  center.delegate = self;
+
+  return didFinish;
+}
+
+// Called by SceneDelegate once the app's scene exists.
+- (void)startReactNativeInScene:(UIWindowScene *)scene connectionOptions:(UISceneConnectionOptions *)connectionOptions
+{
+  // With scenes, a launch URL or universal link arrives in connectionOptions
+  // instead of launchOptions. Fold it back in so Linking.getInitialURL() works.
+  NSMutableDictionary *launchOptions = [NSMutableDictionary dictionaryWithDictionary:self.appLaunchOptions ?: @{}];
+  NSURL *launchURL = connectionOptions.URLContexts.anyObject.URL;
+  if (launchURL != nil) {
+    launchOptions[UIApplicationLaunchOptionsURLKey] = launchURL;
+  }
+  NSUserActivity *launchActivity = connectionOptions.userActivities.anyObject;
+  if (launchActivity != nil) {
+    launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey] = @{
+      UIApplicationLaunchOptionsUserActivityTypeKey : launchActivity.activityType,
+      @"UIApplicationLaunchOptionsUserActivityKey" : launchActivity,
+    };
+  }
+
+  // Same as RCTAppDelegate's loadReactNativeWindow, but bound to the scene.
+  UIView *reactRootView = [self.rootViewFactory viewWithModuleName:self.moduleName
+                                                 initialProperties:self.initialProps
+                                                     launchOptions:launchOptions];
+  UIViewController *rootViewController = [self createRootViewController];
+  [self setRootView:reactRootView toRootViewController:rootViewController];
+  self.window = [[UIWindow alloc] initWithWindowScene:scene];
+  self.window.rootViewController = rootViewController;
+  [self.window makeKeyAndVisible];
 
   // ===================================================================================
   // LOTTIE SPLASH SCREEN FIX FOR RELEASE/TESTFLIGHT BUILDS
@@ -102,17 +153,6 @@ CioAppPushNotificationsHandler *cioPnHandlerObj = [[CioAppPushNotificationsHandl
   
   NSLog(@"[Splash] Added Lottie splash to WINDOW (above all RN content). Frame: %@",
         NSStringFromCGRect(animationUIView.frame));
-
-  // Initialize Customer.io push click handling
-  [cioPnHandlerObj setupCustomerIOClickHandling];
-
-  [application registerForRemoteNotifications];
-
-  // Define UNUserNotificationCenter
-  UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-  center.delegate = self;
-
-  return didFinish;
 }
 
 //Called when a notification is delivered to a foreground app.
@@ -176,6 +216,35 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
  return [RCTLinkingManager application:application
                   continueUserActivity:userActivity
                     restorationHandler:restorationHandler];
+}
+
+@end
+
+@interface SceneDelegate : UIResponder <UIWindowSceneDelegate>
+@end
+
+@implementation SceneDelegate
+
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions
+{
+  AppDelegate *appDelegate = (AppDelegate *)UIApplication.sharedApplication.delegate;
+  [appDelegate startReactNativeInScene:(UIWindowScene *)scene connectionOptions:connectionOptions];
+}
+
+// With scenes, deep links and universal links arrive here instead of the
+// app delegate's openURL / continueUserActivity.
+- (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
+{
+  for (UIOpenURLContext *context in URLContexts) {
+    [RCTLinkingManager application:UIApplication.sharedApplication openURL:context.URL options:@{}];
+  }
+}
+
+- (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity
+{
+  [RCTLinkingManager application:UIApplication.sharedApplication
+            continueUserActivity:userActivity
+              restorationHandler:^(NSArray<id<UIUserActivityRestoring>> *_Nullable restorableObjects) {}];
 }
 
 @end
